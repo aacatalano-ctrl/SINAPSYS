@@ -1,0 +1,5 @@
+/* Estas tres líneas son las directivas de Tailwind. */
+/* Reemplazan el contenido original del archivo index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
