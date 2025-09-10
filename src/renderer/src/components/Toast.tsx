@@ -7,9 +7,14 @@ interface ToastProps {
   message: string;
   type: 'success' | 'error' | 'info';
   onClose: () => void;
+  show: boolean;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+const Toast: React.FC<ToastProps> = ({ message, type, onClose, show }) => {
+  if (!show) {
+    return null;
+  }
+
   const bgColor = {
     success: 'bg-green-600',
     error: 'bg-red-600',

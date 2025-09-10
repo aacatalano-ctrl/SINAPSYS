@@ -1,31 +1,24 @@
 import { db } from './index'; // db is now typed from index.ts
 
-function purgeOldOrders(): void {
+async function purgeOldOrders(): Promise<void> {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-  // Define the query type for NeDB remove operation
-  interface OrderQuery {
-    status: string;
-    completionDate: { $lt: string };
-  }
-
-  const query: OrderQuery = {
+  const query = {
     status: 'Completado',
     completionDate: { $lt: oneYearAgo.toISOString() }
   };
 
-  db.orders.remove(query, { multi: true }, (err: Error | null, numRemoved: number) => {
-    if (err) {
-      console.error("Error purging old orders:", err);
+  try {
+    const result = await db.orders.deleteMany(query);
+    if (result.deletedCount > 0) {
+      console.log(`Successfully purged ${result.deletedCount} old completed orders.`);
     } else {
-      if (numRemoved > 0) {
-        console.log(`Successfully purged ${numRemoved} old completed orders.`);
-      } else {
-        console.log("No old completed orders to purge.");
-      }
+      console.log("No old completed orders to purge.");
     }
-  });
+  } catch (err) {
+    console.error("Error purging old orders:", err);
+  }
 }
 
 export {

@@ -4,6 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import { connectDB, initializeDb, db } from '../main/database/index.ts';
+import { purgeOldOrders } from '../main/database/maintenance.ts';
+import { checkUnpaidOrders } from '../main/database/notifications.ts';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -241,6 +243,13 @@ const startServer = async () => {
   if (!process.env.VERCEL) {
     app.listen(port, () => {
       console.log(`Servidor backend escuchando en http://localhost:${port}`);
+      
+      // Schedule background tasks
+      console.log('Scheduling background tasks...');
+      // Check for unpaid orders every 24 hours
+      setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);
+      // Purge old orders every 7 days
+      setInterval(purgeOldOrders, 7 * 24 * 60 * 60 * 1000);
     });
   }
 };

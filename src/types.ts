@@ -69,3 +69,5 @@ export interface Notification {
   createdAt: string;
   read: boolean;
 }
+
+export const __esModule = true; // Dummy export to satisfy ES module runtime loader
