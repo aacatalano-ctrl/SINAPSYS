@@ -8,6 +8,7 @@
   "scripts": {
     "dev:server": "nodemon --exec ts-node --compiler-options '{\"module\": \"esnext\"}' src/server/server.ts",
     "dev:frontend": "vite",
+    "build": "vite build",
     "lint": "eslint .",
     "test": "vitest"
   },
