@@ -27,7 +27,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/doctors');
+      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -40,7 +40,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:3001/api/doctors', {
+      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/doctors/${id}`, {
+      const response = await fetch(`import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const deleteDoctor = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/doctors/${id}`, {
+      const response = await fetch(`import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -90,7 +90,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const exportDoctors = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/export/doctors');
+      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/export/doctors');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
