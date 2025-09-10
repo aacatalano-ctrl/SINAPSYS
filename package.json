@@ -4,8 +4,9 @@
   "description": "Aplicación de Gestión de Laboratorio Dental con Electron y React",
   "author": "",
   "license": "ISC",
+  "type": "module",
   "scripts": {
-    "dev:server": "nodemon --exec ts-node --compiler-options '{\"module\": \"commonjs\"}' src/server/server.ts",
+    "dev:server": "nodemon --exec ts-node --compiler-options '{\"module\": \"esnext\"}' src/server/server.ts",
     "dev:frontend": "vite",
     "lint": "eslint .",
     "test": "vitest"
@@ -16,6 +17,7 @@
     "express": "^5.1.0",
     "firebase": "^10.12.3",
     "lucide-react": "^0.336.0",
+    "mongoose": "^8.18.1",
     "nedb": "^1.8.0",
     "pdfkit": "^0.17.1",
     "react": "^18.3.1",
