@@ -26,7 +26,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/doctors`);
+      const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'}/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
