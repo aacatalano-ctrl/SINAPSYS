@@ -1,41 +1,250 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path'; // Added path import
-import { fileURLToPath } from 'url'; // Added fileURLToPath import
-import { connectDB, initializeDb } from '../main/database/index.ts'; // Import connectDB and initializeDb
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import { connectDB, initializeDb, db } from '../main/database/index.ts';
 
 const app = express();
-const port = process.env.PORT || 3001; // Use process.env.PORT for deployment
+const port = process.env.PORT || 3001;
 
-// Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Serve static files from the 'renderer' directory
-app.use(express.static(path.join(__dirname, '../../renderer/dist')));
 
 app.use(cors());
 app.use(express.json());
 
-// --- HEALTH CHECK ---
-app.get('/', (req, res) => {
-  res.send('¡El servidor del laboratorio dental está funcionando!');
+// --- API ENDPOINTS ---
+
+// --- USER AUTHENTICATION ---
+app.post('/api/users', async (req, res) => {
+  const { username, password, securityQuestion, securityAnswer } = req.body;
+  if (!username || !password || !securityQuestion || !securityAnswer) {
+    return res.status(400).json({ error: 'Todos los campos son requeridos.' });
+  }
+  try {
+    const existingUser = await db.users.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: 'El nombre de usuario ya existe.' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
+    const newUser = new db.users({
+      username,
+      password: hashedPassword,
+      securityQuestion,
+      securityAnswer: hashedAnswer,
+    });
+    await newUser.save();
+    res.status(201).json({ username: newUser.username });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al registrar el usuario.' });
+  }
 });
 
-// Fallback for SPA - serves index.html for any unmatched routes
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../../renderer/dist/index.html'));
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
+  }
+  try {
+    const user = await db.users.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
+    }
+    res.json({ success: true, user: { username: user.username } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+  }
 });
 
+app.post('/api/users/security-question', async (req, res) => {
+  const { username } = req.body;
+  try {
+    const user = await db.users.findOne({ username });
+    if (user) {
+      res.json({ success: true, securityQuestion: user.securityQuestion });
+    } else {
+      res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Error al buscar la pregunta de seguridad.' });
+  }
+});
 
-// Connect to DB and then start server
-const startServer = async () => {
-  await connectDB(); // Connect to MongoDB
-  await initializeDb(); // Initialize data if collections are empty
+app.post('/api/users/verify-answer', async (req, res) => {
+  const { username, answer } = req.body;
+  try {
+    const user = await db.users.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+    const isMatch = await bcrypt.compare(answer, user.securityAnswer);
+    if (isMatch) {
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, message: 'Respuesta de seguridad incorrecta.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al verificar la respuesta.' });
+  }
+});
 
-  app.listen(port, () => {
-    console.log(`Servidor backend escuchando en http://localhost:${port}`);
+app.post('/api/users/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const updatedUser = await db.users.findOneAndUpdate(
+      { username },
+      { password: hashedPassword },
+      { new: true }
+    );
+    if (updatedUser) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al restablecer la contraseña.' });
+  }
+});
+
+// --- DOCTORS ---
+app.get('/api/doctors', async (req, res) => {
+  try {
+    const doctors = await db.doctors.find({});
+    res.json(doctors);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener doctores' });
+  }
+});
+
+app.post('/api/doctors', async (req, res) => {
+  try {
+    const newDoctor = new db.doctors(req.body);
+    await newDoctor.save();
+    res.status(201).json(newDoctor);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al agregar doctor' });
+  }
+});
+
+// --- ORDERS ---
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await db.orders.find({}).populate('doctorId');
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener las órdenes.' });
+  }
+});
+
+app.post('/api/orders', async (req, res) => {
+  try {
+    const newOrder = new db.orders(req.body);
+    await newOrder.save();
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al crear la orden.' });
+  }
+});
+
+app.put('/api/orders/:id', async (req, res) => {
+  try {
+    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al actualizar la orden.' });
+  }
+});
+
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    await db.orders.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: 'Error al eliminar la orden.' });
+  }
+});
+
+// --- NOTIFICATIONS ---
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const notifications = await db.notifications.find({}).sort({ timestamp: -1 });
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener notificaciones.' });
+  }
+});
+
+app.put('/api/notifications/:id/read', async (req, res) => {
+  try {
+    const notification = await db.notifications.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
+    res.json(notification);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al marcar la notificación como leída.' });
+  }
+});
+
+// --- PAYMENTS ---
+app.post('/api/orders/:orderId/payments', async (req, res) => {
+  try {
+    const order = await db.orders.findById(req.params.orderId);
+    if (order) {
+      order.payments.push(req.body);
+      await order.save();
+      res.status(201).json(order);
+    } else {
+      res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+  } catch (error) {
+    res.status(400).json({ error: 'Error al agregar el pago.' });
+  }
+});
+
+// --- NOTES ---
+app.post('/api/orders/:orderId/notes', async (req, res) => {
+  try {
+    const order = await db.orders.findById(req.params.orderId);
+    if (order) {
+      order.notes.push(req.body);
+      await order.save();
+      res.status(201).json(order);
+    } else {
+      res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+  } catch (error) {
+    res.status(400).json({ error: 'Error al agregar la nota.' });
+  }
+});
+
+// --- STATIC FILES & SPA FALLBACK (for local development) ---
+// In production, Vercel handles this with rewrites.
+if (process.env.NODE_ENV !== 'production') {
+  const staticPath = path.resolve(__dirname, '../../dist');
+  app.use(express.static(staticPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(staticPath, 'index.html'));
   });
+}
+
+// --- SERVER INITIALIZATION ---
+const startServer = async () => {
+  await connectDB();
+  await initializeDb();
+
+  // Don't listen in a serverless environment
+  if (!process.env.VERCEL) {
+    app.listen(port, () => {
+      console.log(`Servidor backend escuchando en http://localhost:${port}`);
+    });
+  }
 };
 
-startServer(); // Call the function to start the server
+startServer();
+
+export default app;
