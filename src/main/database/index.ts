@@ -52,10 +52,8 @@ const userSchema = new mongoose.Schema<User>({
 
 const notificationSchema = new mongoose.Schema<Notification>({
   message: { type: String, required: true },
-  timestamp: { type: String, required: true }, // Consider using Date type
   read: { type: Boolean, default: false },
-});
-
+}, { timestamps: true }); // Fixed
 
 // 2. Create Mongoose Models
 const DoctorModel = mongoose.model<Doctor>('Doctor', doctorSchema);
@@ -146,18 +144,8 @@ const initializeDb = async (): Promise<void> => {
     if (userCount === 0) {
       console.log('Users collection is empty, inserting initial data with hashed passwords...');
       const initialUsers: User[] = [
-        {
-          username: 'admin',
-          password: bcrypt.hashSync('password', saltRounds),
-          securityQuestion: '¿Cuál es el nombre de tu primera mascota?',
-          securityAnswer: bcrypt.hashSync('Buddy', saltRounds)
-        },
-        {
-          username: 'user1',
-          password: bcrypt.hashSync('pass1', saltRounds),
-          securityQuestion: '¿Cuál es tu color favorito?',
-          securityAnswer: bcrypt.hashSync('Azul', saltRounds)
-        },
+        { username: 'admin', password: bcrypt.hashSync('password', saltRounds), securityQuestion: '¿Cuál es el nombre de tu primera mascota?', securityAnswer: bcrypt.hashSync('Buddy', saltRounds) },
+        { username: 'user1', password: bcrypt.hashSync('pass1', saltRounds), securityQuestion: '¿Cuál es tu color favorito?', securityAnswer: bcrypt.hashSync('Azul', saltRounds) },
       ];
       await db.users.insertMany(initialUsers);
       console.log('Initial users inserted.');

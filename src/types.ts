@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 // src/types.d.ts
 
 export interface JobService {
@@ -48,7 +50,7 @@ export interface Note {
 export interface Order {
   _id?: string;
   id: string;
-  doctorId: string;
+  doctorId: mongoose.Types.ObjectId | string;
   patientName: string;
   jobType: string;
   cost: number;

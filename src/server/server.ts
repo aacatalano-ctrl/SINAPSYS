@@ -54,7 +54,7 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password!); // Fixed
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
@@ -85,7 +85,7 @@ app.post('/api/users/verify-answer', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
     }
-    const isMatch = await bcrypt.compare(answer, user.securityAnswer);
+    const isMatch = await bcrypt.compare(answer, user.securityAnswer!); // Fixed
     if (isMatch) {
       res.json({ success: true });
     } else {
