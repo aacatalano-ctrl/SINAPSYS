@@ -1,7 +1,8 @@
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Doctor } from '../../types';
 
-// Define the shape of the context
+const API_URL = '/api';
+
 interface DoctorContextType {
   doctors: Doctor[];
   editingDoctor: Doctor | null;
@@ -13,10 +14,8 @@ interface DoctorContextType {
   exportDoctors: () => Promise<void>;
 }
 
-// Create the context
 const DoctorContext = createContext<DoctorContextType | undefined>(undefined);
 
-// Create a provider component
 interface DoctorProviderProps {
   children: ReactNode;
 }
@@ -27,7 +26,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors');
+      const response = await fetch(`${API_URL}/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -40,7 +39,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
     try {
-      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors', {
+      const response = await fetch(`${API_URL}/doctors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +57,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
-      const response = await fetch(`import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors/${id}`, {
+      const response = await fetch(`${API_URL}/doctors/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +75,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const deleteDoctor = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/doctors/${id}`, {
+      const response = await fetch(`${API_URL}/doctors/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -90,7 +89,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const exportDoctors = useCallback(async () => {
     try {
-      const response = await fetch('import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'/export/doctors');
+      const response = await fetch(`${API_URL}/export/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -126,7 +125,6 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   );
 };
 
-// Create a custom hook to use the context
 export const useDoctors = (): DoctorContextType => {
   const context = useContext(DoctorContext);
   if (context === undefined) {
