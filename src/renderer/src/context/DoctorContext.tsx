@@ -78,16 +78,18 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   }, [fetchDoctors]);
 
   const deleteDoctor = useCallback(async (id: string) => {
-    try {
-      const response = await fetch(`${API_URL}/doctors/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {
+      try {
+        const response = await fetch(`${API_URL}/doctors/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        await fetchDoctors(); // Refresh list
+      } catch (error) {
+        console.error('Failed to delete doctor:', error);
       }
-      await fetchDoctors(); // Refresh list
-    } catch (error) {
-      console.error('Failed to delete doctor:', error);
     }
   }, [fetchDoctors]);
 
