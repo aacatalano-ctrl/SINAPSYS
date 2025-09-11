@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
-import { connectDB, initializeDb, db } from './database/index.ts';
+import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.ts';
 import { checkUnpaidOrders } from './database/notifications.ts';
 import type { Payment } from '../types.ts';
