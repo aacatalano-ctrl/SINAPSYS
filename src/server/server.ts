@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 // --- API ENDPOINTS ---
 
 // --- USER AUTHENTICATION ---
-app.post('/users', async (req, res) => {
+app.post('/api/users', async (req, res) => {
   const { username, password, securityQuestion, securityAnswer } = req.body;
   if (!username || !password || !securityQuestion || !securityAnswer) {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
@@ -51,7 +51,7 @@ app.post('/users', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
@@ -71,7 +71,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/users/security-question', async (req, res) => {
+app.post('/api/users/security-question', async (req, res) => {
   const { username } = req.body;
   try {
     const user = await db.users.findOne({ username });
@@ -85,7 +85,7 @@ app.post('/users/security-question', async (req, res) => {
   }
 });
 
-app.post('/users/verify-answer', async (req, res) => {
+app.post('/api/users/verify-answer', async (req, res) => {
   const { username, answer } = req.body;
   try {
     const user = await db.users.findOne({ username });
@@ -103,7 +103,7 @@ app.post('/users/verify-answer', async (req, res) => {
   }
 });
 
-app.post('/users/reset-password', async (req, res) => {
+app.post('/api/users/reset-password', async (req, res) => {
   const { username, newPassword } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -123,7 +123,7 @@ app.post('/users/reset-password', async (req, res) => {
 });
 
 // --- DOCTORS ---
-app.get('/doctors', async (req, res) => {
+app.get('/api/doctors', async (req, res) => {
   try {
     const doctors = await db.doctors.find({});
     res.json(doctors);
@@ -132,7 +132,7 @@ app.get('/doctors', async (req, res) => {
   }
 });
 
-app.post('/doctors', async (req, res) => {
+app.post('/api/doctors', async (req, res) => {
   try {
     const newDoctor = new db.doctors(req.body);
     await newDoctor.save();
@@ -142,7 +142,7 @@ app.post('/doctors', async (req, res) => {
   }
 });
 
-app.put('/doctors/:id', async (req, res) => {
+app.put('/api/doctors/:id', async (req, res) => {
   try {
     const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedDoctor) {
@@ -154,7 +154,7 @@ app.put('/doctors/:id', async (req, res) => {
   }
 });
 
-app.delete('/doctors/:id', async (req, res) => {
+app.delete('/api/doctors/:id', async (req, res) => {
   try {
     const deletedDoctor = await db.doctors.findByIdAndDelete(req.params.id);
     if (!deletedDoctor) {
@@ -167,7 +167,7 @@ app.delete('/doctors/:id', async (req, res) => {
 });
 
 // --- ORDERS ---
-app.get('/orders', async (req, res) => {
+app.get('/api/orders', async (req, res) => {
   try {
     const orders = await db.orders.find({}).populate('doctorId');
     res.json(orders);
@@ -176,7 +176,7 @@ app.get('/orders', async (req, res) => {
   }
 });
 
-app.post('/orders', async (req, res) => {
+app.post('/api/orders', async (req, res) => {
   try {
     const newOrder = new db.orders(req.body);
     await newOrder.save();
@@ -186,7 +186,7 @@ app.post('/orders', async (req, res) => {
   }
 });
 
-app.put('/orders/:id', async (req, res) => {
+app.put('/api/orders/:id', async (req, res) => {
   try {
     const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedOrder);
@@ -195,7 +195,7 @@ app.put('/orders/:id', async (req, res) => {
   }
 });
 
-app.delete('/orders/:id', async (req, res) => {
+app.delete('/api/orders/:id', async (req, res) => {
   try {
     await db.orders.findByIdAndDelete(req.params.id);
     res.status(204).send();
@@ -204,7 +204,7 @@ app.delete('/orders/:id', async (req, res) => {
   }
 });
 
-app.delete('/orders/by-date', async (req, res) => {
+app.delete('/api/orders/by-date', async (req, res) => {
   try {
     const { startDate, endDate } = req.body;
     if (!startDate || !endDate) {
@@ -223,7 +223,7 @@ app.delete('/orders/by-date', async (req, res) => {
   }
 });
 
-app.post('/orders/:id/receipt', async (req, res) => {
+app.post('/api/orders/:id/receipt', async (req, res) => {
   try {
     const orderId = req.params.id;
     const { order, currentUser } = req.body; // Frontend sends order and currentUser
@@ -271,7 +271,7 @@ app.post('/orders/:id/receipt', async (req, res) => {
 });
 
 // --- NOTIFICATIONS ---
-app.get('/notifications', async (req, res) => {
+app.get('/api/notifications', async (req, res) => {
   try {
     const notifications = await db.notifications.find({}).sort({ timestamp: -1 });
     res.json(notifications);
@@ -280,7 +280,7 @@ app.get('/notifications', async (req, res) => {
   }
 });
 
-app.put('/notifications/:id/read', async (req, res) => {
+app.put('/api/notifications/:id/read', async (req, res) => {
   try {
     const notification = await db.notifications.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
     res.json(notification);
@@ -289,7 +289,7 @@ app.put('/notifications/:id/read', async (req, res) => {
   }
 });
 
-app.delete('/notifications', async (req, res) => {
+app.delete('/api/notifications', async (req, res) => {
   try {
     await db.notifications.deleteMany({});
     res.status(204).send();
@@ -298,7 +298,7 @@ app.delete('/notifications', async (req, res) => {
   }
 });
 
-app.delete('/notifications/:id', async (req, res) => {
+app.delete('/api/notifications/:id', async (req, res) => {
   try {
     const deletedNotification = await db.notifications.findByIdAndDelete(req.params.id);
     if (!deletedNotification) {
@@ -311,7 +311,7 @@ app.delete('/notifications/:id', async (req, res) => {
 });
 
 // --- PAYMENTS ---
-app.post('/orders/:orderId/payments', async (req, res) => {
+app.post('/api/orders/:orderId/payments', async (req, res) => {
   try {
     console.log(`[Backend] POST /api/orders/${req.params.orderId}/payments - req.body:`, req.body);
     const order = await db.orders.findById(req.params.orderId);
@@ -330,7 +330,7 @@ app.post('/orders/:orderId/payments', async (req, res) => {
 });
 
 // --- NOTES ---
-app.post('/orders/:orderId/notes', async (req, res) => {
+app.post('/api/orders/:orderId/notes', async (req, res) => {
   try {
     console.log(`[Backend] POST /api/orders/${req.params.orderId}/notes - req.body:`, req.body);
     const order = await db.orders.findById(req.params.orderId);
