@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
 import { connectDB, initializeDb, db } from './database/index.js';
-import { purgeOldOrders } from './database/maintenance.ts';
-import { checkUnpaidOrders } from './database/notifications.ts';
+import { purgeOldOrders } from './database/maintenance.js';
+import { checkUnpaidOrders } from './database/notifications.js';
 import type { Payment } from '../types.ts';
 
 const app = express();
