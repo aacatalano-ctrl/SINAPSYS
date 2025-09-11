@@ -7,7 +7,7 @@ import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
 import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
-import type { Payment } from '../types.ts';
+import type { Payment } from '../types.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
