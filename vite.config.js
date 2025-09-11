@@ -18,18 +18,9 @@ export default defineConfig({
       },
     },
   },
+  root: 'src/renderer',
   build: {
-    rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'src/renderer/index.html')
-      },
-      output: {
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
-      }
-    },
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true,
   },
 });
