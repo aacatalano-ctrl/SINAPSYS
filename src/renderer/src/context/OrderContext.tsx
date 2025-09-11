@@ -39,7 +39,16 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       const response = await fetch(`${API_URL}/orders`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const loadedOrders = await response.json();
-      setOrders(loadedOrders.filter(Boolean));
+      const transformedOrders = loadedOrders.map((order: Order) => {
+        if (order.doctorId && typeof order.doctorId === 'object' && '_id' in order.doctorId) {
+          return {
+            ...order,
+            doctorId: (order.doctorId as any)._id
+          };
+        }
+        return order;
+      });
+      setOrders(transformedOrders.filter(Boolean));
       setIsDataLoaded(true);
     } catch (error) {
       console.error("Error loading orders from web server:", error);
