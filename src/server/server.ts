@@ -18,6 +18,11 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log('Incoming request URL:', req.url, 'Path:', req.path);
+  next();
+});
+
 // --- API ENDPOINTS ---
 
 // --- USER AUTHENTICATION ---
