@@ -23,6 +23,8 @@ import Toast from './Toast';
 import { Doctor, Order, Notification } from '../../types';
 import { formatDate, formatDateTime, jobTypePrefixMap, jobTypeCosts } from '../utils/helpers';
 
+const API_URL = 'http://localhost:3001/api';
+
 interface MainAppWrapperProps {
   handleLogout: () => void;
   currentUser: any; // Add currentUser prop
@@ -72,9 +74,9 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   // --- Notifications State and Handlers ---
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async () => {
     try {
-      const fetchedNotifications = await window.api.getNotifications();
+      const fetchedNotifications = await fetch(`${API_URL}/notifications`).then(res => res.json());
       setNotifications(fetchedNotifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -83,7 +85,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
   const handleMarkNotificationsAsRead = useCallback(async () => {
     try {
-      await window.api.markNotificationsAsRead();
+      await fetch(`${API_URL}/notifications/mark-all-read`, { method: 'PUT' });
       fetchNotifications(); // Refresh notifications list
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
@@ -92,7 +94,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
   const handleClearAllNotifications = useCallback(async () => {
     try {
-      await window.api.clearAllNotifications();
+      await fetch(`${API_URL}/notifications`, { method: 'DELETE' });
       fetchNotifications(); // Refresh to show empty list
     } catch (error) {
       console.error("Failed to clear notifications:", error);
@@ -101,7 +103,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
   const handleDeleteNotification = useCallback(async (id: string) => {
     try {
-      await window.api.deleteNotification(id);
+      await fetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
       fetchNotifications(); // Refresh notifications list
     } catch (error) {
       console.error("Failed to delete notification:", error);
@@ -128,7 +130,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   // Other useEffects...
   useEffect(() => {
     if (selectedOrder) {
-      const updatedOrder = orders.find(o => o.id === selectedOrder.id);
+      const updatedOrder = orders.find(o => o._id === selectedOrder._id);
       if (updatedOrder) {
         setSelectedOrder(updatedOrder);
       }
@@ -195,7 +197,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   };
 
   const handleViewOrderDetails = (order: Order) => {
-    console.log("Viewing details for order ID:", order.id);
+    console.log("Viewing details for order ID:", order._id);
     setSelectedOrder(order);
     handleSetActiveView('orderDetails');
   };
@@ -249,7 +251,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
             onViewDetails={handleViewOrderDetails}
             onEditOrder={handleEditOrder}
             onConfirmCompletion={(order) => {
-              console.log("Setting order to complete with ID:", order.id);
+              console.log("Setting order to complete with ID:", order._id);
               setOrderToComplete(order);
               openConfirmCompletionModal();
             }}
@@ -427,7 +429,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
         <AddNoteModal
           order={selectedOrder}
           onClose={closeAddNoteModal}
-          onSaveNote={(note) => handleSaveNote(selectedOrder.id, note)}
+          onSaveNote={(note) => handleSaveNote(selectedOrder._id, note)}
         />
       )}
       {isAddPaymentModalOpen && selectedOrderForPayment && (
@@ -435,7 +437,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
           isOpen={isAddPaymentModalOpen}
           onClose={closeAddPaymentModal}
           order={selectedOrderForPayment}
-          onAddPayment={(amount, description) => addPaymentToOrder(selectedOrderForPayment.id, amount, description)}
+          onAddPayment={(amount, description) => addPaymentToOrder(selectedOrderForPayment._id, amount, description)}
         />
       )}
       {isConfirmCompletionModalOpen && orderToComplete && (

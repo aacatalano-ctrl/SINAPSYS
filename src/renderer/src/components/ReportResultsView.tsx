@@ -40,8 +40,8 @@ const ReportResultsView: React.FC<ReportResultsViewProps> = ({ title, orders, on
             </thead>
             <tbody>
               {orders.map(order => (
-                <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order.id}</td>
+                <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order._id}</td>
                   <td className="py-3 px-4 text-sm text-gray-800">{order.patientName}</td>
                   <td className="py-3 px-4 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
                   <td className="py-3 px-4 text-sm text-gray-800">${order.cost.toFixed(2)}</td>

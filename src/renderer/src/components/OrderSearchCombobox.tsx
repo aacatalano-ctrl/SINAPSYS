@@ -23,7 +23,7 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
     const doctorName = getDoctorFullNameById(order.doctorId)?.toLowerCase() || '';
 
     return (
-      (order.id || '').toLowerCase().includes(searchTerm) ||
+      (order._id || '').toLowerCase().includes(searchTerm) ||
       (order.patientName || '').toLowerCase().includes(searchTerm) ||
       doctorName.includes(searchTerm) ||
       (order.jobType || '').toLowerCase().includes(searchTerm)
@@ -40,7 +40,7 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
   };
 
   const handleSelect = (order: Order) => {
-    setInputValue(`${order.id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`);
+    setInputValue(`${order._id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`);
     onSelectOrder(order);
     setIsOpen(false);
   };
@@ -98,12 +98,12 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
         <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-auto">
           {filteredOrders.map((order, index) => (
             <li
-              key={order.id}
+              key={order._id}
               onClick={() => handleSelect(order)}
               onMouseEnter={() => setHighlightedIndex(index)}
               className={`px-4 py-2 cursor-pointer hover:bg-blue-100 ${index === highlightedIndex ? 'bg-blue-100' : ''}`}
             >
-              {`${order.id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`}
+              {`${order._id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`}
             </li>
           ))}
         </ul>

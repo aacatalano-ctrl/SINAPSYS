@@ -72,7 +72,7 @@ interface DoctorsViewProps {
       address: formData.get('editDoctorAddress') as string,
     };
     if (editingDoctor) {
-      await handleEditDoctor(editingDoctor.id, updatedFields);
+      await handleEditDoctor(editingDoctor._id, updatedFields);
       setEditingDoctor(null); // Close the edit form after saving
     }
   };
@@ -152,7 +152,7 @@ interface DoctorsViewProps {
                         <button onClick={(e) => {e.stopPropagation(); setEditingDoctor(doctor);}} className="text-blue-600 hover:text-blue-800" title="Editar Doctor">
                           <Pencil size={20} />
                         </button>
-                        <button onClick={(e) => {e.stopPropagation(); handleDeleteDoctor(doctor.id);}} className="text-red-600 hover:text-red-800" title="Eliminar Doctor">
+                        <button onClick={(e) => {e.stopPropagation(); handleDeleteDoctor(doctor._id);}} className="text-red-600 hover:text-red-800" title="Eliminar Doctor">
                           <Trash2 size={20} />
                         </button>
                       </td>

@@ -74,7 +74,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Registrar Pago para Orden: {order.id}</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Registrar Pago para Orden: {order._id}</h2>
         <div className="mb-4 p-3 bg-blue-100 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800"><span className="font-semibold">Costo Total:</span> ${order.cost.toFixed(2)}</p>
           <p className="text-lg text-blue-900"><span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}</p>

@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
 import { connectDB, initializeDb, db } from '../main/database/index.ts';
 import { purgeOldOrders } from '../main/database/maintenance.ts';
 import { checkUnpaidOrders } from '../main/database/notifications.ts';
@@ -135,6 +136,30 @@ app.post('/api/doctors', async (req, res) => {
   }
 });
 
+app.put('/api/doctors/:id', async (req, res) => {
+  try {
+    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedDoctor) {
+      return res.status(404).json({ error: 'Doctor no encontrado.' });
+    }
+    res.json(updatedDoctor);
+  } catch (error) {
+    res.status(400).json({ error: 'Error al actualizar doctor.' });
+  }
+});
+
+app.delete('/api/doctors/:id', async (req, res) => {
+  try {
+    const deletedDoctor = await db.doctors.findByIdAndDelete(req.params.id);
+    if (!deletedDoctor) {
+      return res.status(404).json({ error: 'Doctor no encontrado.' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: 'Error al eliminar doctor.' });
+  }
+});
+
 // --- ORDERS ---
 app.get('/api/orders', async (req, res) => {
   try {
@@ -173,6 +198,72 @@ app.delete('/api/orders/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/orders/by-date', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Fechas de inicio y fin son requeridas.' });
+    }
+    const result = await db.orders.deleteMany({
+      createdAt: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    });
+    res.json({ message: `Se eliminaron ${result.deletedCount} órdenes.`, deletedCount: result.deletedCount });
+  } catch (error) {
+    console.error("Error deleting orders by date:", error);
+    res.status(500).json({ error: 'Error al eliminar órdenes por fecha.' });
+  }
+});
+
+app.post('/api/orders/:id/receipt', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { order, currentUser } = req.body; // Frontend sends order and currentUser
+
+    const doc = new PDFDocument();
+    let filename = `Recibo-${orderId}.pdf`;
+    filename = encodeURIComponent(filename);
+    res.setHeader('Content-disposition', 'attachment; filename="' + filename + '"');
+    res.setHeader('Content-type', 'application/pdf');
+
+    doc.pipe(res);
+
+    // --- PDF Content ---
+    doc.fontSize(25).text('Recibo de Orden Dental', { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(12).text(`Orden ID: ${order.id}`); // Use order.id from frontend for display
+    doc.text(`Paciente: ${order.patientName}`);
+    doc.text(`Tipo de Trabajo: ${order.jobType}`);
+    doc.text(`Costo Total: ${order.cost.toFixed(2)}`);
+    doc.moveDown();
+
+    doc.text('Pagos:');
+    order.payments.forEach(payment => {
+      doc.text(`  - Fecha: ${new Date(payment.date).toLocaleDateString()} - Monto: ${payment.amount.toFixed(2)} - Descripción: ${payment.description || 'N/A'}`);
+    });
+    doc.moveDown();
+
+    const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    const balance = order.cost - totalPaid;
+    doc.text(`Total Abonado: ${totalPaid.toFixed(2)}`);
+    doc.text(`Saldo Pendiente: ${balance.toFixed(2)}`);
+    doc.moveDown();
+
+    doc.text(`Generado por: ${currentUser.username}`);
+    doc.text(`Fecha de Generación: ${new Date().toLocaleDateString()}`);
+    // --- End PDF Content ---
+
+    doc.end();
+
+  } catch (error) {
+    console.error("Error generating PDF receipt:", error);
+    res.status(500).json({ error: 'Error al generar el recibo PDF.' });
+  }
+});
+
 // --- NOTIFICATIONS ---
 app.get('/api/notifications', async (req, res) => {
   try {
@@ -189,6 +280,27 @@ app.put('/api/notifications/:id/read', async (req, res) => {
     res.json(notification);
   } catch (error) {
     res.status(400).json({ error: 'Error al marcar la notificación como leída.' });
+  }
+});
+
+app.delete('/api/notifications', async (req, res) => {
+  try {
+    await db.notifications.deleteMany({});
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: 'Error al eliminar todas las notificaciones.' });
+  }
+});
+
+app.delete('/api/notifications/:id', async (req, res) => {
+  try {
+    const deletedNotification = await db.notifications.findByIdAndDelete(req.params.id);
+    if (!deletedNotification) {
+      return res.status(404).json({ error: 'Notificación no encontrada.' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: 'Error al eliminar la notificación.' });
   }
 });
 
@@ -229,7 +341,7 @@ app.post('/api/orders/:orderId/notes', async (req, res) => {
 if (process.env.NODE_ENV !== 'production') {
   const staticPath = path.resolve(__dirname, '../../dist');
   app.use(express.static(staticPath));
-  app.get('*', (req, res) => {
+  app.get(/.*/, (req, res) => {
     res.sendFile(path.resolve(staticPath, 'index.html'));
   });
 }

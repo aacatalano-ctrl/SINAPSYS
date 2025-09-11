@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Doctor } from '../../types';
 
-const API_URL = '/api';
+const API_URL = 'http://localhost:3001/api';
 
 interface DoctorContextType {
   doctors: Doctor[];
@@ -26,7 +26,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:3001/api'}/doctors`);
+      const response = await fetch(`${API_URL}/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

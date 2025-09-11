@@ -1,5 +1,5 @@
-import { db } from './index';
-import { Order, Notification } from '../../types';
+import { db } from './index.ts';
+import type { Order, Notification } from '../../types.ts';
 
 // Generic function to create a notification
 async function createNotification(orderId: string, message: string): Promise<void> {

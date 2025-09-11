@@ -23,7 +23,7 @@ interface EditOrderModalProps {
 
 const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose, jobTypePrefixMap, jobTypeCosts }) => {
   const [formData, setFormData] = useState<OrderFormData>({
-    id: order.id,
+    id: order._id,
     doctorId: order.doctorId,
     patientName: order.patientName,
     jobType: order.jobType,
@@ -82,7 +82,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h3 className="text-2xl font-bold mb-6 text-gray-800">Editar Orden: {order.id}</h3>
+        <h3 className="text-2xl font-bold mb-6 text-gray-800">Editar Orden: {order._id}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="doctor" className="block text-gray-700 text-sm font-semibold mb-2">Doctor:</label>
@@ -97,7 +97,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
             >
               <option value="">Selecciona un doctor</option>
               {doctors.map((doc: Doctor) => (
-                <option key={doc.id} value={doc.id}>
+                <option key={doc._id} value={doc.id}>
                   {doc.title} {doc.name}
                 </option>
               ))}

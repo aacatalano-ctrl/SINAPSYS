@@ -14,6 +14,7 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [cost, setCost] = useState<number>(0);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
+  const [selectedJobType, setSelectedJobType] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
 
@@ -22,7 +23,7 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
     const formData = new FormData(e.currentTarget);
     const doctorId = formData.get('doctor') as string;
     const patientName = formData.get('patientName') as string;
-    const jobType = formData.get('jobType') as string;
+    const jobType = selectedJobType;
     const priority = formData.get('priority') as string;
     const caseDescription = formData.get('caseDescription') as string;
 
@@ -32,7 +33,6 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
     }
 
     const newOrder: Order = {
-      id: generateCaseCode(jobType),
       doctorId,
       patientName,
       jobType,
@@ -51,8 +51,9 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
         formRef.current.reset();
       }
       setSelectedCategory('');
+      setSelectedJobType(''); // <--- Add this
       setCost(0);
-      showNotification(`Orden ${addedOrder.id} creada con éxito.`);
+      showNotification(`Orden ${addedOrder._id} creada con éxito.`);
     } catch (error: Error) {
       console.error("Error creating order:", error);
       showNotification('Error al crear orden.', 'error');
@@ -124,9 +125,11 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
             className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             disabled={!selectedCategory} // Disable until a category is selected
+            value={selectedJobType} // <--- Add this
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              const selectedJobType = e.target.value;
-              setCost(jobTypeCosts[selectedJobType] !== undefined ? jobTypeCosts[selectedJobType] : 0);
+              const newJobType = e.target.value; // <--- Change variable name
+              setSelectedJobType(newJobType); // <--- Add this
+              setCost(jobTypeCosts[newJobType] !== undefined ? jobTypeCosts[newJobType] : 0); // <--- Use newJobType
             }}
           >
             <option key="create-order-select-job-type" value="">Selecciona tipo de trabajo</option>

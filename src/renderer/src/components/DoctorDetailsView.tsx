@@ -67,8 +67,8 @@ interface DoctorDetailsViewProps {
               </thead>
               <tbody>
                 {activeDoctorOrders.map(order => (
-                  <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => { /* setFullClientView(order) */ }}>
-                    <td className="py-2 px-4 text-sm text-gray-800 font-medium">{order.id}</td>
+                  <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => { /* setFullClientView(order) */ }}>
+                    <td className="py-2 px-4 text-sm text-gray-800 font-medium">{order._id}</td>
                     <td className="py-2 px-4 text-sm text-gray-800">{order.patientName}</td>
                     <td className="py-2 px-4 text-sm text-gray-800">{order.jobType}</td>
                     <td className="py-2 px-4 text-sm text-gray-800">${order.cost.toFixed(2)}</td>

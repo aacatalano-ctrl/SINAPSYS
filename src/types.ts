@@ -49,7 +49,6 @@ export interface Note {
 
 export interface Order {
   _id?: string;
-  id: string;
   doctorId: mongoose.Types.ObjectId | string;
   patientName: string;
   jobType: string;
@@ -72,4 +71,4 @@ export interface Notification {
   read: boolean;
 }
 
-export const __esModule = true; // Dummy export to satisfy ES module runtime loader
+

@@ -31,7 +31,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast } = useUI();
 
-  const API_URL = '/api';
+  const API_URL = 'http://localhost:3001/api';
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -142,7 +142,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const generateReceiptPDF = async (order: Order, currentUser: User): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/orders/${order.id}/receipt`, {
+      const response = await fetch(`${API_URL}/orders/${order._id}/receipt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order, currentUser }),
@@ -152,7 +152,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${order.id}-Recibo.pdf`;
+      a.download = `${order._id}-Recibo.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -168,9 +168,9 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
     if (!order) return;
     try {
       if (paymentAmount > 0) {
-        await addPaymentToOrder(order.id, paymentAmount, 'Pago al completar');
+        await addPaymentToOrder(order._id, paymentAmount, 'Pago al completar');
       }
-      await handleUpdateOrderStatus(order.id, 'Completado');
+      await handleUpdateOrderStatus(order._id, 'Completado');
       const balance = calculateBalance(order) - paymentAmount;
       if (balance > 0) {
         showToast(`Orden completada con saldo pendiente de ${balance.toFixed(2)}.`, 'info');

@@ -37,7 +37,7 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
 
   const sortedOrders = [...orders.filter(order => {
     if (selectedOrderFromSearch) {
-      return order.id === selectedOrderFromSearch.id;
+      return order._id === selectedOrderFromSearch._id;
     }
     // If no order is selected from combobox, apply existing filters
     // Note: searchTerm, filterStatus, filterDoctor, prefixFilter are no longer used directly for filtering
@@ -132,8 +132,8 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
           </thead>
           <tbody>
             {sortedOrders.map(order => (
-              <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => onViewDetails(order)}>
-                <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order.id}</td>
+              <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => onViewDetails(order)}>
+                <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order._id}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{order.patientName}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>
@@ -158,13 +158,13 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
                   <button onClick={() => onConfirmPayment(order)} className="text-indigo-600 hover:text-indigo-800" title="Registrar Pago">
                     <DollarSign size={20} />
                   </button>
-                  <button onClick={() => onAddNote(order.id)} className="text-orange-600 hover:text-orange-800" title="Añadir Nota">
+                  <button onClick={() => onAddNote(order._id)} className="text-orange-600 hover:text-orange-800" title="Añadir Nota">
                     <MessageSquare size={20} />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent row's onClick from firing
-                      onDeleteOrder(order.id);
+                      onDeleteOrder(order._id);
                     }}
                     className="text-red-600 hover:text-red-800"
                     title="Eliminar Orden"

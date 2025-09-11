@@ -1,4 +1,4 @@
-import { db } from './index'; // db is now typed from index.ts
+import { db } from './index.ts'; // db is now typed from index.ts
 
 async function purgeOldOrders(): Promise<void> {
   const oneYearAgo = new Date();

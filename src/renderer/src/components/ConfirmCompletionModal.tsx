@@ -67,11 +67,11 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
           showNotification(`El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`, 'error');
           return;
         }
-        await addPaymentToOrder(order.id, parsedAmount, 'Pago al completar');
+        await addPaymentToOrder(order._id, parsedAmount, 'Pago al completar');
       }
 
-      await handleUpdateOrderStatus(order.id, 'Completado', new Date().toISOString());
-      showNotification(`Orden ${order.id} marcada como completada.`, 'success');
+      await handleUpdateOrderStatus(order._id, 'Completado', new Date().toISOString());
+      showNotification(`Orden ${order._id} marcada como completada.`, 'success');
       onClose();
     } catch (error) {
       console.error("Error during order completion:", error);
@@ -81,7 +81,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Finalizar Orden: {order.id}</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Finalizar Orden: {order._id}</h2>
         <p className="mb-4 text-gray-700">
           Vas a marcar esta orden como <span className="font-bold text-green-600">Completada</span>.
         </p>

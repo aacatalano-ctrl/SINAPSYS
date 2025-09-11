@@ -30,7 +30,7 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
     const doctorFullName = getDoctorFullNameById(order.doctorId)?.toLowerCase() || '';
     const patientName = order.patientName?.toLowerCase() || '';
     const jobType = order.jobType?.toLowerCase() || '';
-    const orderId = order.id?.toLowerCase() || '';
+    const orderId = order._id?.toLowerCase() || '';
 
     return (
       doctorFullName.includes(searchTerm) ||
@@ -86,8 +86,8 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
               </thead>
               <tbody>
                 {unpaidCompletedOrders.map(order => (
-                  <tr key={order.id} className="border-b border-red-100 hover:bg-red-50 cursor-pointer" onClick={() => setFullClientView(order)}>
-                    <td className="py-2 px-4 text-sm text-gray-800 font-medium">{order.id}</td>
+                  <tr key={order._id} className="border-b border-red-100 hover:bg-red-50 cursor-pointer" onClick={() => setFullClientView(order)}>
+                    <td className="py-2 px-4 text-sm text-gray-800 font-medium">{order._id}</td>
                     <td className="py-2 px-4 text-sm text-gray-800">{order.patientName}</td>
                     <td className="py-2 px-4 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
                     <td className="py-2 px-4 text-sm text-red-600 font-bold">${calculateBalance(order).toFixed(2)}</td>
@@ -133,9 +133,9 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
               </thead>
               <tbody>
                 {sortedPaidOrders.map(order => (
-                  <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => setFullClientView(order)}>
+                  <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => setFullClientView(order)}>
                     <td className="py-3 px-4 text-sm text-gray-800 font-medium">
-                      {order.id}
+                      {order._id}
                       {order.notes.length > 0 && <MessageSquare size={16} className="inline ml-2 text-blue-500" title="Esta orden tiene notas" />}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-800">{order.patientName}</td>
@@ -143,7 +143,7 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
                     <td className="py-3 px-4 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>
                     <td className="py-3 px-4 text-sm text-gray-800">{formatDate(order.completionDate || '')}</td>
                     <td className="py-3 px-4 text-sm text-gray-800">
-                      <button onClick={(e) => {e.stopPropagation(); handleDeleteOrder(order.id);}} className="text-red-600 hover:text-red-800" title="Eliminar Orden">
+                      <button onClick={(e) => {e.stopPropagation(); handleDeleteOrder(order._id);}} className="text-red-600 hover:text-red-800" title="Eliminar Orden">
                         <Trash2 size={20} />
                       </button>
                     </td>

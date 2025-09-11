@@ -79,6 +79,7 @@ const db: AppDatabase = {
 // 3. Connect to MongoDB
 const connectDB = async () => {
   try {
+    console.log('Connecting to MongoDB at:', MONGODB_URI);
     await mongoose.connect(MONGODB_URI);
     console.log('MongoDB connected successfully!');
   } catch (err) {

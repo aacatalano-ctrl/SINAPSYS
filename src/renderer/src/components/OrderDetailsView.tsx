@@ -35,7 +35,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
       return;
     }
 
-    addPaymentToOrder(order.id, amount, 'Abono manual desde detalles');
+    addPaymentToOrder(order._id, amount, 'Abono manual desde detalles');
     setAbonoAmount('');
     setIsAbonando(false);
   };
@@ -57,7 +57,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
         <ArrowLeft className="mr-2" /> Volver a la Lista
       </button>
       <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-        <ClipboardList className="mr-3 text-blue-600" size={30} /> Detalles de la Orden: {order.id}
+        <ClipboardList className="mr-3 text-blue-600" size={30} /> Detalles de la Orden: {order._id}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -86,7 +86,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
             <span className="font-medium text-gray-700 mr-2">Estado:</span>
             <select
               value={order.status}
-              onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value as 'Pendiente' | 'Procesando' | 'Completado')}
+              onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value as 'Pendiente' | 'Procesando' | 'Completado')}
               className={`p-2 rounded-lg text-white font-semibold ${
                 order.status === 'Pendiente' ? 'bg-yellow-500' :
                 order.status === 'Procesando' ? 'bg-blue-500' :

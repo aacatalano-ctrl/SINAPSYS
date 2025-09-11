@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 
+const API_URL = 'http://localhost:3001/api';
+
 interface DeleteReportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,11 +40,20 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
 
     if (window.confirm(`¿Estás seguro de que quieres borrar los reportes para el período seleccionado? Esta acción es irreversible.`)) {
       try {
-        // Assuming window.api.deleteOrdersByDate exists and returns a number
-        const numDeleted: number = await window.api.deleteOrdersByDate({
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString()
+        const response = await fetch(`${API_URL}/orders/by-date`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
+          })
         });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al eliminar órdenes por fecha.');
+        }
+        const result = await response.json();
+        const numDeleted: number = result.deletedCount;
         showNotification(`${numDeleted} registros de órdenes eliminados con éxito.`, 'success');
         await loadData();
         onClose();

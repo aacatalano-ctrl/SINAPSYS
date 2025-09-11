@@ -95,7 +95,7 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
         <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-auto">
           {filteredDoctors.map((doctor, index) => (
             <li
-              key={doctor.id}
+              key={doctor._id}
               onClick={() => handleSelect(doctor)}
               onMouseEnter={() => setHighlightedIndex(index)}
               className={`px-4 py-2 cursor-pointer hover:bg-blue-100 ${index === highlightedIndex ? 'bg-blue-100' : ''}`}
