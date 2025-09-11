@@ -7,6 +7,7 @@ import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
 import { connectDB, initializeDb, db } from './database/index.ts';
 import { purgeOldOrders } from './database/maintenance.ts';
 import { checkUnpaidOrders } from './database/notifications.ts';
+import type { Payment } from '../../types.ts';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -241,12 +242,12 @@ app.post('/api/orders/:id/receipt', async (req, res) => {
     doc.moveDown();
 
     doc.text('Pagos:');
-    order.payments.forEach(payment => {
+    order.payments.forEach((payment: Payment) => {
       doc.text(`  - Fecha: ${new Date(payment.date).toLocaleDateString()} - Monto: ${payment.amount.toFixed(2)} - Descripción: ${payment.description || 'N/A'}`);
     });
     doc.moveDown();
 
-    const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
     const balance = order.cost - totalPaid;
     doc.text(`Total Abonado: ${totalPaid.toFixed(2)}`);
     doc.text(`Saldo Pendiente: ${balance.toFixed(2)}`);

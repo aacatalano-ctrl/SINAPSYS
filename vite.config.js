@@ -4,7 +4,6 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  root: '.', // Set root to project root
   define: {
     // Expose environment variables to the client-side code
     // VITE_API_URL will be replaced with its value during build
@@ -24,8 +23,13 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'src/renderer/index.html')
       },
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      }
     },
-    outDir: 'dist', // Output to project root's dist
+    outDir: 'dist',
     emptyOutDir: true,
   },
 });
