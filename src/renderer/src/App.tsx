@@ -23,9 +23,17 @@ function App() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchNotifications = useCallback(async () => {
-    // In a real web app, this would be a fetch call or a WebSocket connection.
-    setNotifications([]);
-  }, []);
+    try {
+      const response = await fetch(`${API_URL}/notifications`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const fetchedNotifications = await response.json();
+      setNotifications(fetchedNotifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  }, [API_URL]);
 
   const loadData = useCallback(async () => {
     try {

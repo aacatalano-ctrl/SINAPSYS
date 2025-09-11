@@ -237,29 +237,47 @@ app.post('/api/orders/:id/receipt', async (req, res) => {
     doc.pipe(res);
 
     // --- PDF Content ---
-    doc.fontSize(25).text('Recibo de Orden Dental', { align: 'center' });
-    doc.moveDown();
+    // Header
+    doc.fontSize(20).font('Helvetica-Bold').text('RECIBO DE ORDEN DENTAL', { align: 'center' });
+    doc.fontSize(10).font('Helvetica').text('Clínica Dental Ejemplo', { align: 'center' }); // Placeholder for company name
+    doc.moveDown(1.5);
 
-    doc.fontSize(12).text(`Orden ID: ${order.id}`); // Use order.id from frontend for display
+    // Order Summary
+    doc.fontSize(12).font('Helvetica-Bold').text('Detalles de la Orden:', { underline: true });
+    doc.moveDown(0.5);
+    doc.font('Helvetica').text(`Orden ID: ${order._id}`); // Use order._id for consistency
     doc.text(`Paciente: ${order.patientName}`);
     doc.text(`Tipo de Trabajo: ${order.jobType}`);
     doc.text(`Costo Total: ${order.cost.toFixed(2)}`);
-    doc.moveDown();
+    doc.text(`Estado: ${order.status}`);
+    doc.moveDown(1);
 
-    doc.text('Pagos:');
-    order.payments.forEach((payment: Payment) => {
-      doc.text(`  - Fecha: ${new Date(payment.date).toLocaleDateString()} - Monto: ${payment.amount.toFixed(2)} - Descripción: ${payment.description || 'N/A'}`);
-    });
-    doc.moveDown();
+    // Payments Section
+    doc.fontSize(12).font('Helvetica-Bold').text('Pagos Realizados:', { underline: true });
+    doc.moveDown(0.5);
+    if (order.payments && order.payments.length > 0) {
+      order.payments.forEach((payment: Payment) => {
+        doc.font('Helvetica').text(`  - Fecha: ${new Date(payment.date).toLocaleDateString()} | Monto: ${payment.amount.toFixed(2)} | Descripción: ${payment.description || 'N/A'}`);
+      });
+    } else {
+      doc.font('Helvetica').text('  No se han registrado pagos.');
+    }
+    doc.moveDown(1);
 
-    const totalPaid = order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
+    // Balance Summary
+    const totalPaid = order.payments ? order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0) : 0;
     const balance = order.cost - totalPaid;
-    doc.text(`Total Abonado: ${totalPaid.toFixed(2)}`);
-    doc.text(`Saldo Pendiente: ${balance.toFixed(2)}`);
-    doc.moveDown();
 
-    doc.text(`Generado por: ${currentUser.username}`);
-    doc.text(`Fecha de Generación: ${new Date().toLocaleDateString()}`);
+    doc.fontSize(12).font('Helvetica-Bold').text('Resumen Financiero:', { underline: true });
+    doc.moveDown(0.5);
+    doc.font('Helvetica').text(`Total Abonado: ${totalPaid.toFixed(2)}`);
+    doc.font('Helvetica-Bold').fillColor(balance > 0 ? 'red' : 'green').text(`Saldo Pendiente: ${balance.toFixed(2)}`);
+    doc.fillColor('black'); // Reset color
+    doc.moveDown(2);
+
+    // Footer
+    doc.fontSize(10).font('Helvetica').text(`Generado por: ${currentUser.username}`, { align: 'left' });
+    doc.text(`Fecha de Generación: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, { align: 'left' });
     // --- End PDF Content ---
 
     doc.end();
