@@ -20,7 +20,7 @@ export default defineConfig({
   },
   root: 'src/renderer',
   build: {
-    outDir: '../dist',
+    outDir: '../../dist',
     emptyOutDir: true,
   },
 });
