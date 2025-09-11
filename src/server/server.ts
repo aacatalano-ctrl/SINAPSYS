@@ -4,9 +4,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
-import { connectDB, initializeDb, db } from '../main/database/index.ts';
-import { purgeOldOrders } from '../main/database/maintenance.ts';
-import { checkUnpaidOrders } from '../main/database/notifications.ts';
+import { connectDB, initializeDb, db } from './database/index.ts';
+import { purgeOldOrders } from './database/maintenance.ts';
+import { checkUnpaidOrders } from './database/notifications.ts';
 
 const app = express();
 const port = process.env.PORT || 3001;
