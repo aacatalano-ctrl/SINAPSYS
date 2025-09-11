@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { Plus } from 'lucide-react';
 import DoctorCombobox from './DoctorCombobox';
@@ -7,21 +7,32 @@ import { Doctor, Order } from '../../types';
 
 interface CreateOrderViewProps {
     doctors: Doctor[];
-    onAddDoctor: () => void;
+    onAddDoctor: () => Promise<string | null>;
 }
 
 function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [cost, setCost] = useState<number>(0);
-  const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [newlyAddedDoctorId, setNewlyAddedDoctorId] = useState<string | null>(null);
   const [selectedJobType, setSelectedJobType] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
 
+  useEffect(() => {
+    if (newlyAddedDoctorId) {
+      const foundDoctor = doctors.find(doc => doc._id === newlyAddedDoctorId);
+      if (foundDoctor) {
+        setSelectedDoctor(foundDoctor);
+        setNewlyAddedDoctorId(null); // Clear temporary state
+      }
+    }
+  }, [doctors, newlyAddedDoctorId, setSelectedDoctor]);
+
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const doctorId = formData.get('doctor') as string;
+    const doctorId = selectedDoctor?._id;
     const patientName = formData.get('patientName') as string;
     const jobType = selectedJobType;
     const priority = formData.get('priority') as string;
@@ -68,13 +79,21 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
           <label htmlFor="doctor" className="block text-gray-700 text-sm font-semibold mb-2">Doctor:</label>
           <DoctorCombobox
             doctors={doctors}
-            selectedDoctorId={selectedDoctorId}
-            onSelectDoctor={setSelectedDoctorId}
+            selectedDoctor={selectedDoctor}
+            onSelectDoctor={setSelectedDoctor}
           />
-          <input type="hidden" id="doctor" name="doctor" value={selectedDoctorId} required />
+          <input type="hidden" id="doctor" name="doctor" value={selectedDoctor?._id || ''} required />
           <button
             type="button"
-            onClick={onAddDoctor}
+            onClick={async () => {
+              const newDoctorId = await onAddDoctor();
+              if (newDoctorId) {
+                const foundDoctor = doctors.find(doc => doc._id === newDoctorId);
+                if (foundDoctor) {
+                  setSelectedDoctor(foundDoctor);
+                }
+              }
+            }}
             className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center"
           >
             <Plus className="w-4 h-4 mr-1" /> Añadir Nuevo Doctor
@@ -101,9 +120,7 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
             value={selectedCategory}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               setSelectedCategory(e.target.value);
-              // Reset jobType and cost when category changes
-              const jobTypeInput = document.getElementById('jobType') as HTMLSelectElement;
-              if (jobTypeInput) jobTypeInput.value = '';
+              setSelectedJobType(''); // Reset selectedJobType when category changes
               setCost(0);
             }}
             required
@@ -127,9 +144,8 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
             disabled={!selectedCategory} // Disable until a category is selected
             value={selectedJobType} // <--- Add this
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              const newJobType = e.target.value; // <--- Change variable name
-              setSelectedJobType(newJobType); // <--- Add this
-              setCost(jobTypeCosts[newJobType] !== undefined ? jobTypeCosts[newJobType] : 0); // <--- Use newJobType
+              setSelectedJobType(e.target.value);
+              setCost(jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0);
             }}
           >
             <option key="create-order-select-job-type" value="">Selecciona tipo de trabajo</option>

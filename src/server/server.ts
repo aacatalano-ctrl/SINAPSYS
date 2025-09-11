@@ -307,15 +307,18 @@ app.delete('/api/notifications/:id', async (req, res) => {
 // --- PAYMENTS ---
 app.post('/api/orders/:orderId/payments', async (req, res) => {
   try {
+    console.log(`[Backend] POST /api/orders/${req.params.orderId}/payments - req.body:`, req.body);
     const order = await db.orders.findById(req.params.orderId);
     if (order) {
       order.payments.push(req.body);
       await order.save();
+      console.log(`[Backend] Payment added to order ${order._id}. New payments array:`, order.payments);
       res.status(201).json(order);
     } else {
       res.status(404).json({ error: 'Orden no encontrada.' });
     }
   } catch (error) {
+    console.error('Error al agregar el pago:', error);
     res.status(400).json({ error: 'Error al agregar el pago.' });
   }
 });
@@ -323,15 +326,18 @@ app.post('/api/orders/:orderId/payments', async (req, res) => {
 // --- NOTES ---
 app.post('/api/orders/:orderId/notes', async (req, res) => {
   try {
+    console.log(`[Backend] POST /api/orders/${req.params.orderId}/notes - req.body:`, req.body);
     const order = await db.orders.findById(req.params.orderId);
     if (order) {
       order.notes.push(req.body);
       await order.save();
+      console.log(`[Backend] Note added to order ${order._id}. New notes array:`, order.notes);
       res.status(201).json(order);
     } else {
       res.status(404).json({ error: 'Orden no encontrada.' });
     }
   } catch (error) {
+    console.error('Error al agregar la nota:', error);
     res.status(400).json({ error: 'Error al agregar la nota.' });
   }
 });

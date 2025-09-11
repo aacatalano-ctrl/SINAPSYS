@@ -22,7 +22,6 @@ export interface User {
 
 export interface Doctor {
   _id?: string;
-  id: string;
   title: string;
   firstName: string;
   lastName: string;
@@ -33,7 +32,6 @@ export interface Doctor {
 
 export interface Payment {
   _id?: string;
-  id: string;
   amount: number;
   date: string;
   description?: string;
@@ -41,7 +39,6 @@ export interface Payment {
 
 export interface Note {
   _id?: string;
-  id: string;
   text: string;
   timestamp: string;
   author: string;
@@ -64,11 +61,8 @@ export interface Order {
 
 export interface Notification {
   _id?: string;
-  id: string;
   orderId: string;
   message: string;
   createdAt: string;
   read: boolean;
 }
-
-

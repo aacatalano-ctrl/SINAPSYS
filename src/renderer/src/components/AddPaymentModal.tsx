@@ -7,7 +7,7 @@ interface AddPaymentModalProps {
     order: Order;
     onClose: () => void;
     isOpen: boolean;
-    onAddPayment: (amount: number, description: string) => void;
+    onAddPayment: (amount: number, description: string) => Promise<void>;
 }
 
 const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpen, onAddPayment }) => {
@@ -61,9 +61,11 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
     }
     try {
       await onAddPayment(parsedAmount, description);
+      showNotification('Pago registrado con éxito.', 'success');
       onClose();
     } catch (error) {
       console.error("Failed to save payment:", error);
+      showNotification('Error al registrar el pago.', 'error');
     }
   };
 

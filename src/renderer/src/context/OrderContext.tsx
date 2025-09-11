@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUI } from './UIContext';
 import { Order, Payment, Note, User } from '../../types';
+import mongoose from 'mongoose';
 
 interface OrderContextType {
   orders: Order[];
@@ -31,7 +32,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast } = useUI();
 
-  const API_URL = 'http://localhost:3001/api';
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -93,29 +94,53 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   };
 
   const addPaymentToOrder = async (orderId: string, amount: number, description: string): Promise<void> => {
-    const order = orders.find(o => o.id === orderId);
+    const order = orders.find(o => o._id === orderId);
     if (!order) return;
     const newPayment: Payment = {
-      id: `pay-${Date.now()}`,
+      _id: new mongoose.Types.ObjectId().toString(),
       amount: parseFloat(String(amount)),
       date: new Date().toISOString(),
       description: description || 'Pago',
     };
-    const updatedPayments = [...order.payments, newPayment];
-    await handleUpdateOrder(orderId, { payments: updatedPayments });
+    try {
+      const response = await fetch(`${API_URL}/orders/${orderId}/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPayment),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await fetchOrders(); // Refresh orders after successful payment
+      showToast('Pago añadido con éxito.', 'success');
+    } catch (error) {
+      console.error("Failed to add payment:", error);
+      showToast('Error al añadir pago.', 'error');
+      throw error;
+    }
   };
 
   const handleSaveNote = async (orderId: string, noteText: string): Promise<void> => {
-    const order = orders.find(o => o.id === orderId);
+    const order = orders.find(o => o._id === orderId);
     if (!order) return;
     const newNote: Note = {
-      id: `note-${Date.now()}`,
+      _id: new mongoose.Types.ObjectId().toString(),
       text: noteText,
       timestamp: new Date().toISOString(),
       author: currentUser?.username || 'Usuario',
     };
-    const updatedNotes = [...order.notes, newNote];
-    await handleUpdateOrder(orderId, { notes: updatedNotes });
+    try {
+      const response = await fetch(`${API_URL}/orders/${orderId}/notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newNote),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await fetchOrders(); // Refresh orders after successful note save
+      showToast('Nota añadida con éxito.', 'success');
+    } catch (error) {
+      console.error("Failed to save note:", error);
+      showToast('Error al añadir nota.', 'error');
+      throw error;
+    }
   };
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status'], completionDate: string | null = null): Promise<void> => {

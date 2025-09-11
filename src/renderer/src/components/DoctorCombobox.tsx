@@ -4,13 +4,13 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DoctorComboboxProps {
   doctors: Doctor[];
-  selectedDoctorId: string;
-  onSelectDoctor: (id: string) => void;
+  selectedDoctor: Doctor | null;
+  onSelectDoctor: (doctor: Doctor | null) => void;
   placeholder?: string;
 }
 
 const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
-  doctors, selectedDoctorId, onSelectDoctor, placeholder = "Selecciona o busca un doctor..."
+  doctors, selectedDoctor, onSelectDoctor, placeholder = "Selecciona o busca un doctor..."
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -18,13 +18,12 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
   const comboboxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const selected = doctors.find(doc => doc.id === selectedDoctorId);
-    if (selected) {
-      setInputValue(`${selected.title} ${selected.firstName} ${selected.lastName}`);
+    if (selectedDoctor) {
+      setInputValue(`${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`);
     } else {
       setInputValue('');
     }
-  }, [selectedDoctorId, doctors]);
+  }, [selectedDoctor]);
 
   const filteredDoctors = doctors.filter(doctor =>
     `${doctor.title} ${doctor.firstName} ${doctor.lastName}`.toLowerCase().includes(inputValue.toLowerCase())
@@ -38,7 +37,7 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
 
   const handleSelect = (doctor: Doctor) => {
     setInputValue(`${doctor.title} ${doctor.firstName} ${doctor.lastName}`);
-    onSelectDoctor(doctor.id);
+    onSelectDoctor(doctor);
     setIsOpen(false);
   };
 

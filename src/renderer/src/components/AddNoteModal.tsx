@@ -4,20 +4,25 @@ import { Order } from '../../types';
 interface AddNoteModalProps {
     order: Order;
     onClose: () => void;
-    onSaveNote: (noteText: string) => void;
+    onSaveNote: (noteText: string) => Promise<void>;
 }
 
 const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote }) => {
   const [noteText, setNoteText] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!noteText.trim()) {
       // You might want to show a notification here
       return;
     }
-    onSaveNote(noteText);
-    onClose();
+    try {
+      await onSaveNote(noteText);
+      onClose();
+    } catch (error) {
+      console.error("Failed to save note:", error);
+      // You might want to show a notification here
+    }
   }
 
   return (

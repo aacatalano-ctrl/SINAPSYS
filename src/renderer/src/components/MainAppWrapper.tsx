@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { useUI } from '../context/UIContext';
 import { useDoctors } from '../context/DoctorContext';
@@ -23,7 +23,7 @@ import Toast from './Toast';
 import { Doctor, Order, Notification } from '../../types';
 import { formatDate, formatDateTime, jobTypePrefixMap, jobTypeCosts } from '../utils/helpers';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface MainAppWrapperProps {
   handleLogout: () => void;
@@ -32,7 +32,7 @@ interface MainAppWrapperProps {
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser }) => {
   const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, deleteReport, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
-  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal, closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
+  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
   const [activeView, _setActiveView] = useState<string>('createOrder');
@@ -70,6 +70,22 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const [orderToComplete, setOrderToComplete] = useState<Order | null>(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [reportTimeframe, setReportTimeframe] = useState<string>('all');
+  const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
+
+  const openAddDoctorModal = useCallback(() => {
+    return new Promise<string | null>(resolve => {
+      resolveAddDoctorPromise.current = resolve;
+      _openAddDoctorModal();
+    });
+  }, [_openAddDoctorModal]);
+
+  const closeAddDoctorModal = useCallback(() => {
+    _closeAddDoctorModal();
+    if (resolveAddDoctorPromise.current) {
+      resolveAddDoctorPromise.current(null);
+      resolveAddDoctorPromise.current = null;
+    }
+  }, [_closeAddDoctorModal]);
   
   // --- Notifications State and Handlers ---
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -260,7 +276,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
               openAddPaymentModal();
             }}
             onAddNote={(orderId) => {
-              const order = orders.find(o => o.id === orderId);
+              const order = orders.find(o => o._id === orderId);
               if (order) {
                 setSelectedOrder(order);
                 openAddNoteModal();
@@ -412,6 +428,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
           onEditDoctor={updateDoctor}
           doctorToEdit={selectedDoctor}
           showToast={showToast}
+          onDoctorAdded={(doctor) => {
+            if (resolveAddDoctorPromise.current) {
+              resolveAddDoctorPromise.current(doctor._id);
+              resolveAddDoctorPromise.current = null;
+            }
+          }}
         />
       )}
       {isEditOrderModalOpen && selectedOrder && (

@@ -2,10 +2,10 @@
 
 import React, { useRef } from 'react';
 
-const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => void; onAddDoctor: (doctor: Doctor) => void; showToast: (message: string, type?: string) => void; }) => {
+const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { onClose: () => void; onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>; showToast: (message: string, type?: string) => void; onDoctorAdded: (doctor: Doctor) => void; }) => {
   const newDoctorFormRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const fullName = formData.get('doctorName') as string;
@@ -13,7 +13,7 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || ' '; // Ensure lastName is not empty // Ensure lastName is not empty
 
-    const newDoctor: Omit<Doctor, 'id'> = {
+    const newDoctorData: Omit<Doctor, 'id'> = {
       title: formData.get('doctorTitle') as string,
       firstName: firstName,
       lastName: lastName,
@@ -21,11 +21,17 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
       phone: formData.get('doctorPhone') as string,
       address: formData.get('doctorAddress') as string,
     };
-    console.log('New Doctor object being sent:', newDoctor);
-    onAddDoctor(newDoctor);
-    onClose();
-    newDoctorFormRef.current?.reset();
-    showToast(`Doctor ${newDoctor.title} ${newDoctor.name} añadido con éxito.`);
+    console.log('New Doctor object being sent:', newDoctorData);
+    try {
+      const addedDoctor = await onAddDoctor(newDoctorData);
+      onDoctorAdded(addedDoctor);
+      onClose();
+      newDoctorFormRef.current?.reset();
+      showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
+    } catch (error) {
+      console.error("Error adding doctor:", error);
+      showToast('Error al añadir doctor.', 'error');
+    }
   };
 
   return (

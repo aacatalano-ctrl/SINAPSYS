@@ -158,7 +158,7 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
                   <button onClick={() => onConfirmPayment(order)} className="text-indigo-600 hover:text-indigo-800" title="Registrar Pago">
                     <DollarSign size={20} />
                   </button>
-                  <button onClick={() => onAddNote(order._id)} className="text-orange-600 hover:text-orange-800" title="Añadir Nota">
+                  <button onClick={(e) => { e.stopPropagation(); onAddNote(order._id); }} className="text-orange-600 hover:text-orange-800" title="Añadir Nota">
                     <MessageSquare size={20} />
                   </button>
                   <button

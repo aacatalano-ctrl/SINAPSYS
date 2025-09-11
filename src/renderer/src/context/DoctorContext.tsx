@@ -1,14 +1,14 @@
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Doctor } from '../../types';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface DoctorContextType {
   doctors: Doctor[];
   editingDoctor: Doctor | null;
   setEditingDoctor: React.Dispatch<React.SetStateAction<Doctor | null>>;
   fetchDoctors: () => Promise<void>;
-  addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<void>;
+  addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>;
   updateDoctor: (id: string, fields: Partial<Doctor>) => Promise<void>;
   deleteDoctor: (id: string) => Promise<void>;
   exportDoctors: () => Promise<void>;
@@ -49,11 +49,15 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      await fetchDoctors(); // Refresh list
+      const newDoctor = await response.json(); // Get the newly created doctor from the response
+      setDoctors(prevDoctors => [...prevDoctors, newDoctor]); // Immediately add to state
+      await fetchDoctors(); // Refresh list to ensure full consistency
+      return newDoctor; // Return the new doctor for potential use in CreateOrderView
     } catch (error) {
       console.error('Failed to add doctor:', error);
+      throw error; // Re-throw to allow error handling in components
     }
-  }, [fetchDoctors]);
+  }, []);
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {

@@ -4,7 +4,12 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  root: 'src/renderer', // Esto solucionó el 404 de la página principal
+  root: '.', // Set root to project root
+  define: {
+    // Expose environment variables to the client-side code
+    // VITE_API_URL will be replaced with its value during build
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:3001/api'),
+  },
   server: {
     proxy: {
       '/api': {
@@ -20,7 +25,7 @@ export default defineConfig({
         main: path.resolve(__dirname, 'src/renderer/index.html')
       },
     },
-    outDir: 'dist',
+    outDir: 'dist', // Output to project root's dist
     emptyOutDir: true,
   },
 });

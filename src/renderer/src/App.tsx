@@ -20,7 +20,7 @@ function App() {
   const { showToast } = useUI();
   const { fetchDoctors } = useDoctors();
 
-  const API_URL = 'http://localhost:3001/api';
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchNotifications = useCallback(async () => {
     // In a real web app, this would be a fetch call or a WebSocket connection.
