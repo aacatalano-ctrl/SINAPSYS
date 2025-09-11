@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import type { Doctor, Order, User, Notification, Payment, Note } from '../../types.ts'; // Import necessary types
+import type { Doctor, Order, User, Notification, Payment, Note } from '../../types.js'; // Import necessary types
 
 const saltRounds = 10;
 
