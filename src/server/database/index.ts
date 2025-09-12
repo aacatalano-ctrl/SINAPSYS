@@ -30,6 +30,7 @@ const doctorSchema = new mongoose.Schema<Doctor>({
 });
 
 const orderSchema = new mongoose.Schema<Order>({
+  orderNumber: { type: String, unique: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
   patientName: { type: String, required: true },
   jobType: { type: String, required: true },

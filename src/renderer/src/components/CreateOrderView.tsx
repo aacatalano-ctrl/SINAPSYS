@@ -64,7 +64,7 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
       setSelectedCategory('');
       setSelectedJobType(''); // <--- Add this
       setCost(0);
-      showNotification(`Orden ${addedOrder._id} creada con éxito.`);
+      showNotification(`Orden ${addedOrder.orderNumber} creada con éxito.`);
     } catch (error: Error) {
       console.error("Error creating order:", error);
       showNotification('Error al crear orden.', 'error');

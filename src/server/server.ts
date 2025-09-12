@@ -178,10 +178,50 @@ app.get('/api/orders', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
   try {
-    const newOrder = new db.orders(req.body);
+    const orderData = req.body;
+
+    // 1. Definir prefijos
+    const prefixMap: { [key: string]: string } = {
+      'PRÓTESIS FIJA': 'PTF',
+      'DPR METAL ACRÍLICO': 'DPR',
+      'ACRÍLICO': 'ACR',
+      'FLEXIBLE': 'FLX',
+      'FLUJO DIGITAL': 'DIG',
+    };
+
+    // 2. Extraer categoría y obtener prefijo
+    const category = orderData.jobType.split(' - ')[0].trim();
+    const prefix = prefixMap[category] || 'ORD'; // 'ORD' como prefijo por defecto
+
+    // 3. Obtener año y calcular siguiente número de secuencia
+    const year = new Date().getFullYear().toString().slice(-2);
+    const searchPrefix = `${prefix}-${year}-`;
+
+    const lastOrder = await db.orders.findOne(
+      { orderNumber: { $regex: new RegExp(`^${searchPrefix}`) } },
+      { sort: { orderNumber: -1 } }
+    );
+
+    let nextSequence = 1;
+    if (lastOrder && lastOrder.orderNumber) {
+      const lastSequence = parseInt(lastOrder.orderNumber.split('-')[2], 10);
+      nextSequence = lastSequence + 1;
+    }
+
+    // 4. Formatear el nuevo ID
+    const sequencePadded = nextSequence.toString().padStart(4, '0');
+    const newOrderNumber = `${searchPrefix}${sequencePadded}`;
+
+    // 5. Crear la nueva orden con el ID personalizado
+    const newOrder = new db.orders({
+      ...orderData,
+      orderNumber: newOrderNumber,
+    });
+
     await newOrder.save();
     res.status(201).json(newOrder);
   } catch (error) {
+    console.error("Error creating order:", error);
     res.status(400).json({ error: 'Error al crear la orden.' });
   }
 });
