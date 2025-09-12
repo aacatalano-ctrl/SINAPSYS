@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
-import { useDoctors } from './context/DoctorContext.tsx';
+
 import { User, Notification } from '../types';
 import { UIProvider } from './context/UIContext.tsx';
 
@@ -33,7 +33,7 @@ function App() {
   const [forgotPasswordSecurityQuestion, setForgotPasswordSecurityQuestion] = useState('');
   const [authError, setAuthError] = useState('');
 
-  const { fetchDoctors } = useDoctors();
+  
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -69,7 +69,7 @@ function App() {
 
   const loadData = useCallback(async () => {
     try {
-      await fetchDoctors();
+      
       await fetchNotifications();
       setIsAppContentLoaded(true);
     } catch (error: unknown) {
@@ -222,17 +222,7 @@ function App() {
   };
 
   return (
-    <UIProvider
-      currentUser={currentUser}
-      setCurrentUser={setCurrentUser}
-      showToast={showToast}
-      closeAuthModal={closeAuthModal}
-      authFetch={authFetch}
-      isAuthModalOpen={isAuthModalOpen}
-      setAuthModalOpen={setAuthModalOpen}
-      toast={toast}
-      setToast={setToast}
-    >
+    <>
       {!currentUser ? (
         <AuthModal
           onLogin={handleLogin}
@@ -260,7 +250,7 @@ function App() {
           handleLogout={handleLogout}
         />
       )}
-    </UIProvider>
+    </>
   );
 }
 

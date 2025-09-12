@@ -57,7 +57,9 @@ interface UIProviderProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export const UIProvider: React.FC<UIProviderProps> = ({ children, authFetch }) => {
+export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
   const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);
@@ -68,6 +70,25 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children, authFetch }) =
   const [isEmailDraftModalOpen, setEmailDraftModalOpen] = useState(false);
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+
+  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options?.headers,
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+      // Token inválido o expirado, o acceso denegado
+      // This part needs to be handled by the component that uses authFetch, not here directly
+      // For now, we'll just log and let the caller handle it.
+      console.error('Authentication failed or token expired. Please log in again.');
+      // showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
+      // handleLogout(); // This would cause a circular dependency if called directly
+    }
+    return response;
+  }, []); // Dependencies for authFetch
 
   const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
   const closeAddDoctorModal = useCallback(() => setAddDoctorModalOpen(false), []);

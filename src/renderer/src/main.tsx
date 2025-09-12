@@ -12,10 +12,12 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <DoctorProvider>
-      <OrderProvider>
-        <App />
-      </OrderProvider>
-    </DoctorProvider>
+    <UIProvider>
+      <DoctorProvider>
+        <OrderProvider>
+          <App />
+        </OrderProvider>
+      </DoctorProvider>
+    </UIProvider>
   </StrictMode>,
 );
