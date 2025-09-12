@@ -1,13 +1,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
-import { useUI } from './context/UIContext.tsx';
 import { useDoctors } from './context/DoctorContext.tsx';
 import { User, Notification } from '../types';
 import { UIProvider } from './context/UIContext.tsx';
 
 function App() {
-  const { currentUser, setCurrentUser, showToast, closeAuthModal } = useUI(); // Obtener setCurrentUser y closeAuthModal del contexto
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'info' }>({ show: false, message: '', type: 'info' });
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, 3000);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    if (currentUser) { // Only close auth modal if a user is logged in
+      setAuthModalOpen(false);
+    }
+  }, [currentUser]);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isAppContentLoaded, setIsAppContentLoaded] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -67,12 +82,8 @@ function App() {
     // Intentar cargar el usuario desde el token al iniciar la app
     const token = localStorage.getItem('token');
     if (token) {
-      // Aquí podrías decodificar el token para obtener el usuario y rol
-      // O hacer una llamada a una API de verificación si el token es opaco
-      // Por ahora, asumiremos que el token es válido y el usuario está logueado
-      // En una app real, harías una validación en el backend
       try {
-        const decodedUser = JSON.parse(atob(token.split('.')[1])); // Decodificación básica del payload del JWT
+        const decodedUser = JSON.parse(atob(token.split('.')[1]));
         setCurrentUser({ username: decodedUser.username, role: decodedUser.role });
         setIsAppContentLoaded(false); // Forzar recarga de datos si el token es válido
       } catch (e) {
@@ -211,7 +222,17 @@ function App() {
   };
 
   return (
-    <UIProvider authFetch={authFetch}>
+    <UIProvider
+      currentUser={currentUser}
+      setCurrentUser={setCurrentUser}
+      showToast={showToast}
+      closeAuthModal={closeAuthModal}
+      authFetch={authFetch}
+      isAuthModalOpen={isAuthModalOpen}
+      setAuthModalOpen={setAuthModalOpen}
+      toast={toast}
+      setToast={setToast}
+    >
       {!currentUser ? (
         <AuthModal
           onLogin={handleLogin}
