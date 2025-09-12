@@ -93,39 +93,39 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
     const fetchNotifications = useCallback(async () => {
     try {
-      const fetchedNotifications = await fetch(`${API_URL}/notifications`).then(res => res.json());
+      const fetchedNotifications = await authFetch(`${API_URL}/notifications`).then(res => res.json());
       setNotifications(fetchedNotifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
-  }, []);
+  }, [authFetch, API_URL]);
 
   const handleMarkNotificationsAsRead = useCallback(async () => {
     try {
-      await fetch(`${API_URL}/notifications/mark-all-read`, { method: 'PUT' });
+      await authFetch(`${API_URL}/notifications/mark-all-read`, { method: 'PUT' });
       fetchNotifications(); // Refresh notifications list
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications, API_URL]);
 
   const handleClearAllNotifications = useCallback(async () => {
     try {
-      await fetch(`${API_URL}/notifications`, { method: 'DELETE' });
+      await authFetch(`${API_URL}/notifications`, { method: 'DELETE' });
       fetchNotifications(); // Refresh to show empty list
     } catch (error) {
       console.error("Failed to clear notifications:", error);
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications, API_URL]);
 
   const handleDeleteNotification = useCallback(async (id: string) => {
     try {
-      await fetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
+      await authFetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
       fetchNotifications(); // Refresh notifications list
     } catch (error) {
       console.error("Failed to delete notification:", error);
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications, API_URL]);
 
   const handleNotificationClick = (notification: Notification) => {
     const order = orders.find(o => o.id === notification.orderId);

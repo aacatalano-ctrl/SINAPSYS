@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "firebase": "^10.12.3",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.336.0",
     "mongoose": "^8.18.1",
     "pdfkit": "^0.17.1",

@@ -18,6 +18,7 @@ interface ToastState {
 interface UIContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>; // Añadir authFetch
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -55,7 +56,7 @@ interface UIProviderProps {
   children: ReactNode;
 }
 
-export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
+export const UIProvider: React.FC<UIProviderProps> = ({ children, authFetch }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
   const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);
@@ -109,6 +110,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const value = {
     currentUser,
     setCurrentUser,
+    authFetch, // Añadir authFetch al valor del contexto
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,

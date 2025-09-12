@@ -6,7 +6,7 @@ import { useDoctors } from './context/DoctorContext.tsx';
 import { User, Notification } from '../types';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { currentUser, setCurrentUser, showToast, closeAuthModal } = useUI(); // Obtener setCurrentUser y closeAuthModal del contexto
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isAppContentLoaded, setIsAppContentLoaded] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -17,14 +17,31 @@ function App() {
   const [forgotPasswordSecurityQuestion, setForgotPasswordSecurityQuestion] = useState('');
   const [authError, setAuthError] = useState('');
 
-  const { showToast } = useUI();
   const { fetchDoctors } = useDoctors();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Función auxiliar para hacer fetch con token de autenticación
+  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      ...
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options?.headers,
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+      // Token inválido o expirado, o acceso denegado
+      handleLogout(); // Cerrar sesión
+      showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
+    }
+    return response;
+  }, [showToast]);
+
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/notifications`);
+      const response = await authFetch(`${API_URL}/notifications`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -33,7 +50,7 @@ function App() {
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  }, [API_URL]);
+  }, [API_URL, authFetch]);
 
   const loadData = useCallback(async () => {
     try {
@@ -45,6 +62,28 @@ function App() {
       showToast('Error al cargar datos. Revisa la consola.', 'error');
     }
   }, [fetchDoctors, fetchNotifications, showToast]);
+
+  useEffect(() => {
+    // Intentar cargar el usuario desde el token al iniciar la app
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Aquí podrías decodificar el token para obtener el usuario y rol
+      // O hacer una llamada a una API de verificación si el token es opaco
+      // Por ahora, asumiremos que el token es válido y el usuario está logueado
+      // En una app real, harías una validación en el backend
+      try {
+        const decodedUser = JSON.parse(atob(token.split('.')[1])); // Decodificación básica del payload del JWT
+        setCurrentUser({ username: decodedUser.username, role: decodedUser.role });
+        setIsAppContentLoaded(false); // Forzar recarga de datos si el token es válido
+      } catch (e) {
+        console.error("Error decodificando token:", e);
+        localStorage.removeItem('token');
+        setCurrentUser(null);
+      }
+    } else {
+      setCurrentUser(null); // Asegurarse de que no haya usuario si no hay token
+    }
+  }, [setCurrentUser]);
 
   useEffect(() => {
     if (currentUser && !isAppContentLoaded) {
@@ -63,7 +102,9 @@ function App() {
       const result = await response.json();
       if (result.success) {
         setCurrentUser(result.user as User);
+        localStorage.setItem('token', result.token); // Guardar el token
         showToast(`Bienvenido, ${result.user.username}!`);
+        closeAuthModal(); // Cerrar el modal de autenticación
       } else {
         setAuthError(result.message || 'Error de autenticación');
         showToast(result.message || 'Error de autenticación', 'error');
@@ -99,9 +140,8 @@ function App() {
   const onForgotPassword = async (username: string) => {
     setAuthError('');
     try {
-      const response = await fetch(`${API_URL}/users/security-question`, {
+      const response = await authFetch(`${API_URL}/users/security-question`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
       });
       const result = await response.json();
@@ -122,9 +162,8 @@ function App() {
   const handleForgotPasswordSubmitAnswer = async (answer: string) => {
     setAuthError('');
     try {
-      const response = await fetch(`${API_URL}/users/verify-answer`, {
+      const response = await authFetch(`${API_URL}/users/verify-answer`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: forgotPasswordUsername, answer }),
       });
       const result = await response.json();
@@ -143,9 +182,8 @@ function App() {
   const handleSetNewPassword = async (newPassword: string) => {
     setAuthError('');
     try {
-      const response = await fetch(`${API_URL}/users/reset-password`, {
+      const response = await authFetch(`${API_URL}/users/reset-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: forgotPasswordUsername, newPassword }),
       });
       const result = await response.json();
@@ -167,6 +205,7 @@ function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('token'); // Eliminar el token
     setIsAppContentLoaded(false);
     showToast('Sesión cerrada.');
   };
@@ -200,6 +239,7 @@ function App() {
       notifications={notifications}
       setNotifications={setNotifications}
       handleLogout={handleLogout}
+      authFetch={authFetch} // Pasar authFetch a MainAppWrapper
     />
   );
 }

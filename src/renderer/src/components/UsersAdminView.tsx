@@ -8,11 +8,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 const UsersAdminView: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useUI(); // Obtener la función para mostrar notificaciones
+  const { showToast, authFetch } = useUI(); // Obtener la función para mostrar notificaciones y authFetch
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/users`);
+      const response = await authFetch(`${API_URL}/users`);
       if (!response.ok) {
         throw new Error('No se pudo obtener la lista de usuarios.');
       }
@@ -22,7 +22,7 @@ const UsersAdminView: React.FC = () => {
       setError(err.message);
       showToast(err.message, 'error');
     }
-  }, [showToast]);
+  }, [authFetch, showToast]);
 
   useEffect(() => {
     fetchUsers();
@@ -34,7 +34,7 @@ const UsersAdminView: React.FC = () => {
 
     if (window.confirm(`¿Estás seguro de que quieres ${actionText} a ${user.username}?`)) {
       try {
-        const response = await fetch(`${API_URL}/users/${user._id}/status`, {
+        const response = await authFetch(`${API_URL}/users/${user._id}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
@@ -60,7 +60,7 @@ const UsersAdminView: React.FC = () => {
 
     if (window.confirm(`¿Estás seguro de que quieres eliminar permanentemente a ${userToDelete.username}? Esta acción no se puede deshacer.`)) {
       try {
-        const response = await fetch(`${API_URL}/users/${userId}`, {
+        const response = await authFetch(`${API_URL}/users/${userId}`, {
           method: 'DELETE',
         });
 

@@ -3,7 +3,116 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken'; // Importar jsonwebtoken
+import authMiddleware from './middleware/authMiddleware.js'; // Importar authMiddleware
+import adminAuthMiddleware from './middleware/adminAuthMiddleware.js'; // Importar adminAuthMiddleware
 import PDFDocument from 'pdfkit'; // <--- Añadir esta línea
+import { connectDB, initializeDb, db } from './database/index.js';
+import { purgeOldOrders } from './database/maintenance.js';
+import { checkUnpaidOrders } from './database/notifications.js';
+import type { Payment } from '../types.js';
+
+const app = express();
+const port = process.env.PORT || 3001;
+
+// Asegúrate de que JWT_SECRET esté definido en tus variables de entorno
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Usar una clave por defecto para desarrollo local
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(cors());
+app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log('Incoming request URL:', req.url, 'Path:', req.path);
+  next();
+});
+
+// --- API ENDPOINTS ---
+
+// --- USER AUTHENTICATION ---
+app.post('/api/users', async (req, res) => {
+  const { username, password, securityQuestion, securityAnswer } = req.body;
+  if (!username || !password || !securityQuestion || !securityAnswer) {
+    return res.status(400).json({ error: 'Todos los campos son requeridos.' });
+  }
+
+  // Lógica de registro seguro
+  const adminUsername = process.env.ADMIN_USERNAME;
+
+  // Solo permitir el registro si el username coincide con el admin o si no hay admin definido
+  if (adminUsername && username !== adminUsername) {
+    return res.status(403).json({ error: 'El registro de nuevos usuarios no está permitido.' });
+  }
+
+  try {
+    const existingUser = await db.users.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Este nombre de usuario ya existe.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
+    
+    // Asignar rol de admin si coincide con la variable de entorno
+    const role = (adminUsername && username === adminUsername) ? 'admin' : 'user';
+
+    const newUser = new db.users({
+      username,
+      password: hashedPassword,
+      securityQuestion,
+      securityAnswer: hashedAnswer,
+      role: role,
+      status: 'active',
+    });
+
+    await newUser.save();
+    res.status(201).json({ username: newUser.username });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al registrar el usuario.' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
+  }
+  try {
+    const user = await db.users.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+
+    // Verificar si el usuario está bloqueado
+    if (user.status === 'blocked') {
+      return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password!); // Fixed
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
+    }
+    
+    // Generar JWT
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '1h' } // Token expira en 1 hora
+    );
+
+    // Enviar el rol del usuario y el token al frontend
+    res.json({ success: true, user: { username: user.username, role: user.role }, token });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+  }
+});
 import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
@@ -148,7 +257,8 @@ app.post('/api/users/reset-password', async (req, res) => {
 });
 
 // --- USER MANAGEMENT (Admin) ---
-app.get('/api/users', async (req, res) => {
+// Proteger estas rutas con el middleware de administrador
+app.get('/api/users', adminAuthMiddleware, async (req, res) => {
   try {
     // Excluimos la contraseña y la respuesta de seguridad por seguridad
     const users = await db.users.find({}, '-password -securityAnswer');
@@ -158,7 +268,7 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-app.put('/api/users/:id/status', async (req, res) => {
+app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
     if (!['active', 'blocked'].includes(status)) {
@@ -178,7 +288,7 @@ app.put('/api/users/:id/status', async (req, res) => {
   }
 });
 
-app.delete('/api/users/:id', async (req, res) => {
+app.delete('/api/users/:id', adminAuthMiddleware, async (req, res) => {
   try {
     const deletedUser = await db.users.findByIdAndDelete(req.params.id);
     if (!deletedUser) {
