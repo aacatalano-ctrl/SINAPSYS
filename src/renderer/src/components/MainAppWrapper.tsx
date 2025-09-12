@@ -14,6 +14,7 @@ import ReportResultsView from './ReportResultsView';
 import IncomeBreakdownView from './IncomeBreakdownView';
 import ReportsView from './ReportsView';
 import NotificationsView from './NotificationsView'; // Import new view
+import UsersAdminView from './UsersAdminView'; // Import admin view
 import AddDoctorModal from './AddDoctorModal';
 import AddNoteModal from './AddNoteModal';
 import AddPaymentModal from './AddPaymentModal';
@@ -232,6 +233,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
   const mainContent = () => {
     switch (activeView) {
+      case 'usersAdmin':
+        return <UsersAdminView />;
       case 'notifications':
         return (
           <NotificationsView 

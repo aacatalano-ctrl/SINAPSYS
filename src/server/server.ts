@@ -32,18 +32,26 @@ app.post('/api/users', async (req, res) => {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
   }
   try {
+    // Verificar si ya existe algún usuario
+    const userCount = await db.users.countDocuments();
+
     const existingUser = await db.users.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: 'El nombre de usuario ya existe.' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
+    
     const newUser = new db.users({
       username,
       password: hashedPassword,
       securityQuestion,
       securityAnswer: hashedAnswer,
+      // Si no hay usuarios en la BD, el primero será admin. El resto, 'user'.
+      role: userCount === 0 ? 'admin' : 'user',
+      status: 'active',
     });
+
     await newUser.save();
     res.status(201).json({ username: newUser.username });
   } catch (error) {
@@ -61,11 +69,19 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
     }
+
+    // Verificar si el usuario está bloqueado
+    if (user.status === 'blocked') {
+      return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password!); // Fixed
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
-    res.json({ success: true, user: { username: user.username } });
+    
+    // Enviar el rol del usuario al frontend
+    res.json({ success: true, user: { username: user.username, role: user.role } });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
   }
@@ -119,6 +135,49 @@ app.post('/api/users/reset-password', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error al restablecer la contraseña.' });
+  }
+});
+
+// --- USER MANAGEMENT (Admin) ---
+app.get('/api/users', async (req, res) => {
+  try {
+    // Excluimos la contraseña y la respuesta de seguridad por seguridad
+    const users = await db.users.find({}, '-password -securityAnswer');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los usuarios.' });
+  }
+});
+
+app.put('/api/users/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['active', 'blocked'].includes(status)) {
+      return res.status(400).json({ error: 'Estado no válido.' });
+    }
+    const updatedUser = await db.users.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).select('-password -securityAnswer');
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el estado del usuario.' });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const deletedUser = await db.users.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+    res.status(204).send(); // No content
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario.' });
   }
 });
 

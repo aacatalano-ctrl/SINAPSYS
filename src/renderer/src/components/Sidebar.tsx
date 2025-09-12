@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, BrainCircuit } from 'lucide-react';
+import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, BrainCircuit, Users } from 'lucide-react';
 import { Notification } from '../../types'; // Assuming types are in this location
 
 interface SidebarProps {
@@ -41,6 +41,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             <span>{label}</span>
           </button>
         ))}
+
+        {/* Admin-only User Management Button */}
+        {currentUser && currentUser.role === 'admin' && (
+          <button
+            key="usersAdmin"
+            onClick={() => setCurrentView('usersAdmin')}
+            className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${currentView === 'usersAdmin' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
+            title="Adm. Usuarios"
+          >
+            <Users className="mr-3 h-5 w-5" />
+            <span>Adm. Usuarios</span>
+          </button>
+        )}
         
         {/* Notifications Button - Standalone */}
         <button

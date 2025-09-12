@@ -1,6 +1,12 @@
 
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 
+// Define User type
+interface User {
+  username: string;
+  role: 'admin' | 'user';
+}
+
 // Define the shape of the toast state
 interface ToastState {
   show: boolean;
@@ -10,6 +16,8 @@ interface ToastState {
 
 // Define the shape of the context
 interface UIContextType {
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -48,6 +56,7 @@ interface UIProviderProps {
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
   const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);
   const [isAddPaymentModalOpen, setAddPaymentModalOpen] = useState(false);
@@ -68,7 +77,11 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const closeAddPaymentModal = useCallback(() => setAddPaymentModalOpen(false), []);
 
   const openAuthModal = useCallback(() => setAuthModalOpen(true), []);
-  const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
+  const closeAuthModal = useCallback(() => {
+    if (currentUser) { // Only close auth modal if a user is logged in
+      setAuthModalOpen(false);
+    }
+  }, [currentUser]);
 
   const openConfirmCompletionModal = useCallback(() => setConfirmCompletionModalOpen(true), []);
   const closeConfirmCompletionModal = useCallback(() => setConfirmCompletionModalOpen(false), []);
@@ -94,6 +107,8 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   }, [hideToast]);
 
   const value = {
+    currentUser,
+    setCurrentUser,
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,
