@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types'; // Assuming types are defined here
 import { useUI } from '../context/UIContext'; // For showing toasts
 import EditUserModal from './EditUserModal'; // Import EditUserModal
+import AddUserModal from './AddUserModal'; // Import AddUserModal
 
 interface UsersAdminViewProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
@@ -31,6 +32,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   // State for editing user
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // New state for Add User modal
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -157,6 +159,10 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     setIsEditModalOpen(true);
   };
 
+  const handleAddUser = () => {
+    setIsAddModalOpen(true);
+  };
+
   if (loading) return <div className="text-center py-4">Cargando usuarios...</div>;
   if (error) return <div className="text-center py-4 text-red-500">Error: {error}</div>;
 
@@ -164,77 +170,16 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     <>
       <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Administración de Usuarios</h2>
-
-      {/* Create New User Form */}
-      <div className="mb-8 p-4 border rounded-lg bg-gray-50">
-        <h3 className="text-xl font-semibold text-gray-700 mb-4">Crear Nuevo Usuario</h3>
-        <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="newUsername" className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
-            <input
-              type="text"
-              id="newUsername"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">Contraseña</label>
-            <input
-              type="password"
-              id="newPassword"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="newSecurityQuestion" className="block text-sm font-medium text-gray-700">Pregunta de Seguridad</label>
-            <input
-              type="text"
-              id="newSecurityQuestion"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={newSecurityQuestion}
-              onChange={(e) => setNewSecurityQuestion(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="newSecurityAnswer" className="block text-sm font-medium text-gray-700">Respuesta de Seguridad</label>
-            <input
-              type="text"
-              id="newSecurityAnswer"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={newSecurityAnswer}
-              onChange={(e) => setNewSecurityAnswer(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="newUserRole" className="block text-sm font-medium text-gray-700">Rol</label>
-            <select
-              id="newUserRole"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={newUserRole}
-              onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'user')}
-            >
-              <option value="user">Usuario</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-          <div className="md:col-span-2 flex justify-end">
-            <button
-              type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Crear Usuario
-            </button>
-          </div>
-        </form>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleAddUser}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Crear Usuario
+        </button>
       </div>
+
+      
 
       {/* User List */}
       <h3 className="text-xl font-semibold text-gray-700 mb-4">Lista de Usuarios</h3>
@@ -306,6 +251,15 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
           user={editingUser}
           authFetch={authFetch}
           onUserUpdated={fetchUsers}
+        />
+      )}
+
+      {isAddModalOpen && (
+        <AddUserModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          authFetch={authFetch}
+          onUserAdded={fetchUsers}
         />
       )}
     </>
