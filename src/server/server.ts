@@ -31,24 +31,33 @@ app.post('/api/users', async (req, res) => {
   if (!username || !password || !securityQuestion || !securityAnswer) {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
   }
-  try {
-    // Verificar si ya existe algún usuario
-    const userCount = await db.users.countDocuments();
 
+  // Lógica de registro seguro
+  const adminUsername = process.env.ADMIN_USERNAME;
+
+  // Solo permitir el registro si el username coincide con el admin o si no hay admin definido
+  if (adminUsername && username !== adminUsername) {
+    return res.status(403).json({ error: 'El registro de nuevos usuarios no está permitido.' });
+  }
+
+  try {
     const existingUser = await db.users.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ error: 'El nombre de usuario ya existe.' });
+      return res.status(400).json({ error: 'Este nombre de usuario ya existe.' });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
     
+    // Asignar rol de admin si coincide con la variable de entorno
+    const role = (adminUsername && username === adminUsername) ? 'admin' : 'user';
+
     const newUser = new db.users({
       username,
       password: hashedPassword,
       securityQuestion,
       securityAnswer: hashedAnswer,
-      // Si no hay usuarios en la BD, el primero será admin. El resto, 'user'.
-      role: userCount === 0 ? 'admin' : 'user',
+      role: role,
       status: 'active',
     });
 
