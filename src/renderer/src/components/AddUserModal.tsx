@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react'; // Import eye icons
 import { useUI } from '../context/UIContext';
 import { User } from '../../types';
 
@@ -22,6 +23,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
   const [newRif, setNewRif] = useState('');
   const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const { showToast } = useUI();
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -95,16 +97,26 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
               required
             />
           </div>
-          <div>
+          <div className="relative">
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">Contraseña</label>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="newPassword"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10" // Added pr-10 for icon spacing
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
+            <span
+              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-6" // Adjusted top for alignment
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </span>
           </div>
           <div>
             <label htmlFor="newSecurityQuestion" className="block text-sm font-medium text-gray-700">Pregunta de Seguridad</label>

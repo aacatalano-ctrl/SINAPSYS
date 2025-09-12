@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordModal, setShowForgotPasswordModal, forgotPasswordStep, setForgotPasswordStep, forgotPasswordUsername, setForgotPasswordUsername, forgotPasswordSecurityQuestion, handleForgotPasswordSubmitAnswer, handleSetNewPassword, showNotification }: { onLogin: (username: string, password: string) => Promise<void>; onForgotPassword: (username: string) => Promise<void>; authError: string; showForgotPasswordModal: boolean; setShowForgotPasswordModal: React.Dispatch<React.SetStateAction<boolean>>; forgotPasswordStep: number; setForgotPasswordStep: React.Dispatch<React.SetStateAction<number>>; forgotPasswordUsername: string; setForgotPasswordUsername: React.Dispatch<React.SetStateAction<string>>; forgotPasswordSecurityQuestion: string; handleForgotPasswordSubmitAnswer: (answer: string) => Promise<void>; handleSetNewPassword: (newPassword: string) => Promise<void>; showNotification: (message: string, type?: string) => void; }) => {
   const [username, setUsername] = useState('');
@@ -7,6 +7,9 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   const [newPassword, setNewPassword] = useState('');
   const [newConfirmPassword, setNewConfirmPassword] = useState('');
   const [forgotPasswordAnswer, setForgotPasswordAnswer] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,27 +71,47 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
             )}
             {forgotPasswordStep === 3 && (
               <>
-                <div className="mb-4">
+                <div className="mb-4 relative"> {/* Added relative for icon positioning */}
                   <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">Nueva Contraseña:</label>
                   <input
-                    type="password"
+                    type={showNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newPassword"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                   />
+                  <span
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </span>
                 </div>
-                <div className="mb-6">
+                <div className="mb-6 relative"> {/* Added relative for icon positioning */}
                   <label htmlFor="newConfirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirmar Nueva Contraseña:</label>
                   <input
-                    type="password"
+                    type={showConfirmNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newConfirmPassword"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                     value={newConfirmPassword}
                     onChange={(e) => setNewConfirmPassword(e.target.value)}
                     required
                   />
+                  <span
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                    onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                  >
+                    {showConfirmNewPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </span>
                 </div>
               </>
             )}
@@ -129,16 +152,26 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                 required
               />
             </div>
-            <div className="mb-6">
+            <div className="mb-6 relative"> {/* Added relative for icon positioning */}
               <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
               <input
-                type="password"
+                type={showLoginPassword ? 'text' : 'password'} // Dynamic type
                 id="password"
-                className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <span
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                onClick={() => setShowLoginPassword(!showLoginPassword)}
+              >
+                {showLoginPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400" />
+                )}
+              </span>
             </div>
 
             {authError && <p className="text-red-500 text-sm mb-4 text-center">{authError}</p>}
