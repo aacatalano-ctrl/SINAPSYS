@@ -4,6 +4,7 @@ import MainAppWrapper from './components/MainAppWrapper.tsx';
 
 import { User, Notification } from '../types';
 import { UIProvider } from './context/UIContext.tsx';
+import { DoctorProvider } from './context/DoctorContext.tsx'; // Import DoctorProvider
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -33,7 +34,7 @@ function App() {
   const [forgotPasswordSecurityQuestion, setForgotPasswordSecurityQuestion] = useState('');
   const [authError, setAuthError] = useState('');
 
-  
+
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,7 +77,7 @@ function App() {
       console.error("Error loading data:", error);
       showToast('Error al cargar datos. Revisa la consola.', 'error');
     }
-  }, [fetchDoctors, fetchNotifications, showToast]);
+  }, [fetchNotifications, showToast]); // Removed fetchDoctors from dependencies
 
   useEffect(() => {
     // Intentar cargar el usuario desde el token al iniciar la app
@@ -243,12 +244,14 @@ function App() {
           handleSetNewPassword={handleSetNewPassword}
         />
       ) : (
-        <MainAppWrapper
-          currentUser={currentUser}
-          notifications={notifications}
-          setNotifications={setNotifications}
-          handleLogout={handleLogout}
-        />
+        <DoctorProvider> {/* Wrap MainAppWrapper with DoctorProvider */}
+          <MainAppWrapper
+            currentUser={currentUser}
+            notifications={notifications}
+            setNotifications={setNotifications}
+            handleLogout={handleLogout}
+          />
+        </DoctorProvider>
       )}
     </>
   );
