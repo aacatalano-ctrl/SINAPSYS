@@ -49,6 +49,12 @@ const userSchema = new mongoose.Schema<User>({
   password: { type: String, required: true },
   securityQuestion: { type: String, required: true },
   securityAnswer: { type: String, required: true },
+  nombre: { type: String, required: true },
+  apellido: { type: String, required: true },
+  cedula: { type: String, required: true },
+  direccion: { type: String, required: true },
+  razonSocial: { type: String, required: true },
+  rif: { type: String, required: true },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },
   status: { type: String, enum: ['active', 'blocked'], default: 'active' },
 });

@@ -37,8 +37,8 @@ app.use((req, res, next) => {
 
 // --- USER AUTHENTICATION ---
 app.post('/api/users', adminAuthMiddleware, async (req, res) => {
-  const { username, password, securityQuestion, securityAnswer, role } = req.body;
-  if (!username || !password || !securityQuestion || !securityAnswer) {
+  const { username, password, securityQuestion, securityAnswer, nombre, apellido, cedula, direccion, razonSocial, rif, role } = req.body;
+  if (!username || !password || !securityQuestion || !securityAnswer || !nombre || !apellido || !cedula || !direccion || !razonSocial || !rif) {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
   }
 
@@ -56,12 +56,18 @@ app.post('/api/users', adminAuthMiddleware, async (req, res) => {
       password: hashedPassword,
       securityQuestion,
       securityAnswer: hashedAnswer,
+      nombre,
+      apellido,
+      cedula,
+      direccion,
+      razonSocial,
+      rif,
       role: role || 'user', // Default to 'user' if not specified by admin
       status: 'active',
     });
 
     await newUser.save();
-    res.status(201).json({ username: newUser.username, role: newUser.role });
+    res.status(201).json({ username: newUser.username, role: newUser.role, nombre: newUser.nombre, apellido: newUser.apellido, cedula: newUser.cedula, direccion: newUser.direccion, razonSocial: newUser.razonSocial, rif: newUser.rif });
   } catch (error) {
     console.error('Error al crear el usuario:', error);
     res.status(500).json({ error: 'Error al crear el usuario.' });
@@ -183,6 +189,27 @@ app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
     res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar el estado del usuario.' });
+  }
+});
+
+app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
+  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status } = req.body;
+  const userId = req.params.id;
+
+  try {
+    const updatedUser = await db.users.findByIdAndUpdate(
+      userId,
+      { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status },
+      { new: true }
+    ).select('-password -securityAnswer'); // Exclude sensitive info
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error al actualizar el usuario:', error);
+    res.status(500).json({ error: 'Error al actualizar el usuario.' });
   }
 });
 

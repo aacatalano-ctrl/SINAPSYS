@@ -18,6 +18,12 @@ export interface User {
   password?: string;
   securityQuestion?: string;
   securityAnswer?: string;
+  nombre: string;
+  apellido: string;
+  cedula: string;
+  direccion: string;
+  razonSocial: string;
+  rif: string;
   role: 'admin' | 'user';
   status: 'active' | 'blocked';
 }

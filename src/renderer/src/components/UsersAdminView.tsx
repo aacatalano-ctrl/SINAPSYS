@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types'; // Assuming types are defined here
 import { useUI } from '../context/UIContext'; // For showing toasts
+import EditUserModal from './EditUserModal'; // Import EditUserModal
 
 interface UsersAdminViewProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
@@ -17,7 +18,17 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   const [newPassword, setNewPassword] = useState('');
   const [newSecurityQuestion, setNewSecurityQuestion] = useState('');
   const [newSecurityAnswer, setNewSecurityAnswer] = useState('');
+  const [newNombre, setNewNombre] = useState('');
+  const [newApellido, setNewApellido] = useState('');
+  const [newCedula, setNewCedula] = useState('');
+  const [newDireccion, setNewDireccion] = useState('');
+  const [newRazonSocial, setNewRazonSocial] = useState('');
+  const [newRif, setNewRif] = useState('');
   const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
+
+  // State for editing user
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -56,6 +67,12 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
           password: newPassword,
           securityQuestion: newSecurityQuestion,
           securityAnswer: newSecurityAnswer,
+          nombre: newNombre,
+          apellido: newApellido,
+          cedula: newCedula,
+          direccion: newDireccion,
+          razonSocial: newRazonSocial,
+          rif: newRif,
           role: newUserRole,
         }),
       });
@@ -70,6 +87,12 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
       setNewPassword('');
       setNewSecurityQuestion('');
       setNewSecurityAnswer('');
+      setNewNombre('');
+      setNewApellido('');
+      setNewCedula('');
+      setNewDireccion('');
+      setNewRazonSocial('');
+      setNewRif('');
       setNewUserRole('user');
       fetchUsers(); // Refresh user list
     } catch (err: any) {
@@ -125,6 +148,11 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
       setError(err.message || 'Error al eliminar usuario.');
       showToast(err.message || 'Error al eliminar usuario.', 'error');
     }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
   };
 
   if (loading) return <div className="text-center py-4">Cargando usuarios...</div>;
@@ -243,6 +271,12 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
+                    onClick={() => handleEditUser(user)}
+                    className="text-blue-600 hover:text-blue-900 mr-3 bg-blue-100 p-1 rounded"
+                  >
+                    Editar
+                  </button>
+                  <button
                     onClick={() => handleUpdateUserStatus(user._id!, user.status!)}
                     className={`text-indigo-600 hover:text-indigo-900 mr-3 ${user.status === 'active' ? 'bg-red-100' : 'bg-green-100'} p-1 rounded`}
                   >
@@ -261,6 +295,16 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
         </table>
       </div>
     </div>
+
+    {isEditModalOpen && editingUser && (
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={editingUser}
+        authFetch={authFetch}
+        onUserUpdated={fetchUsers}
+      />
+    )}
   );
 };
 
