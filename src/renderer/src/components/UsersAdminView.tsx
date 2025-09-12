@@ -18,13 +18,15 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   const [newPassword, setNewPassword] = useState('');
   const [newSecurityQuestion, setNewSecurityQuestion] = useState('');
   const [newSecurityAnswer, setNewSecurityAnswer] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
+
+  // State for new user form fields
   const [newNombre, setNewNombre] = useState('');
   const [newApellido, setNewApellido] = useState('');
   const [newCedula, setNewCedula] = useState('');
   const [newDireccion, setNewDireccion] = useState('');
   const [newRazonSocial, setNewRazonSocial] = useState('');
   const [newRif, setNewRif] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
 
   // State for editing user
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -159,7 +161,8 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   if (error) return <div className="text-center py-4 text-red-500">Error: {error}</div>;
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <>
+      <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Administración de Usuarios</h2>
 
       {/* Create New User Form */}
@@ -296,15 +299,16 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
       </div>
     </div>
 
-    {isEditModalOpen && editingUser && (
-      <EditUserModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        user={editingUser}
-        authFetch={authFetch}
-        onUserUpdated={fetchUsers}
-      />
-    )}
+      {isEditModalOpen && editingUser && (
+        <EditUserModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          user={editingUser}
+          authFetch={authFetch}
+          onUserUpdated={fetchUsers}
+        />
+      )}
+    </>
   );
 };
 
