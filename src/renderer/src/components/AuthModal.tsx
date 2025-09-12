@@ -1,27 +1,19 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-const AuthModal = ({ onLogin, onRegister, onForgotPassword, authError, isRegistering, setIsRegistering, showForgotPasswordModal, setShowForgotPasswordModal, forgotPasswordStep, setForgotPasswordStep, forgotPasswordUsername, setForgotPasswordUsername, forgotPasswordSecurityQuestion, handleForgotPasswordSubmitAnswer, handleSetNewPassword, showNotification }: { onLogin: (username: string, password: string) => Promise<void>; onRegister: (username: string, password: string, securityQuestion: string, securityAnswer: string) => Promise<void>; onForgotPassword: (username: string) => Promise<void>; authError: string; isRegistering: boolean; setIsRegistering: React.Dispatch<React.SetStateAction<boolean>>; showForgotPasswordModal: boolean; setShowForgotPasswordModal: React.Dispatch<React.SetStateAction<boolean>>; forgotPasswordStep: number; setForgotPasswordStep: React.Dispatch<React.SetStateAction<number>>; forgotPasswordUsername: string; setForgotPasswordUsername: React.Dispatch<React.SetStateAction<string>>; forgotPasswordSecurityQuestion: string; handleForgotPasswordSubmitAnswer: (answer: string) => Promise<void>; handleSetNewPassword: (newPassword: string) => Promise<void>; showNotification: (message: string, type?: string) => void; }) => {
+const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordModal, setShowForgotPasswordModal, forgotPasswordStep, setForgotPasswordStep, forgotPasswordUsername, setForgotPasswordUsername, forgotPasswordSecurityQuestion, handleForgotPasswordSubmitAnswer, handleSetNewPassword, showNotification }: { onLogin: (username: string, password: string) => Promise<void>; onForgotPassword: (username: string) => Promise<void>; authError: string; showForgotPasswordModal: boolean; setShowForgotPasswordModal: React.Dispatch<React.SetStateAction<boolean>>; forgotPasswordStep: number; setForgotPasswordStep: React.Dispatch<React.SetStateAction<number>>; forgotPasswordUsername: string; setForgotPasswordUsername: React.Dispatch<React.SetStateAction<string>>; forgotPasswordSecurityQuestion: string; handleForgotPasswordSubmitAnswer: (answer: string) => Promise<void>; handleSetNewPassword: (newPassword: string) => Promise<void>; showNotification: (message: string, type?: string) => void; }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [securityQuestion, setSecurityQuestion] = useState('');
-  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newConfirmPassword, setNewConfirmPassword] = useState('');
+  const [forgotPasswordAnswer, setForgotPasswordAnswer] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newConfirmPassword, setNewConfirmPassword] = useState('');
   const [forgotPasswordAnswer, setForgotPasswordAnswer] = useState('');
 
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isRegistering) {
-      if (password !== confirmPassword) {
-        showNotification('Las contraseñas no coinciden.', 'error');
-        return;
-      }
-      onRegister(username, password, securityQuestion, securityAnswer);
-    } else {
-      onLogin(username, password);
-    }
+    onLogin(username, password);
   };
 
   const handleForgotPasswordFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,7 +35,7 @@ const AuthModal = ({ onLogin, onRegister, onForgotPassword, authError, isRegiste
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[100]">
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-100 opacity-100">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
+          Iniciar Sesión
         </h2>
 
         {showForgotPasswordModal ? (
@@ -152,78 +144,30 @@ const AuthModal = ({ onLogin, onRegister, onForgotPassword, authError, isRegiste
               />
             </div>
 
-            {isRegistering && (
-              <>
-                <div className="mb-6">
-                  <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirmar Contraseña:</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="mb-6">
-                  <label htmlFor="securityQuestion" className="block text-gray-700 text-sm font-bold mb-2">Pregunta Secreta (para recuperación):</label>
-                  <input
-                    type="text"
-                    id="securityQuestion"
-                    placeholder="Ej: ¿Cuál es el nombre de tu primera mascota?"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={securityQuestion}
-                    onChange={(e) => setSecurityQuestion(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="mb-6">
-                  <label htmlFor="securityAnswer" className="block text-gray-700 text-sm font-bold mb-2">Respuesta Secreta:</label>
-                  <input
-                    type="text"
-                    id="securityAnswer"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={securityAnswer}
-                    onChange={(e) => setSecurityAnswer(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
             {authError && <p className="text-red-500 text-sm mb-4 text-center">{authError}</p>}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-end">
               <button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
               >
-                {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsRegistering(!isRegistering)}
-                className="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
-              >
-                {isRegistering ? 'Ya tengo una cuenta' : 'Crear una cuenta'}
+                Iniciar Sesión
               </button>
             </div>
-            {!isRegistering && (
-              <div className="mt-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForgotPasswordModal(true);
-                    showNotification('', 'error');
-                    setForgotPasswordStep(1);
-                    setForgotPasswordUsername('');
-                  }}
-                  className="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-            )}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPasswordModal(true);
+                  showNotification('', 'error');
+                  setForgotPasswordStep(1);
+                  setForgotPasswordUsername('');
+                }}
+                className="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           </form>
         )}
       </div>

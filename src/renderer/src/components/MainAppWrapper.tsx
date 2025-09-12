@@ -29,9 +29,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 interface MainAppWrapperProps {
   handleLogout: () => void;
   currentUser: any; // Add currentUser prop
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser }) => {
+const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
   const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, deleteReport, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, authFetch } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
@@ -234,7 +235,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const mainContent = () => {
     switch (activeView) {
       case 'usersAdmin':
-        return <UsersAdminView />;
+        return currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div className="text-center py-4 text-red-500">Acceso denegado.</div>;
       case 'notifications':
         return (
           <NotificationsView 

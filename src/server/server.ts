@@ -16,7 +16,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Asegúrate de que JWT_SECRET esté definido en tus variables de entorno
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Usar una clave por defecto para desarrollo local
+const JWT_SECRET = process.env.JWT_SECRET; // Usar una clave por defecto para desarrollo local
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,18 +32,10 @@ app.use((req, res, next) => {
 // --- API ENDPOINTS ---
 
 // --- USER AUTHENTICATION ---
-app.post('/api/users', async (req, res) => {
-  const { username, password, securityQuestion, securityAnswer } = req.body;
+app.post('/api/users', adminAuthMiddleware, async (req, res) => {
+  const { username, password, securityQuestion, securityAnswer, role } = req.body;
   if (!username || !password || !securityQuestion || !securityAnswer) {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
-  }
-
-  // Lógica de registro seguro
-  const adminUsername = process.env.ADMIN_USERNAME;
-
-  // Solo permitir el registro si el username coincide con el admin o si no hay admin definido
-  if (adminUsername && username !== adminUsername) {
-    return res.status(403).json({ error: 'El registro de nuevos usuarios no está permitido.' });
   }
 
   try {
@@ -55,22 +47,20 @@ app.post('/api/users', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
     
-    // Asignar rol de admin si coincide con la variable de entorno
-    const role = (adminUsername && username === adminUsername) ? 'admin' : 'user';
-
     const newUser = new db.users({
       username,
       password: hashedPassword,
       securityQuestion,
       securityAnswer: hashedAnswer,
-      role: role,
+      role: role || 'user', // Default to 'user' if not specified by admin
       status: 'active',
     });
 
     await newUser.save();
-    res.status(201).json({ username: newUser.username });
+    res.status(201).json({ username: newUser.username, role: newUser.role });
   } catch (error) {
-    res.status(500).json({ error: 'Error al registrar el usuario.' });
+    console.error('Error al crear el usuario:', error);
+    res.status(500).json({ error: 'Error al crear el usuario.' });
   }
 });
 

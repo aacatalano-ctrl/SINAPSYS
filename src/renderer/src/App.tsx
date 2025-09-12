@@ -26,7 +26,6 @@ function App() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isAppContentLoaded, setIsAppContentLoaded] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
 
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
@@ -128,27 +127,6 @@ function App() {
     }
   };
 
-  const handleRegister = async (username: string, password: string, securityQuestion: string, securityAnswer: string) => {
-    setAuthError('');
-    try {
-      const response = await fetch(`${API_URL}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, securityQuestion, securityAnswer }),
-      });
-      const registeredUser = await response.json();
-      if (!response.ok) {
-        throw new Error(registeredUser.error || 'Error al registrar usuario.');
-      }
-      showToast(`Cuenta creada con éxito para ${registeredUser.username}. Por favor, inicia sesión.`);
-      setIsRegistering(false);
-    } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
-      setAuthError(errorMessage);
-      showToast(errorMessage, 'error');
-    }
-  };
-
   const onForgotPassword = async (username: string) => {
     setAuthError('');
     try {
@@ -227,10 +205,7 @@ function App() {
       {!currentUser ? (
         <AuthModal
           onLogin={handleLogin}
-          onRegister={handleRegister}
           authError={authError}
-          isRegistering={isRegistering}
-          setIsRegistering={setIsRegistering}
           showNotification={showToast}
           showForgotPasswordModal={showForgotPasswordModal}
           setShowForgotPasswordModal={setShowForgotPasswordModal}
@@ -250,6 +225,7 @@ function App() {
             notifications={notifications}
             setNotifications={setNotifications}
             handleLogout={handleLogout}
+            authFetch={authFetch}
           />
         </DoctorProvider>
       )}
