@@ -54,6 +54,7 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 // Create a provider component
 interface UIProviderProps {
   children: ReactNode;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children, authFetch }) => {
