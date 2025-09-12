@@ -7,9 +7,6 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   const [newPassword, setNewPassword] = useState('');
   const [newConfirmPassword, setNewConfirmPassword] = useState('');
   const [forgotPasswordAnswer, setForgotPasswordAnswer] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newConfirmPassword, setNewConfirmPassword] = useState('');
-  const [forgotPasswordAnswer, setForgotPasswordAnswer] = useState('');
 
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
