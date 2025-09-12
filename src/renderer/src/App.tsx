@@ -4,6 +4,7 @@ import MainAppWrapper from './components/MainAppWrapper.tsx';
 import { useUI } from './context/UIContext.tsx';
 import { useDoctors } from './context/DoctorContext.tsx';
 import { User, Notification } from '../types';
+import { UIProvider } from './context/UIContext.tsx';
 
 function App() {
   const { currentUser, setCurrentUser, showToast, closeAuthModal } = useUI(); // Obtener setCurrentUser y closeAuthModal del contexto
@@ -209,37 +210,36 @@ function App() {
     showToast('Sesión cerrada.');
   };
 
-  if (!currentUser) {
-    return (
-      <AuthModal
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        authError={authError}
-        isRegistering={isRegistering}
-        setIsRegistering={setIsRegistering}
-        showNotification={showToast}
-        showForgotPasswordModal={showForgotPasswordModal}
-        setShowForgotPasswordModal={setShowForgotPasswordModal}
-        forgotPasswordStep={forgotPasswordStep}
-        setForgotPasswordStep={setForgotPasswordStep}
-        forgotPasswordUsername={forgotPasswordUsername}
-        setForgotPasswordUsername={setForgotPasswordUsername}
-        forgotPasswordSecurityQuestion={forgotPasswordSecurityQuestion}
-        onForgotPassword={onForgotPassword}
-        handleForgotPasswordSubmitAnswer={handleForgotPasswordSubmitAnswer}
-        handleSetNewPassword={handleSetNewPassword}
-      />
-    );
-  }
-
   return (
-    <MainAppWrapper
-      currentUser={currentUser}
-      notifications={notifications}
-      setNotifications={setNotifications}
-      handleLogout={handleLogout}
-      authFetch={authFetch} // Pasar authFetch a MainAppWrapper
-    />
+    <UIProvider authFetch={authFetch}>
+      {!currentUser ? (
+        <AuthModal
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+          authError={authError}
+          isRegistering={isRegistering}
+          setIsRegistering={setIsRegistering}
+          showNotification={showToast}
+          showForgotPasswordModal={showForgotPasswordModal}
+          setShowForgotPasswordModal={setShowForgotPasswordModal}
+          forgotPasswordStep={forgotPasswordStep}
+          setForgotPasswordStep={setForgotPasswordStep}
+          forgotPasswordUsername={forgotPasswordUsername}
+          setForgotPasswordUsername={setForgotPasswordUsername}
+          forgotPasswordSecurityQuestion={forgotPasswordSecurityQuestion}
+          onForgotPassword={onForgotPassword}
+          handleForgotPasswordSubmitAnswer={handleForgotPasswordSubmitAnswer}
+          handleSetNewPassword={handleSetNewPassword}
+        />
+      ) : (
+        <MainAppWrapper
+          currentUser={currentUser}
+          notifications={notifications}
+          setNotifications={setNotifications}
+          handleLogout={handleLogout}
+        />
+      )}
+    </UIProvider>
   );
 }
 
