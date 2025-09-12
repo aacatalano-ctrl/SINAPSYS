@@ -18,6 +18,8 @@ export interface User {
   password?: string;
   securityQuestion?: string;
   securityAnswer?: string;
+  role: 'admin' | 'user';
+  status: 'active' | 'blocked';
 }
 
 export interface Doctor {
@@ -46,6 +48,7 @@ export interface Note {
 
 export interface Order {
   _id?: string;
+  orderNumber?: string;
   doctorId: mongoose.Types.ObjectId | string;
   patientName: string;
   jobType: string;
