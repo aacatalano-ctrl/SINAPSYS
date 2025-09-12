@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import authMiddleware from './authMiddleware';
+import authMiddleware from './authMiddleware.js';
 
 interface AuthenticatedRequest extends Request {
   user?: { userId: string; username: string; role: 'admin' | 'user' };
