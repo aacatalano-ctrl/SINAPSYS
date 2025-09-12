@@ -16,7 +16,11 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Asegúrate de que JWT_SECRET esté definido en tus variables de entorno
-const JWT_SECRET = process.env.JWT_SECRET; // Usar una clave por defecto para desarrollo local
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined. Please set this environment variable.');
+  process.exit(1);
+} // Usar una clave por defecto para desarrollo local
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
