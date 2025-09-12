@@ -24,8 +24,7 @@ function App() {
   // Función auxiliar para hacer fetch con token de autenticación
   const authFetch = useCallback(async (url: string, options?: RequestInit) => {
     const token = localStorage.getItem('token');
-    const headers = {
-      ...
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options?.headers,
