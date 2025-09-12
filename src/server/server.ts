@@ -174,38 +174,59 @@ app.get('/api/users', adminAuthMiddleware, async (req, res) => {
 
 app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, masterCode } = req.body; // Destructure masterCode
     if (!['active', 'blocked'].includes(status)) {
       return res.status(400).json({ error: 'Estado no válido.' });
     }
+
+    const userToModify = await db.users.findById(req.params.id);
+    if (!userToModify) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
+    // Master code check for admin users
+    if (userToModify.role === 'admin') {
+      if (masterCode !== '868686') {
+        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+      }
+    }
+
     const updatedUser = await db.users.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true }
     ).select('-password -securityAnswer');
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado.' });
-    }
+    
     res.json(updatedUser);
   } catch (error) {
+    console.error('Error al actualizar el estado del usuario:', error); // Added console.error for backend
     res.status(500).json({ error: 'Error al actualizar el estado del usuario.' });
   }
 });
 
 app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
-  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status } = req.body;
+  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status, masterCode } = req.body; // Destructure masterCode
   const userId = req.params.id;
 
   try {
+    const userToModify = await db.users.findById(userId);
+    if (!userToModify) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
+    // Master code check for admin users
+    if (userToModify.role === 'admin') {
+      if (masterCode !== '868686') {
+        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+      }
+    }
+
     const updatedUser = await db.users.findByIdAndUpdate(
       userId,
       { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status },
       { new: true }
     ).select('-password -securityAnswer'); // Exclude sensitive info
 
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado.' });
-    }
     res.json(updatedUser);
   } catch (error) {
     console.error('Error al actualizar el usuario:', error);

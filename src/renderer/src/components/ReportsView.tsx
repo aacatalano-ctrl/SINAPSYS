@@ -149,7 +149,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
             </thead>
             <tbody>
               {doctors.map(doctor => {
-                const doctorOrders = filteredOrders.filter(order => order.doctorId === doctor.id);
+                const doctorOrders = filteredOrders.filter(order => order.doctorId.toString() === doctor.id);
                 const totalOrders = doctorOrders.length;
                 const completedOrders = doctorOrders.filter(o => o.status === 'Completado').length;
                 const pendingOrders = doctorOrders.filter(o => o.status === 'Pendiente' || o.status === 'Procesando').length;

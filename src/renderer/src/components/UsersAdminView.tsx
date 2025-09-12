@@ -106,11 +106,19 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     }
   };
 
-  const handleUpdateUserStatus = async (userId: string, currentStatus: 'active' | 'blocked') => {
+  const handleUpdateUserStatus = async (userToUpdate: User) => { // Changed parameter to User object
+    if (userToUpdate.role === 'admin') {
+      const masterCode = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
+      if (masterCode !== '868686') {
+        showToast('Código maestro incorrecto o acción cancelada.', 'error');
+        return;
+      }
+    }
+
     setError(null);
-    const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
+    const newStatus = userToUpdate.status === 'active' ? 'blocked' : 'active';
     try {
-      const response = await authFetch(`${API_URL}/users/${userId}/status`, {
+      const response = await authFetch(`${API_URL}/users/${userToUpdate._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -154,8 +162,15 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     }
   };
 
-  const handleEditUser = (user: User) => {
-    setEditingUser(user);
+  const handleEditUser = (userToEdit: User) => { // Changed parameter to User object
+    if (userToEdit.role === 'admin') {
+      const masterCode = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
+      if (masterCode !== '868686') {
+        showToast('Código maestro incorrecto o acción cancelada.', 'error');
+        return;
+      }
+    }
+    setEditingUser(userToEdit);
     setIsEditModalOpen(true);
   };
 
@@ -225,7 +240,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
                     Editar
                   </button>
                   <button
-                    onClick={() => handleUpdateUserStatus(user._id!, user.status!)}
+                    onClick={() => handleUpdateUserStatus(user)}
                     className={`text-indigo-600 hover:text-indigo-900 mr-3 ${user.status === 'active' ? 'bg-red-100' : 'bg-green-100'} p-1 rounded`}
                   >
                     {user.status === 'active' ? 'Bloquear' : 'Activar'}
