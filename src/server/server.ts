@@ -320,10 +320,13 @@ app.delete('/api/doctors/:id', async (req, res) => {
 
 // --- ORDERS ---
 app.get('/api/orders', async (req, res) => {
+  console.log('Request received for /api/orders.');
   try {
     const orders = await db.orders.find({}).populate('doctorId');
+    console.log(`Fetched ${orders.length} orders from DB. Sample:`, orders.length > 0 ? orders[0] : 'None');
     res.json(orders);
   } catch (error) {
+    console.error('Error al obtener las órdenes:', error);
     res.status(500).json({ error: 'Error al obtener las órdenes.' });
   }
 });
