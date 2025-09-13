@@ -138,3 +138,9 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 };
 
 export const useDoctors = (): DoctorContextType => {
+  const context = useContext(DoctorContext);
+  if (context === undefined) {
+    throw new Error('useDoctors must be used within a DoctorProvider');
+  }
+  return context;
+};
