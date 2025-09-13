@@ -83,22 +83,28 @@ app.post('/api/users', adminAuthMiddleware, async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+  console.log('Login attempt received.');
   const { username, password } = req.body;
   if (!username || !password) {
+    console.log('Login attempt: Missing username or password.');
     return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
   }
   try {
+    console.log(`Login attempt for user: ${username}`);
     const user = await db.users.findOne({ username });
     if (!user) {
+      console.log(`Login attempt for user ${username}: User not found.`);
       return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
     }
 
     if (user.status === 'blocked') {
+      console.log(`Login attempt for user ${username}: User is blocked.`);
       return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) {
+      console.log(`Login attempt for user ${username}: Incorrect password.`);
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
 
@@ -107,9 +113,10 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '1h' }
     );
-
+    console.log(`Login successful for user: ${username}`);
     res.json({ success: true, user: { username: user.username, role: user.role }, token });
   } catch (error) {
+    console.error(`Error during login for user ${username}:`, error);
     res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
   }
 });
@@ -667,8 +674,10 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
 
 // --- NOTIFICATIONS ---
 app.get('/api/notifications', async (req, res) => {
+  console.log('Request received for /api/notifications.');
   try {
     const notifications = await db.notifications.find({ read: false }).sort({ createdAt: -1 });
+    console.log(`Found ${notifications.length} unread notifications.`);
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);
@@ -730,9 +739,32 @@ const initializeCounters = async () => {
 };
 
 const startServer = async () => {
-  await connectDB();
-  await initializeDb();
-  await initializeCounters();
+  console.log('Attempting to connect to MongoDB...');
+  try {
+    await connectDB();
+    console.log('MongoDB connected successfully.');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
+  }
+
+  console.log('Attempting to initialize database...');
+  try {
+    await initializeDb();
+    console.log('Database initialized successfully.');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
+  }
+
+  console.log('Attempting to initialize counters...');
+  try {
+    await initializeCounters();
+    console.log('Counters initialized successfully.');
+  } catch (error) {
+    console.error('Failed to initialize counters:', error);
+    process.exit(1);
+  }
 
   if (!process.env.VERCEL) {
     app.listen(port, () => {
@@ -742,6 +774,8 @@ const startServer = async () => {
       setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);
       setInterval(purgeOldOrders, 7 * 24 * 60 * 60 * 1000);
     });
+  } else {
+    console.log('Running on Vercel, serverless function will handle requests.');
   }
 };
 
