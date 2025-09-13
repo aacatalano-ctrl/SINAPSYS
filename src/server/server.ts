@@ -1,5 +1,6 @@
 import express from 'express';
 console.log('Serverless function src/server/server.ts started.');
+import { IncomingMessage, ServerResponse } from 'http';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -717,7 +718,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 
 // --- SERVER INITIALIZATION ---
 // --- SERVERLESS INITIALIZATION ---
-let cachedDb = null;
+let cachedDb: any = null;
 let isInitialized = false;
 
 const initializeCounters = async () => {
@@ -800,7 +801,7 @@ async function connectToDatabase() {
 }
 
 // Export a handler function for Vercel
-export default async function handler(req, res) {
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
   console.log('Serverless handler invoked.');
   try {
     await connectToDatabase();
