@@ -48,9 +48,9 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
     let bValue: any;
 
     switch (sortColumn) {
-      case 'id':
-        aValue = a.id;
-        bValue = b.id;
+      case 'orderNumber':
+        aValue = order.orderNumber;
+        bValue = order.orderNumber;
         break;
       case 'patientName':
         aValue = a.patientName;
@@ -106,8 +106,8 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
         <table className="min-w-full bg-white">
           <thead className="bg-gray-200 border-b border-gray-300">
             <tr>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('id')}>
-                ID Orden {sortColumn === 'id' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('orderNumber')}>
+                ID Orden {sortColumn === 'orderNumber' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
               </th>
               <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('patientName')}>
                 Paciente {sortColumn === 'patientName' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
@@ -133,7 +133,7 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
           <tbody>
             {sortedOrders.map(order => (
               <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => onViewDetails(order)}>
-                <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order._id}</td>
+                <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order.orderNumber}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{order.patientName}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
                 <td className="py-3 px-4 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>

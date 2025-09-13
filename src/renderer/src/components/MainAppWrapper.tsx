@@ -138,7 +138,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   useEffect(() => {
     fetchDoctors();
     fetchNotifications();
-  }, [fetchDoctors, fetchNotifications]);
+    fetchOrders(); // Add this line to fetch orders on initial load
+  }, [fetchDoctors, fetchNotifications, fetchOrders]);
 
   // Refresh notifications when orders change to catch new ones
   useEffect(() => {
@@ -209,9 +210,15 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     handleSetActiveView('jobTypeDetails');
   };
 
-  const getDoctorFullNameById = (id: string) => {
-    const doctor = doctors.find((d) => d.id === id);
-    return doctor ? `${doctor.firstName} ${doctor.lastName}` : 'N/A';
+  const getDoctorFullNameById = (doctorId: any) => {
+    if (doctorId && typeof doctorId === 'object' && doctorId.firstName && doctorId.lastName) {
+      return `${doctorId.firstName} ${doctorId.lastName}`;
+    } else if (typeof doctorId === 'string') {
+      // Fallback for cases where doctorId might still be just an ID string (less likely now)
+      const doctor = doctors.find((d) => d._id === doctorId);
+      return doctor ? `${doctor.firstName} ${doctor.lastName}` : 'N/A';
+    }
+    return 'N/A';
   };
 
   const handleViewOrderDetails = (order: Order) => {
