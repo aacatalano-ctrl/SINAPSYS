@@ -38,8 +38,24 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
     const priority = formData.get('priority') as string;
     const caseDescription = formData.get('caseDescription') as string;
 
-    if (!doctorId || !patientName || !jobType || isNaN(cost) || !caseDescription.trim()) {
-      showNotification('Por favor, completa todos los campos obligatorios, incluyendo la descripción del caso.', 'error');
+    if (!selectedDoctor) {
+      showNotification('Por favor, selecciona un Doctor.', 'error');
+      return;
+    }
+    if (!patientName.trim()) {
+      showNotification('Por favor, ingresa el Nombre del Paciente.', 'error');
+      return;
+    }
+    if (!jobType) {
+      showNotification('Por favor, selecciona un Tipo de Trabajo.', 'error');
+      return;
+    }
+    if (isNaN(cost) || cost <= 0) {
+      showNotification('Por favor, ingresa un Costo válido (mayor que 0).', 'error');
+      return;
+    }
+    if (!caseDescription.trim()) {
+      showNotification('Por favor, ingresa la Descripción del Caso.', 'error');
       return;
     }
 
@@ -166,7 +182,6 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
             className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[120px]"
             step="10"
             min="0"
-            required
             value={cost}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               let value = parseFloat(e.target.value);
