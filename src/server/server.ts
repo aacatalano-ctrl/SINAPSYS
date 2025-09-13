@@ -708,6 +708,10 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 });
 
 // --- SERVER INITIALIZATION ---
+// --- SERVERLESS INITIALIZATION ---
+let cachedDb = null;
+let isInitialized = false;
+
 const initializeCounters = async () => {
   console.log('Initializing order number counters...');
   
@@ -742,14 +746,20 @@ const initializeCounters = async () => {
   console.log('Counter initialization complete.');
 };
 
-const startServer = async () => {
+async function connectToDatabase() {
+  if (cachedDb) {
+    console.log('Using cached database connection.');
+    return cachedDb;
+  }
+
   console.log('Attempting to connect to MongoDB...');
   try {
     await connectDB();
     console.log('MongoDB connected successfully.');
+    cachedDb = db; // Cache the connected database instance
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    process.exit(1);
+    throw error; // Re-throw to indicate failure
   }
 
   console.log('Attempting to initialize database...');
@@ -758,7 +768,7 @@ const startServer = async () => {
     console.log('Database initialized successfully.');
   } catch (error) {
     console.error('Failed to initialize database:', error);
-    process.exit(1);
+    throw error; // Re-throw to indicate failure
   }
 
   console.log('Attempting to initialize counters...');
@@ -767,22 +777,29 @@ const startServer = async () => {
     console.log('Counters initialized successfully.');
   } catch (error) {
     console.error('Failed to initialize counters:', error);
-    process.exit(1);
+    throw error; // Re-throw to indicate failure
   }
 
-  if (!process.env.VERCEL) {
-    app.listen(port, () => {
-      console.log(`Servidor backend escuchando en http://localhost:${port}`);
-      
-      console.log('Scheduling background tasks...');
-      setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);
-      setInterval(purgeOldOrders, 7 * 24 * 60 * 60 * 1000);
-    });
-  } else {
-    console.log('Running on Vercel, serverless function will handle requests.');
+  // Schedule background tasks only once if not on Vercel (for local development)
+  if (!process.env.VERCEL && !isInitialized) {
+    console.log('Scheduling background tasks for local development...');
+    setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);
+    setInterval(purgeOldOrders, 7 * 24 * 60 * 60 * 1000);
+    isInitialized = true;
   }
-};
 
-startServer();
+  return cachedDb;
+}
 
-export default app;
+// Export a handler function for Vercel
+export default async function handler(req, res) {
+  console.log('Serverless handler invoked.');
+  try {
+    await connectToDatabase();
+    // Now that the database is connected, let the express app handle the request
+    return app(req, res);
+  } catch (error) {
+    console.error('Serverless handler initialization failed:', error);
+    res.status(500).json({ error: 'Internal Server Error during initialization.' });
+  }
+}
