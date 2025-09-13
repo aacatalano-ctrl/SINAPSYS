@@ -1,4 +1,5 @@
 import express from 'express';
+console.log('Serverless function src/server/server.ts started.');
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
