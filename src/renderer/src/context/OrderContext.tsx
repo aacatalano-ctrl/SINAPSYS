@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUI } from './UIContext';
+import { useDoctors } from './DoctorContext';
 import { Order, Payment, Note, User } from '../../types';
 import mongoose from 'mongoose';
 
@@ -31,6 +32,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast } = useUI();
+  const { isDoctorsLoaded } = useDoctors();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -57,8 +59,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   }, [showToast]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    if (isDoctorsLoaded) {
+      fetchOrders();
+    }
+  }, [isDoctorsLoaded, fetchOrders]);
 
   const calculateBalance = (order: Order): number => {
     if (!order || !order.payments) return order?.cost || 0;

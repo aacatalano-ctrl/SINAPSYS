@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 interface DoctorContextType {
   doctors: Doctor[];
+  isDoctorsLoaded: boolean;
   editingDoctor: Doctor | null;
   setEditingDoctor: React.Dispatch<React.SetStateAction<Doctor | null>>;
   fetchDoctors: () => Promise<void>;
@@ -23,8 +24,10 @@ interface DoctorProviderProps {
 export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
+  const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
 
   const fetchDoctors = useCallback(async () => {
+    setIsDoctorsLoaded(false);
     try {
       const response = await fetch(`${API_URL}/doctors`);
       if (!response.ok) {
@@ -32,8 +35,10 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
       }
       const fetchedDoctors = await response.json();
       setDoctors(fetchedDoctors);
+      setIsDoctorsLoaded(true);
     } catch (error) {
       console.error('Failed to fetch doctors from web server:', error);
+      setIsDoctorsLoaded(false);
     }
   }, []);
 
@@ -115,6 +120,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const value = {
     doctors,
+    isDoctorsLoaded,
     editingDoctor,
     setEditingDoctor,
     fetchDoctors,
@@ -132,9 +138,3 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 };
 
 export const useDoctors = (): DoctorContextType => {
-  const context = useContext(DoctorContext);
-  if (context === undefined) {
-    throw new Error('useDoctors must be used within a DoctorProvider');
-  }
-  return context;
-};
