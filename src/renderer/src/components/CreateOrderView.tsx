@@ -90,7 +90,7 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
   return (
     <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Crear Nueva Orden Dental</h2>
-      <form onSubmit={handleCreateOrder} className="grid grid-cols-1 md:grid-cols-2 gap-6" ref={formRef}>
+      <form onSubmit={handleCreateOrder} className="grid grid-cols-1 md:grid-cols-2 gap-6" ref={formRef} noValidate>
         <div>
           <label htmlFor="doctor" className="block text-gray-700 text-sm font-semibold mb-2">Doctor:</label>
           <DoctorCombobox

@@ -78,6 +78,16 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
         value={inputValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
+        onBlur={() => {
+          // If input value doesn't match selected doctor, or is empty, clear selection
+          if (selectedDoctor && inputValue !== `${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`) {
+            onSelectDoctor(null);
+          } else if (!inputValue) {
+            onSelectDoctor(null);
+          }
+          // Delay closing to allow click on dropdown items
+          setTimeout(() => setIsOpen(false), 100);
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
