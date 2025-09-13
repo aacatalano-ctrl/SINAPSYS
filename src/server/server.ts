@@ -809,6 +809,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return app(req, res);
   } catch (error) {
     console.error('Serverless handler initialization failed:', error);
-    res.status(500).json({ error: 'Internal Server Error during initialization.' });
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Internal Server Error during initialization.' }));
   }
 }
