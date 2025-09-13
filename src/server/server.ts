@@ -477,6 +477,7 @@ app.get('/api/reports/income-breakdown', async (req, res) => {
 });
 
 app.get('/api/reports/doctor-performance', async (req, res) => {
+  console.log('Request received for /api/reports/doctor-performance.');
   try {
     const doctorPerformance = await db.orders.aggregate([
       {
@@ -515,6 +516,7 @@ app.get('/api/reports/doctor-performance', async (req, res) => {
         $sort: { '_id.doctorName': 1 }
       }
     ]);
+    console.log(`Generated doctor performance report. Count: ${doctorPerformance.length}. Sample:`, doctorPerformance.length > 0 ? doctorPerformance[0] : 'None');
     res.json(doctorPerformance);
   } catch (error) {
     console.error('Error al generar el reporte de rendimiento de doctores:', error);
