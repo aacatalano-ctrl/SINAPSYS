@@ -23,6 +23,9 @@ interface ReportsViewProps {
 
 const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, reportTimeframe, setReportTimeframe, setFullDoctorView, setFullJobTypeView, setReportFilter, setActiveView, orders, calculateBalance }) => {
 
+  console.log('ReportsView - orders:', orders);
+  console.log('ReportsView - doctors:', doctors);
+
   const filterOrdersByTimeframe = (allOrders: Order[], timeframe: string): Order[] => {
     const now = new Date();
     return allOrders.filter((order: Order) => {
@@ -49,6 +52,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
   };
 
   const filteredOrders = filterOrdersByTimeframe(orders, reportTimeframe);
+  console.log('ReportsView - filteredOrders:', filteredOrders);
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
