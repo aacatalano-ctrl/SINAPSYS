@@ -665,6 +665,35 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
   }
 });
 
+// --- NOTIFICATIONS ---
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const notifications = await db.notifications.find({ read: false }).sort({ createdAt: -1 });
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Error al obtener notificaciones.' });
+  }
+});
+
+app.put('/api/notifications/:id/read', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedNotification = await db.notifications.findByIdAndUpdate(
+      id,
+      { read: true },
+      { new: true }
+    );
+    if (!updatedNotification) {
+      return res.status(404).json({ error: 'Notificación no encontrada.' });
+    }
+    res.json(updatedNotification);
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: 'Error al marcar notificación como leída.' });
+  }
+});
+
 // --- SERVER INITIALIZATION ---
 const initializeCounters = async () => {
   console.log('Initializing order number counters...');

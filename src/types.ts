@@ -59,6 +59,8 @@ export interface Order {
   patientName: string;
   jobType: string;
   cost: number;
+  balance: number;
+  paidAmount: number;
   status: 'Pendiente' | 'Procesando' | 'Completado';
   creationDate: string;
   completionDate?: string;
