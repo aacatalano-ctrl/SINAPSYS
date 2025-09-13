@@ -12,7 +12,7 @@ interface DoctorDetailsViewProps {
   const { orders, calculateBalance } = useOrders(); // Use useOrders hook directly
   if (!doctor) return null;
 
-  const doctorOrders = orders.filter(order => order.doctorId === doctor.id);
+  const doctorOrders = orders.filter(order => order.doctorId._id === doctor._id);
   const activeDoctorOrders = doctorOrders.filter(order => order.status !== 'Completado');
 
   const totalCostActive = activeDoctorOrders.reduce((sum: number, order: Order) => sum + order.cost, 0);
