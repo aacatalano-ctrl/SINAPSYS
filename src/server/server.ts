@@ -497,7 +497,13 @@ app.get('/api/reports/doctor-performance', async (req, res) => {
         $group: {
           _id: {
             doctorId: '$doctorId',
-            doctorName: { $ifNull: ['$doctorInfo.name', 'N/A'] }
+            doctorName: {
+              $cond: {
+                if: { $and: ['$doctorInfo.firstName', '$doctorInfo.lastName'] },
+                then: { $concat: ['$doctorInfo.firstName', ' ', '$doctorInfo.lastName'] },
+                else: 'N/A'
+              }
+            }
           },
           totalOrders: { $sum: 1 },
           totalIncome: { $sum: '$totalPrice' },
