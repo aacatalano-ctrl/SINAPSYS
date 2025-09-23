@@ -390,6 +390,7 @@ app.put('/api/orders/:id', async (req, res) => {
     }
 
     // Immediate notification on completion with balance
+    console.log(`Balance de la orden actualizada (${updatedOrder.orderNumber}): ${updatedOrder.balance}`);
     if (req.body.status === 'Completado' && updatedOrder.balance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${updatedOrder.balance.toFixed(2)}.`;
       // Fire and forget notification creation
