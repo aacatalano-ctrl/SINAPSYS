@@ -545,7 +545,7 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
         const y = doc.y;
         totalPaid += payment.amount;
         doc.text(new Date(payment.date).toLocaleDateString(), itemX, y);
-        doc.text(payment.description, descriptionX, y, { width: 300 });
+        doc.text(payment.description || '', descriptionX, y, { width: 300 });
         doc.text(`${payment.amount.toFixed(2)}`, amountX, y, { align: 'right' });
         doc.moveDown();
       });
