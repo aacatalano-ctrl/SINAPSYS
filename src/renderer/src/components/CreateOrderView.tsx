@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { Plus } from 'lucide-react';
 import DoctorCombobox from './DoctorCombobox';
-import { jobCategories, jobTypeCosts, generateCaseCode } from '../utils/helpers';
+import { jobCategories, jobTypeCosts } from '../utils/helpers';
 import { Doctor, Order } from '../../types';
 
 interface CreateOrderViewProps {
@@ -88,11 +88,11 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Crear Nueva Orden Dental</h2>
-      <form onSubmit={handleCreateOrder} className="grid grid-cols-1 md:grid-cols-2 gap-6" ref={formRef} noValidate>
+    <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
+      <h2 className="mb-6 text-3xl font-bold text-gray-800">Crear Nueva Orden Dental</h2>
+      <form onSubmit={handleCreateOrder} className="grid grid-cols-1 gap-6 md:grid-cols-2" ref={formRef} noValidate>
         <div>
-          <label htmlFor="doctor" className="block text-gray-700 text-sm font-semibold mb-2">Doctor:</label>
+          <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
           <DoctorCombobox
             doctors={doctors}
             selectedDoctor={selectedDoctor}
@@ -110,29 +110,29 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
                 }
               }
             }}
-            className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center"
+            className="mt-2 flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
           >
-            <Plus className="w-4 h-4 mr-1" /> Añadir Nuevo Doctor
+            <Plus className="mr-1 size-4" /> Añadir Nuevo Doctor
           </button>
         </div>
 
         <div>
-          <label htmlFor="patientName" className="block text-gray-700 text-sm font-semibold mb-2">Nombre del Paciente:</label>
+          <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre del Paciente:</label>
           <input
             type="text"
             id="patientName"
             name="patientName"
-            className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="jobCategory" className="block text-gray-700 text-sm font-semibold mb-2">Categoría de Trabajo:</label>
+          <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">Categoría de Trabajo:</label>
           <select
             id="jobCategory"
             name="jobCategory"
-            className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={selectedCategory}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               setSelectedCategory(e.target.value);
@@ -151,11 +151,11 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
         </div>
 
         <div>
-          <label htmlFor="jobType" className="block text-gray-700 text-sm font-semibold mb-2">Tipo de Trabajo:</label>
+          <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">Tipo de Trabajo:</label>
           <select
             id="jobType"
             name="jobType"
-            className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             disabled={!selectedCategory} // Disable until a category is selected
             value={selectedJobType} // <--- Add this
@@ -174,12 +174,12 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
         </div>
 
         <div>
-          <label htmlFor="cost" className="block text-gray-700 text-sm font-semibold mb-2">Costo ($):</label>
+          <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">Costo ($):</label>
           <input
             type="number"
             id="cost"
             name="cost"
-            className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[120px]"
+            className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             step="10"
             min="0"
             value={cost}
@@ -192,11 +192,11 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
         </div>
 
         <div>
-          <label htmlFor="priority" className="block text-gray-700 text-sm font-semibold mb-2">Prioridad:</label>
+          <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">Prioridad:</label>
           <select
             id="priority"
             name="priority"
-            className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             defaultValue="Normal"
           >
             <option value="Baja">Baja</option>
@@ -207,21 +207,21 @@ function CreateOrderView({ doctors, onAddDoctor }: CreateOrderViewProps) {
         </div>
 
         <div className="md:col-span-2">
-          <label htmlFor="caseDescription" className="block text-gray-700 text-sm font-semibold mb-2">Descripción del Caso:</label>
+          <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
           <textarea
             id="caseDescription"
             name="caseDescription"
             rows="4"
-            className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            className="w-full resize-y appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Detalles sobre el caso dental, como material, color, etc."
             required
           ></textarea>
         </div>
 
-        <div className="md:col-span-2 flex justify-end mt-4">
+        <div className="mt-4 flex justify-end md:col-span-2">
           <button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-colors duration-200 flex items-center"
+            className="flex items-center rounded-lg bg-green-600 px-8 py-3 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-green-700"
           >
             <Plus className="mr-2" /> Registrar Orden
           </button>

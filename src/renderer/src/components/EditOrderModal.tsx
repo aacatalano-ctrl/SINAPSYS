@@ -80,18 +80,18 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h3 className="text-2xl font-bold mb-6 text-gray-800">Editar Orden: {order._id}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+        <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order._id}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="doctor" className="block text-gray-700 text-sm font-semibold mb-2">Doctor:</label>
+            <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
             <select
               id="doctor"
               name="doctorId"
               value={formData.doctorId}
               onChange={handleChange}
-              className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               disabled // Make doctor non-editable
             >
@@ -105,26 +105,26 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
           </div>
 
           <div className="mb-4">
-            <label htmlFor="patientName" className="block text-gray-700 text-sm font-semibold mb-2">Nombre del Paciente:</label>
+            <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre del Paciente:</label>
             <input
               type="text"
               id="patientName"
               name="patientName"
               value={formData.patientName}
               onChange={handleChange}
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="jobType" className="block text-gray-700 text-sm font-semibold mb-2">Tipo de Trabajo:</label>
+            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">Tipo de Trabajo:</label>
             <select
               id="jobType"
               name="jobType"
               value={formData.jobType}
               onChange={handleChange}
-              className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Selecciona tipo de trabajo</option>
@@ -135,14 +135,14 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
           </div>
 
           <div className="mb-4">
-            <label htmlFor="cost" className="block text-gray-700 text-sm font-semibold mb-2">Costo ($):</label>
+            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">Costo ($):</label>
             <input
               type="number"
               id="cost"
               name="cost"
               value={String(formData.cost)} // Convert number to string for input value
               onChange={handleChange}
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[120px]"
+              className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               step="10"
               min="0"
               required
@@ -150,13 +150,13 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
           </div>
 
           <div className="mb-4">
-            <label htmlFor="priority" className="block text-gray-700 text-sm font-semibold mb-2">Prioridad:</label>
+            <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">Prioridad:</label>
             <select
               id="priority"
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Baja">Baja</option>
               <option value="Normal">Normal</option>
@@ -166,35 +166,35 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
           </div>
 
           <div className="mb-4">
-            <label htmlFor="initialPaymentAmount" className="block text-gray-700 text-sm font-semibold mb-2">Abono Inicial:</label>
+            <label htmlFor="initialPaymentAmount" className="mb-2 block text-sm font-semibold text-gray-700">Abono Inicial:</label>
             <input
               type="number"
               id="initialPaymentAmount"
               name="initialPaymentAmount"
               value={String(formData.initialPaymentAmount)} // Convert number to string for input value
               onChange={handleChange}
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[120px]"
+              className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               step="10"
               min="0"
             />
           </div>
 
           <div className="mb-6">
-            <label htmlFor="caseDescription" className="block text-gray-700 text-sm font-semibold mb-2">Descripción del Caso:</label>
+            <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
             <textarea
               id="caseDescription"
               name="caseDescription"
               rows="4"
               value={formData.caseDescription}
               onChange={handleChange}
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              className="w-full resize-y appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Detalles sobre el caso dental, como material, color, etc."
             ></textarea>
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors duration-200">Cancelar</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200">Guardar Cambios</button>
+            <button type="button" onClick={onClose} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
+            <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Guardar Cambios</button>
           </div>
         </form>
       </div>

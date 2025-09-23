@@ -35,16 +35,16 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h3 className="text-2xl font-bold mb-6 text-gray-800">Añadir Nuevo Doctor</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+        <h3 className="mb-6 text-2xl font-bold text-gray-800">Añadir Nuevo Doctor</h3>
         <form onSubmit={handleSubmit} ref={newDoctorFormRef}>
           <div className="mb-4">
-            <label htmlFor="doctorTitle" className="block text-gray-700 text-sm font-semibold mb-2">Título:</label>
+            <label htmlFor="doctorTitle" className="mb-2 block text-sm font-semibold text-gray-700">Título:</label>
             <select
               name="doctorTitle"
               id="doctorTitle"
-              className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Selecciona</option>
@@ -54,32 +54,32 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorName" className="block text-gray-700 text-sm font-semibold mb-2">Nombre Completo:</label>
-            <input type="text" name="doctorName" id="doctorName" placeholder="Juan Pérez" className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label htmlFor="doctorName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre Completo:</label>
+            <input type="text" name="doctorName" id="doctorName" placeholder="Juan Pérez" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorEmail" className="block text-gray-700 text-sm font-semibold mb-2">Email:</label>
-            <input type="email" name="doctorEmail" id="doctorEmail" placeholder="juan.perez@example.com" className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label htmlFor="doctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">Email:</label>
+            <input type="email" name="doctorEmail" id="doctorEmail" placeholder="juan.perez@example.com" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorPhone" className="block text-gray-700 text-sm font-semibold mb-2">Teléfono:</label>
+            <label htmlFor="doctorPhone" className="mb-2 block text-sm font-semibold text-gray-700">Teléfono:</label>
             <input
               type="tel"
               name="doctorPhone"
               id="doctorPhone"
               placeholder="Ej: 04141234567, +58 567 3412"
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Formato de teléfono válido: solo números, +, espacios o guiones. Mínimo 7 dígitos."
               pattern="[0-9+\- ]{7,}"
             />
           </div>
           <div className="mb-6">
-            <label htmlFor="doctorAddress" className="block text-gray-700 text-sm font-semibold mb-2">Dirección:</label>
-            <input type="text" name="doctorAddress" id="doctorAddress" placeholder="Calle Falsa 123" className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="doctorAddress" className="mb-2 block text-sm font-semibold text-gray-700">Dirección:</label>
+            <input type="text" name="doctorAddress" id="doctorAddress" placeholder="Calle Falsa 123" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors duration-200">Cancelar</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200">Añadir Doctor</button>
+            <button type="button" onClick={onClose} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
+            <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Añadir Doctor</button>
           </div>
         </form>
       </div>

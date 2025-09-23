@@ -22,7 +22,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose, show }) => {
   }[type];
 
   return (
-    <div className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300 flex items-center justify-between`}>
+    <div className={`fixed bottom-4 right-4 ${bgColor} z-50 flex items-center justify-between rounded-lg px-6 py-3 text-white shadow-lg transition-opacity duration-300`}>
       {message}
       <button onClick={onClose} className="ml-4 text-white hover:text-gray-200">
         <X size={18} />

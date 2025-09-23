@@ -20,7 +20,8 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'admin' | 'user' };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
     next();
-  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return res.status(403).json({ message: 'No autorizado: Token inválido o expirado.' });
   }
 };

@@ -65,9 +65,9 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-2xl">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-800">Borrar Reportes</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
             <X size={28} />
@@ -78,13 +78,13 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setDeleteType('week')}
-              className={`flex-1 py-3 text-center font-semibold ${deleteType === 'week' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              className={`flex-1 py-3 text-center font-semibold ${deleteType === 'week' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
             >
               Por Semana
             </button>
             <button
               onClick={() => setDeleteType('month')}
-              className={`flex-1 py-3 text-center font-semibold ${deleteType === 'month' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              className={`flex-1 py-3 text-center font-semibold ${deleteType === 'month' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
             >
               Por Mes
             </button>
@@ -93,12 +93,12 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
 
         {deleteType === 'week' && (
           <div>
-            <label className="block text-gray-700 text-sm font-semibold mb-2">Selecciona una fecha en la semana que deseas borrar:</label>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">Selecciona una fecha en la semana que deseas borrar:</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
@@ -106,11 +106,11 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
         {deleteType === 'month' && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-2">Mes:</label>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">Mes:</label>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
@@ -120,12 +120,12 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-2">Año:</label>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">Año:</label>
               <input
                 type="number"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
         <div className="mt-8 flex justify-end">
           <button
             onClick={handleDelete}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-200 flex items-center"
+            className="flex items-center rounded-lg bg-red-600 px-6 py-3 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-red-700"
           >
             <Trash2 className="mr-2" /> Borrar
           </button>

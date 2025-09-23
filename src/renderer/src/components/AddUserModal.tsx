@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react'; // Import eye icons
 import { useUI } from '../context/UIContext';
-import { User } from '../../types';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -69,23 +68,27 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
       setNewUserRole('user');
       onUserAdded(); // Refresh user list in parent
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating user:", err);
-      setError(err.message || 'Error al crear usuario.');
-      showToast(err.message || 'Error al crear usuario.', 'error');
+      let message = 'Error al crear usuario.';
+      if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+      showToast(message, 'error');
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[100]">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-100 opacity-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Crear Nuevo Usuario</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
+      <div className="w-full max-w-lg scale-100 rounded-lg bg-white p-8 opacity-100 shadow-2xl transition-all duration-300">
+        <h2 className="mb-6 text-2xl font-bold text-gray-800">Crear Nuevo Usuario</h2>
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {error && <p className="mb-4 text-center text-sm text-red-500">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="newUsername" className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
             <input
@@ -102,19 +105,19 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             <input
               type={showPassword ? 'text' : 'password'}
               id="newPassword"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10" // Added pr-10 for icon spacing
+              className="mt-1 block w-full rounded-md border-gray-300 pr-10 shadow-sm focus:border-blue-500 focus:ring-blue-500" // Added pr-10 for icon spacing
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
             <span
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-6" // Adjusted top for alignment
+              className="absolute inset-y-0 right-0 top-6 flex cursor-pointer items-center pr-3" // Adjusted top for alignment
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
+                <EyeOff className="size-5 text-gray-400" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
+                <Eye className="size-5 text-gray-400" />
               )}
             </span>
           </div>
@@ -219,17 +222,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             </select>
           </div>
 
-          <div className="md:col-span-2 flex justify-end space-x-3 mt-4">
+          <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Crear Usuario
             </button>

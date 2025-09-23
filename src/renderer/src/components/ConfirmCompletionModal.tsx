@@ -79,26 +79,26 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Finalizar Orden: {order._id}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+        <h2 className="mb-4 text-2xl font-bold text-gray-800">Finalizar Orden: {order._id}</h2>
         <p className="mb-4 text-gray-700">
           Vas a marcar esta orden como <span className="font-bold text-green-600">Completada</span>.
         </p>
         
-        <div className="mb-6 p-3 bg-blue-100 border border-blue-200 rounded-lg">
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-100 p-3">
           <p className="text-lg text-blue-900"><span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <label htmlFor="finalPayment" className="block text-gray-700 text-sm font-semibold mb-2">Abono Adicional (Opcional):</label>
-            <div className="flex items-center border border-gray-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden w-40">
+            <label htmlFor="finalPayment" className="mb-2 block text-sm font-semibold text-gray-700">Abono Adicional (Opcional):</label>
+            <div className="flex w-40 items-center overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
               <span className="pl-3 text-gray-500">$</span>
               <input
                 type="number"
                 id="finalPayment"
-                className="flex-grow py-2 px-1 text-gray-700 leading-tight focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="grow px-1 py-2 leading-tight text-gray-700 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 value={paymentAmount}
                 onChange={handleAmountChange}
                 min="0"
@@ -110,7 +110,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
                 <button
                   type="button"
                   onClick={() => handleStepperClick(true)}
-                  className="w-8 h-6 flex items-center justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none rounded-tr-lg"
+                  className="flex h-6 w-8 items-center justify-center rounded-tr-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
                   title="Incrementar en $10"
                 >
                   <Plus size={16} />
@@ -118,27 +118,27 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
                 <button
                   type="button"
                   onClick={() => handleStepperClick(false)}
-                  className="w-8 h-6 flex items-center justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none rounded-br-lg border-t border-gray-200"
+                  className="flex h-6 w-8 items-center justify-center rounded-br-lg border-t border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
                   title="Decrementar en $10"
                 >
                   <Minus size={16} />
                 </button>
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Deja en blanco o en 0 si no hay pago adicional.</p>
+            <p className="mt-1 text-xs text-gray-500">Deja en blanco o en 0 si no hay pago adicional.</p>
           </div>
 
           <div className="flex justify-end space-x-4">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors duration-200"
+              className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200"
+              className="rounded-lg bg-green-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
             >
               Confirmar y Completar
             </button>

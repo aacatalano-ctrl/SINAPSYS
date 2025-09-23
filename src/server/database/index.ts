@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import type { Doctor, Order, User, Notification, Payment, Note } from '../../types.js'; // Import necessary types
-
-const saltRounds = 10;
+import type { Doctor, Order, User, Notification, Payment, Note } from '../../types.js';
 
 // MongoDB Connection String (replace with environment variable in production)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SINAPSYS'; // Use environment variable for production

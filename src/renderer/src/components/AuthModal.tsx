@@ -32,22 +32,22 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[100]">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-100 opacity-100">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
+      <div className="w-full max-w-sm scale-100 rounded-lg bg-white p-8 opacity-100 shadow-2xl transition-all duration-300">
+        <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">
           Iniciar Sesión
         </h2>
 
         {showForgotPasswordModal ? (
           <form onSubmit={handleForgotPasswordFormSubmit}>
-            <h3 className="text-xl font-semibold mb-4 text-gray-700">Recuperar Contraseña</h3>
+            <h3 className="mb-4 text-xl font-semibold text-gray-700">Recuperar Contraseña</h3>
             {forgotPasswordStep === 1 && (
               <div className="mb-4">
-                <label htmlFor="fpUsername" className="block text-gray-700 text-sm font-bold mb-2">Nombre de Usuario:</label>
+                <label htmlFor="fpUsername" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
                 <input
                   type="text"
                   id="fpUsername"
-                  className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={forgotPasswordUsername}
                   onChange={(e) => setForgotPasswordUsername(e.target.value)}
                   required
@@ -56,13 +56,13 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
             )}
             {forgotPasswordStep === 2 && (
               <div className="mb-4">
-                <label htmlFor="fpSecurityQuestion" className="block text-gray-700 text-sm font-bold mb-2">Pregunta Secreta:</label>
-                <p className="mb-2 p-3 bg-gray-100 rounded-lg text-gray-800">{forgotPasswordSecurityQuestion}</p>
-                <label htmlFor="fpSecurityAnswer" className="block text-gray-700 text-sm font-bold mb-2">Tu Respuesta:</label>
+                <label htmlFor="fpSecurityQuestion" className="mb-2 block text-sm font-bold text-gray-700">Pregunta Secreta:</label>
+                <p className="mb-2 rounded-lg bg-gray-100 p-3 text-gray-800">{forgotPasswordSecurityQuestion}</p>
+                <label htmlFor="fpSecurityAnswer" className="mb-2 block text-sm font-bold text-gray-700">Tu Respuesta:</label>
                 <input
                   type="text"
                   id="fpSecurityAnswer"
-                  className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={forgotPasswordAnswer}
                   onChange={(e) => setForgotPasswordAnswer(e.target.value)}
                   required
@@ -71,52 +71,52 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
             )}
             {forgotPasswordStep === 3 && (
               <>
-                <div className="mb-4 relative"> {/* Added relative for icon positioning */}
-                  <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">Nueva Contraseña:</label>
+                <div className="relative mb-4"> {/* Added relative for icon positioning */}
+                  <label htmlFor="newPassword" className="mb-2 block text-sm font-bold text-gray-700">Nueva Contraseña:</label>
                   <input
                     type={showNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newPassword"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
+                    className="w-full appearance-none rounded-lg border px-4 py-3 pr-10 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                   />
                   <span
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                    className="absolute inset-y-0 right-0 top-7 flex cursor-pointer items-center pr-3" // Adjusted top
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
                     {showNewPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="size-5 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="size-5 text-gray-400" />
                     )}
                   </span>
                 </div>
-                <div className="mb-6 relative"> {/* Added relative for icon positioning */}
-                  <label htmlFor="newConfirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirmar Nueva Contraseña:</label>
+                <div className="relative mb-6"> {/* Added relative for icon positioning */}
+                  <label htmlFor="newConfirmPassword" className="mb-2 block text-sm font-bold text-gray-700">Confirmar Nueva Contraseña:</label>
                   <input
                     type={showConfirmNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newConfirmPassword"
-                    className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
+                    className="w-full appearance-none rounded-lg border px-4 py-3 pr-10 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                     value={newConfirmPassword}
                     onChange={(e) => setNewConfirmPassword(e.target.value)}
                     required
                   />
                   <span
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                    className="absolute inset-y-0 right-0 top-7 flex cursor-pointer items-center pr-3" // Adjusted top
                     onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
                   >
                     {showConfirmNewPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="size-5 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="size-5 text-gray-400" />
                     )}
                   </span>
                 </div>
               </>
             )}
 
-            {authError && <p className="text-red-500 text-sm mb-4 text-center">{authError}</p>}
+            {authError && <p className="mb-4 text-center text-sm text-red-500">{authError}</p>}
 
             <div className="flex items-center justify-between">
               <button
@@ -126,13 +126,13 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                   setForgotPasswordStep(1);
                   showNotification('', 'error');
                 }}
-                className="inline-flex items-center text-gray-600 hover:text-gray-800 text-sm font-semibold transition-colors duration-200"
+                className="inline-flex items-center text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-gray-800"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" /> Volver al Login
+                <ArrowLeft className="mr-1 size-4" /> Volver al Login
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+                className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/75"
               >
                 {forgotPasswordStep === 1 ? 'Buscar Usuario' : forgotPasswordStep === 2 ? 'Verificar Respuesta' : 'Establecer Contraseña'}
               </button>
@@ -142,44 +142,44 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
         ) : (
           <form onSubmit={handleAuthSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Nombre de Usuario:</label>
+              <label htmlFor="username" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
               <input
                 type="text"
                 id="username"
-                className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
-            <div className="mb-6 relative"> {/* Added relative for icon positioning */}
-              <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
+            <div className="relative mb-6"> {/* Added relative for icon positioning */}
+              <label htmlFor="password" className="mb-2 block text-sm font-bold text-gray-700">Contraseña:</label>
               <input
                 type={showLoginPassword ? 'text' : 'password'} // Dynamic type
                 id="password"
-                className="shadow appearance-none border rounded-lg w-full py-3 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
+                className="w-full appearance-none rounded-lg border px-4 py-3 pr-10 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <span
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer top-7" // Adjusted top
+                className="absolute inset-y-0 right-0 top-7 flex cursor-pointer items-center pr-3" // Adjusted top
                 onClick={() => setShowLoginPassword(!showLoginPassword)}
               >
                 {showLoginPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
+                  <EyeOff className="size-5 text-gray-400" />
                 ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
+                  <Eye className="size-5 text-gray-400" />
                 )}
               </span>
             </div>
 
-            {authError && <p className="text-red-500 text-sm mb-4 text-center">{authError}</p>}
+            {authError && <p className="mb-4 text-center text-sm text-red-500">{authError}</p>}
 
             <div className="flex items-center justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+                className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/75"
               >
                 Iniciar Sesión
               </button>
@@ -193,7 +193,7 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                   setForgotPasswordStep(1);
                   setForgotPasswordUsername('');
                 }}
-                className="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                className="inline-block align-baseline text-sm font-bold text-gray-600 transition-colors duration-200 hover:text-gray-800"
               >
                 ¿Olvidaste tu contraseña?
               </button>

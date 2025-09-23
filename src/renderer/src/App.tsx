@@ -3,13 +3,15 @@ import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
 
 import { User, Notification } from '../types';
-import { UIProvider } from './context/UIContext.tsx';
+
 import { DoctorProvider } from './context/DoctorContext.tsx'; // Import DoctorProvider
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
-  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'info' }>({ show: false, message: '', type: 'info' });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'info' }>({ show: false, message: '', type: 'info' });
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ show: true, message, type });
@@ -33,9 +35,14 @@ function App() {
   const [forgotPasswordSecurityQuestion, setForgotPasswordSecurityQuestion] = useState('');
   const [authError, setAuthError] = useState('');
 
-
-
   const API_URL = import.meta.env.VITE_API_URL;
+
+  const handleLogout = useCallback(() => {
+    setCurrentUser(null);
+    localStorage.removeItem('token'); // Eliminar el token
+    setIsAppContentLoaded(false);
+    showToast('Sesión cerrada.');
+  }, [setCurrentUser, setIsAppContentLoaded, showToast]);
 
   // Función auxiliar para hacer fetch con token de autenticación
   const authFetch = useCallback(async (url: string, options?: RequestInit) => {
@@ -52,7 +59,7 @@ function App() {
       showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
     }
     return response;
-  }, [showToast]);
+  }, [showToast, handleLogout]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -143,7 +150,7 @@ function App() {
         setAuthError(result.error || 'Usuario no encontrado');
         showToast(result.error || 'Usuario no encontrado', 'error');
       }
-    } catch (error) {
+    } catch {
       setAuthError('Error al buscar usuario. Inténtalo de nuevo.');
       showToast('Error al buscar usuario. Inténtalo de nuevo.', 'error');
     }
@@ -163,7 +170,7 @@ function App() {
         setAuthError(result.message || 'Respuesta incorrecta.');
         showToast(result.message || 'Respuesta incorrecta.', 'error');
       }
-    } catch (error) {
+    } catch {
       setAuthError('Error al verificar respuesta. Inténtalo de nuevo.');
       showToast('Error al verificar respuesta. Inténtalo de nuevo.', 'error');
     }
@@ -187,17 +194,10 @@ function App() {
         setAuthError(result.message || 'Error al restablecer.');
         showToast(result.message || 'Error al restablecer.', 'error');
       }
-    } catch (error) {
+    } catch {
       setAuthError('Error al establecer nueva contraseña. Inténtalo de nuevo.');
       showToast('Error al establecer nueva contraseña. Inténtalo de nuevo.', 'error');
     }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('token'); // Eliminar el token
-    setIsAppContentLoaded(false);
-    showToast('Sesión cerrada.');
   };
 
   return (

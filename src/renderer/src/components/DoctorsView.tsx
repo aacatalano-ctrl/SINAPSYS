@@ -80,10 +80,10 @@ interface DoctorsViewProps {
   const prefixes = ['all', 'Est.', 'Dra.', 'Dr.'];
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
+    <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
       {!editingDoctor ? (
         <>
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">Gestión de Doctores</h2>
+          <h2 className="mb-6 text-3xl font-bold text-gray-800">Gestión de Doctores</h2>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-semibold text-gray-600">Filtro:</span>
@@ -91,7 +91,7 @@ interface DoctorsViewProps {
                 <button 
                   key={p}
                   onClick={() => setPrefixFilter(p)}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm ${prefixFilter === p ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold ${prefixFilter === p ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
                 >
                   {p === 'all' ? 'Todos' : p}
                 </button>
@@ -100,55 +100,55 @@ interface DoctorsViewProps {
             <div className="flex space-x-3">
               <button
                 onClick={onExportDoctors}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg shadow-md transition-colors duration-200 flex items-center"
+                className="flex items-center rounded-lg bg-green-600 px-5 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
               >
                 <Download className="mr-2" /> Exportar a CSV
               </button>
               <button
                 onClick={() => openAddDoctorModal()}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg shadow-md transition-colors duration-200 flex items-center"
+                className="flex items-center rounded-lg bg-blue-600 px-5 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
               >
                 <Plus className="mr-2" /> Añadir
               </button>
             </div>
           </div>
            <div className="mb-6 flex items-center space-x-4">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <input
                 type="text"
                 placeholder="Buscar por nombre..."
-                className="shadow border rounded-lg w-full py-3 pl-10 pr-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border py-3 pl-10 pr-4 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={searchDoctorTerm}
                 onChange={(e) => setSearchDoctorTerm(e.target.value)}
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             </div>
           </div>
 
           {sortedDoctors.length === 0 ? (
-            <p className="text-gray-600 text-center py-10">No hay doctores registrados que coincidan con la búsqueda.</p>
+            <p className="py-10 text-center text-gray-600">No hay doctores registrados que coincidan con la búsqueda.</p>
           ) : (
             <div className="overflow-x-auto rounded-lg shadow">
               <table className="min-w-full bg-white">
-                <thead className="bg-gray-200 border-b border-gray-300">
+                <thead className="border-b border-gray-300 bg-gray-200">
                   <tr>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSortDoctors('name')}>
-                      Nombre {sortDoctorsColumn === 'name' && (sortDoctorsDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+                    <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortDoctors('name')}>
+                      Nombre {sortDoctorsColumn === 'name' && (sortDoctorsDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
                     </th>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Email</th>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Teléfono</th>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Dirección</th>
-                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Acciones</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Email</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Teléfono</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Dirección</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedDoctors.map((doctor, index) => (
                     <tr key={doctor.id || doctor._id || `${doctor.firstName}-${doctor.lastName}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm text-gray-800 font-medium cursor-pointer text-blue-600 hover:underline" onClick={() => setFullDoctorView(doctor)}>{doctor.title} {doctor.firstName} {doctor.lastName}</td>
-                      <td className="py-3 px-4 text-sm text-gray-800">{doctor.email}</td>
-                      <td className="py-3 px-4 text-sm text-gray-800">{doctor.phone}</td>
-                      <td className="py-3 px-4 text-sm text-gray-800">{doctor.address}</td>
-                      <td className="py-3 px-4 text-sm text-gray-800 flex items-center space-x-2">
+                      <td className="cursor-pointer px-4 py-3 text-sm font-medium text-blue-600 hover:underline" onClick={() => setFullDoctorView(doctor)}>{doctor.title} {doctor.firstName} {doctor.lastName}</td>
+                      <td className="px-4 py-3 text-sm text-gray-800">{doctor.email}</td>
+                      <td className="px-4 py-3 text-sm text-gray-800">{doctor.phone}</td>
+                      <td className="px-4 py-3 text-sm text-gray-800">{doctor.address}</td>
+                      <td className="flex items-center space-x-2 px-4 py-3 text-sm text-gray-800">
                         <button onClick={(e) => {e.stopPropagation(); setEditingDoctor(doctor);}} className="text-blue-600 hover:text-blue-800" title="Editar Doctor">
                           <Pencil size={20} />
                         </button>
@@ -164,22 +164,22 @@ interface DoctorsViewProps {
           )}
         </>
       ) : (
-        <div className="bg-white p-8 rounded-lg shadow-xl">
+        <div className="rounded-lg bg-white p-8 shadow-xl">
           <button
             onClick={() => setEditingDoctor(null)}
-            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 font-semibold"
+            className="mb-6 flex items-center font-semibold text-blue-600 hover:text-blue-800"
           >
             <ArrowLeft className="mr-2" /> Volver a Gestión de Doctores
           </button>
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">Editar Doctor: {editingDoctor.title} {editingDoctor.name}</h2>
+          <h2 className="mb-6 text-3xl font-bold text-gray-800">Editar Doctor: {editingDoctor.title} {editingDoctor.name}</h2>
           <form onSubmit={handleEditDoctorSubmit}>
             <div className="mb-4">
-              <label htmlFor="editDoctorTitle" className="block text-gray-700 text-sm font-semibold mb-2">Título:</label>
+              <label htmlFor="editDoctorTitle" className="mb-2 block text-sm font-semibold text-gray-700">Título:</label>
               <select
                 name="editDoctorTitle"
                 id="editDoctorTitle"
                 defaultValue={editingDoctor.title}
-                className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="Dr.">Dr.</option>
@@ -188,33 +188,33 @@ interface DoctorsViewProps {
               </select>
             </div>
             <div className="mb-4">
-              <label htmlFor="editDoctorName" className="block text-gray-700 text-sm font-semibold mb-2">Nombre Completo:</label>
-              <input type="text" name="editDoctorName" id="editDoctorName" defaultValue={`${editingDoctor.firstName} ${editingDoctor.lastName}`} className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+              <label htmlFor="editDoctorName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre Completo:</label>
+              <input type="text" name="editDoctorName" id="editDoctorName" defaultValue={`${editingDoctor.firstName} ${editingDoctor.lastName}`} className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
             </div>
             <div className="mb-4">
-              <label htmlFor="editDoctorEmail" className="block text-gray-700 text-sm font-semibold mb-2">Email:</label>
-              <input type="email" name="editDoctorEmail" id="editDoctorEmail" defaultValue={editingDoctor.email} className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label htmlFor="editDoctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">Email:</label>
+              <input type="email" name="editDoctorEmail" id="editDoctorEmail" defaultValue={editingDoctor.email} className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="mb-4">
-              <label htmlFor="editDoctorPhone" className="block text-gray-700 text-sm font-semibold mb-2">Teléfono:</label>
+              <label htmlFor="editDoctorPhone" className="mb-2 block text-sm font-semibold text-gray-700">Teléfono:</label>
               <input
                 type="tel"
                 name="editDoctorPhone"
                 id="editDoctorPhone"
                 defaultValue={editingDoctor.phone}
                 placeholder="Ej: 04141234567, +58 567 3412"
-                className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 title="Formato de teléfono válido: solo números, +, espacios o guiones. Mínimo 7 dígitos."
                 pattern="[0-9+\- ]{7,}"
               />
             </div>
             <div className="mb-6">
-              <label htmlFor="editDoctorAddress" className="block text-gray-700 text-sm font-semibold mb-2">Dirección:</label>
-              <input type="text" name="editDoctorAddress" id="editDoctorAddress" defaultValue={editingDoctor.address} className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label htmlFor="editDoctorAddress" className="mb-2 block text-sm font-semibold text-gray-700">Dirección:</label>
+              <input type="text" name="editDoctorAddress" id="editDoctorAddress" defaultValue={editingDoctor.address} className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="flex justify-end space-x-4">
-              <button type="button" onClick={() => setEditingDoctor(null)} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors duration-200">Cancelar</button>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200">Guardar Cambios</button>
+              <button type="button" onClick={() => setEditingDoctor(null)} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
+              <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Guardar Cambios</button>
             </div>
           </form>
         </div>

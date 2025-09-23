@@ -26,15 +26,15 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Añadir Nota a Orden: {order._id}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+        <h2 className="mb-6 text-2xl font-bold text-gray-800">Añadir Nota a Orden: {order._id}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="noteText" className="block text-gray-700 text-sm font-semibold mb-2">Nota:</label>
+            <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">Nota:</label>
             <textarea
               id="noteText"
-              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
+              className="h-32 w-full resize-none appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               required
@@ -44,13 +44,13 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors duration-200"
+              className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors duration-200"
+              className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
             >
               Guardar Nota
             </button>

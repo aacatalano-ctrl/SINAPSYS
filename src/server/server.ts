@@ -2,17 +2,14 @@ import express from 'express';
 console.log('Serverless function src/server/server.ts started.');
 import { IncomingMessage, ServerResponse } from 'http';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import authMiddleware from './middleware/authMiddleware.js';
 import adminAuthMiddleware from './middleware/adminAuthMiddleware.js';
 import PDFDocument from 'pdfkit';
 import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
-import { checkUnpaidOrders } from './database/notifications.js';
+import { checkUnpaidOrders, createNotification } from './database/notifications.js';
 import { jobTypePrefixMap } from './database/constants.js';
 import type { Payment } from '../types.js';
 
@@ -24,16 +21,12 @@ const SequenceSchema = new mongoose.Schema({
 const Sequence = mongoose.model('Sequence', SequenceSchema);
 
 const app = express();
-const port = process.env.PORT || 3001;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error('FATAL ERROR: JWT_SECRET is not defined. Please set this environment variable.');
   process.exit(1);
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
@@ -132,6 +125,7 @@ app.post('/api/users/security-question', async (req, res) => {
     } else {
       res.status(404).json({ success: false, error: 'Usuario no encontrado' });
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ success: false, error: 'Error al buscar la pregunta de seguridad.' });
   }
@@ -150,6 +144,7 @@ app.post('/api/users/verify-answer', async (req, res) => {
     } else {
       res.status(401).json({ success: false, message: 'Respuesta de seguridad incorrecta.' });
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error al verificar la respuesta.' });
   }
@@ -169,6 +164,7 @@ app.post('/api/users/reset-password', async (req, res) => {
     } else {
       res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error al restablecer la contraseña.' });
   }
@@ -179,6 +175,7 @@ app.get('/api/users', adminAuthMiddleware, async (req, res) => {
   try {
     const users = await db.users.find({}, '-password -securityAnswer');
     res.json(users);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener los usuarios.' });
   }
@@ -251,6 +248,7 @@ app.delete('/api/users/:id', adminAuthMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
     res.status(204).send();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar el usuario.' });
   }
@@ -261,6 +259,7 @@ app.get('/api/doctors', async (req, res) => {
   try {
     const doctors = await db.doctors.find({});
     res.json(doctors);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener doctores' });
   }
@@ -271,6 +270,7 @@ app.post('/api/doctors', async (req, res) => {
     const newDoctor = new db.doctors(req.body);
     await newDoctor.save();
     res.status(201).json(newDoctor);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(400).json({ error: 'Error al agregar doctor' });
   }
@@ -283,6 +283,7 @@ app.put('/api/doctors/:id', async (req, res) => {
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
     res.json(updatedDoctor);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(400).json({ error: 'Error al actualizar doctor.' });
   }
@@ -340,6 +341,7 @@ app.get('/api/orders/:id', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
     res.json(order);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener la orden.' });
   }
@@ -370,7 +372,7 @@ app.post('/api/orders', async (req, res) => {
 
     await newOrder.save();
     res.status(201).json(newOrder);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error.code === 11000) {
       console.error("Error de clave duplicada al crear la orden:", error);
       return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
@@ -386,7 +388,16 @@ app.put('/api/orders/:id', async (req, res) => {
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
+
+    // Immediate notification on completion with balance
+    if (req.body.status === 'Completado' && updatedOrder.balance > 0) {
+      const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${updatedOrder.balance.toFixed(2)}.`;
+      // Fire and forget notification creation
+      createNotification(updatedOrder._id.toString(), message).catch(console.error);
+    }
+
     res.json(updatedOrder);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(400).json({ error: 'Error al actualizar la orden.' });
   }
@@ -399,6 +410,7 @@ app.delete('/api/orders/:id', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
     res.status(204).send();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar la orden.' });
   }
@@ -450,6 +462,29 @@ app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar pago:', error);
     res.status(500).json({ error: 'Error al eliminar pago.' });
+  }
+});
+
+app.post('/api/orders/:orderId/notes', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const note = req.body;
+
+    const order = await db.orders.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    if (!order.notes) {
+      order.notes = [];
+    }
+    order.notes.push(note);
+
+    await order.save();
+    res.status(201).json(order);
+  } catch (error) {
+    console.error('Error al agregar nota:', error);
+    res.status(500).json({ error: 'Error al agregar nota.' });
   }
 });
 
@@ -573,7 +608,7 @@ app.get('/api/reports/daily-summary', async (req, res) => {
 
 app.get('/api/reports/pdf/:reportType', async (req, res) => {
   const { reportType } = req.params;
-  let data: any[] = [];
+  let data: unknown[] = [];
   let title = '';
 
   try {
@@ -660,7 +695,7 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
     }
 
     const doc = new PDFDocument();
-    let pipeline = doc.pipe(res);
+    doc.pipe(res);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${reportType}-report.pdf`);
@@ -710,6 +745,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
       return res.status(404).json({ error: 'Notificación no encontrada.' });
     }
     res.json(updatedNotification);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({ error: 'Error al marcar notificación como leída.' });
@@ -718,7 +754,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 
 // --- SERVER INITIALIZATION ---
 // --- SERVERLESS INITIALIZATION ---
-let cachedDb: any = null;
+let cachedDb: unknown = null;
 let isInitialized = false;
 
 const initializeCounters = async () => {

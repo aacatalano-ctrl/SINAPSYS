@@ -84,24 +84,24 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
       >
         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
 
       {isOpen && filteredOrders.length > 0 && ( // Only show dropdown if there are filtered results
-        <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-auto">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-300 bg-white shadow-lg">
           {filteredOrders.map((order, index) => (
             <li
               key={order._id}
               onClick={() => handleSelect(order)}
               onMouseEnter={() => setHighlightedIndex(index)}
-              className={`px-4 py-2 cursor-pointer hover:bg-blue-100 ${index === highlightedIndex ? 'bg-blue-100' : ''}`}
+              className={`cursor-pointer px-4 py-2 hover:bg-blue-100 ${index === highlightedIndex ? 'bg-blue-100' : ''}`}
             >
               {`${order._id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`}
             </li>

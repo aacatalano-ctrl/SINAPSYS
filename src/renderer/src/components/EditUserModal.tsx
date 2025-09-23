@@ -67,23 +67,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
       showToast('Usuario actualizado con éxito.', 'success');
       onUserUpdated(); // Refresh user list in parent
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating user:", err);
-      setError(err.message || 'Error al actualizar usuario.');
-      showToast(err.message || 'Error al actualizar usuario.', 'error');
+      let message = 'Error al actualizar usuario.';
+      if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+      showToast(message, 'error');
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[100]">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-100 opacity-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Editar Usuario: {user.username}</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
+      <div className="w-full max-w-lg scale-100 rounded-lg bg-white p-8 opacity-100 shadow-2xl transition-all duration-300">
+        <h2 className="mb-6 text-2xl font-bold text-gray-800">Editar Usuario: {user.username}</h2>
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {error && <p className="mb-4 text-center text-sm text-red-500">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
             <input
@@ -186,17 +190,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             </select>
           </div>
 
-          <div className="md:col-span-2 flex justify-end space-x-3 mt-4">
+          <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Guardar Cambios
             </button>

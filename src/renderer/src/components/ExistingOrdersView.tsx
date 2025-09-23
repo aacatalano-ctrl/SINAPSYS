@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useOrders } from '../context/OrderContext';
-import { useDoctors } from '../context/DoctorContext';
-import { Search, Edit, CheckCircle, DollarSign, MessageSquare, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+
+import { Edit, CheckCircle, DollarSign, MessageSquare, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import OrderSearchCombobox from './OrderSearchCombobox';
 import { Order } from '../../types';
 import { formatDate, getJobTypeCategory } from '../utils/helpers';
@@ -33,8 +32,6 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
     }
   };
 
-  const { doctors } = useDoctors();
-
   const sortedOrders = [...orders.filter(order => {
     if (selectedOrderFromSearch) {
       return order._id === selectedOrderFromSearch._id;
@@ -44,13 +41,13 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
     // as the combobox handles the primary search. This section is kept for potential future complex filtering.
     return true; // All orders are passed to the combobox for filtering
   })].sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
+    let aValue: string | number;
+    let bValue: string | number;
 
     switch (sortColumn) {
       case 'orderNumber':
-        aValue = order.orderNumber;
-        bValue = order.orderNumber;
+        aValue = a.orderNumber;
+        bValue = b.orderNumber;
         break;
       case 'patientName':
         aValue = a.patientName;
@@ -91,8 +88,8 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
   });
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-xl mb-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Órdenes Existentes</h2>
+    <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
+      <h2 className="mb-6 text-3xl font-bold text-gray-800">Órdenes Existentes</h2>
 
       <div className="mb-6">
         <OrderSearchCombobox
@@ -104,42 +101,42 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
 
       <div className="overflow-x-auto rounded-lg shadow">
         <table className="min-w-full bg-white">
-          <thead className="bg-gray-200 border-b border-gray-300">
+          <thead className="border-b border-gray-300 bg-gray-200">
             <tr>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('orderNumber')}>
-                ID Orden {sortColumn === 'orderNumber' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('orderNumber')}>
+                ID Orden {sortColumn === 'orderNumber' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('patientName')}>
-                Paciente {sortColumn === 'patientName' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('patientName')}>
+                Paciente {sortColumn === 'patientName' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('doctorId')}>
-                Doctor {sortColumn === 'doctorId' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('doctorId')}>
+                Doctor {sortColumn === 'doctorId' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('jobType')}>
-                Tipo Trabajo {sortColumn === 'jobType' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('jobType')}>
+                Tipo Trabajo {sortColumn === 'jobType' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('cost')}>
-                Costo {sortColumn === 'cost' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('cost')}>
+                Costo {sortColumn === 'cost' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('status')}>
-                Estado {sortColumn === 'status' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('status')}>
+                Estado {sortColumn === 'status' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase cursor-pointer" onClick={() => handleSort('creationDate')}>
-                Fecha Creación {sortColumn === 'creationDate' && (sortDirection === 'asc' ? <ArrowUp size={16} className="inline ml-1" /> : <ArrowDown size={16} className="inline ml-1" />)}
+              <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSort('creationDate')}>
+                Fecha Creación {sortColumn === 'creationDate' && (sortDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {sortedOrders.map(order => (
-              <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer" onClick={() => onViewDetails(order)}>
-                <td className="py-3 px-4 text-sm text-gray-800 font-medium">{order.orderNumber}</td>
-                <td className="py-3 px-4 text-sm text-gray-800">{order.patientName}</td>
-                <td className="py-3 px-4 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
-                <td className="py-3 px-4 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>
-                <td className="py-3 px-4 text-sm text-gray-800">${order.cost.toFixed(2)}</td>
-                <td className="py-3 px-4 text-sm text-gray-800">
-                  <span className={`p-1 rounded-lg text-white text-xs font-semibold ${
+              <tr key={order._id} className="cursor-pointer border-b border-gray-200 hover:bg-gray-50" onClick={() => onViewDetails(order)}>
+                <td className="px-4 py-3 text-sm font-medium text-gray-800">{order.orderNumber}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">{order.patientName}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">${order.cost.toFixed(2)}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  <span className={`rounded-lg p-1 text-xs font-semibold text-white ${
                     order.status === 'Pendiente' ? 'bg-yellow-500' :
                     order.status === 'Procesando' ? 'bg-blue-500' :
                     'bg-green-500'
@@ -147,8 +144,8 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
                     {order.status}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-sm text-gray-800">{formatDate(order.creationDate)}</td>
-                <td className="py-3 px-4 text-sm text-gray-800 font-medium flex items-center space-x-2">
+                <td className="px-4 py-3 text-sm text-gray-800">{formatDate(order.creationDate)}</td>
+                <td className="flex items-center space-x-2 px-4 py-3 text-sm font-medium text-gray-800">
                   <button onClick={() => onEditOrder(order)} className="text-green-600 hover:text-green-800" title="Editar Orden">
                     <Edit size={20} />
                   </button>

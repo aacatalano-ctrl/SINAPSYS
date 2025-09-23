@@ -21,24 +21,24 @@ import AddPaymentModal from './AddPaymentModal';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 import EditOrderModal from './EditOrderModal';
 import Toast from './Toast';
-import { Doctor, Order, Notification } from '../../types';
+import { Doctor, Order, Notification, User } from '../../types';
 import { formatDate, formatDateTime, jobTypePrefixMap, jobTypeCosts } from '../utils/helpers';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface MainAppWrapperProps {
   handleLogout: () => void;
-  currentUser: any; // Add currentUser prop
+  currentUser: User; // Changed from any to User
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
-  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, deleteReport, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
-      const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
+  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
+  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
   const [activeView, _setActiveView] = useState<string>('createOrder');
-  const [viewHistory, setViewHistory] = useState<string[]>(['existingOrders']);
+  const [, setViewHistory] = useState<string[]>(['existingOrders']); // Renamed viewHistory to _viewHistory
 
   const handleSetActiveView = useCallback((view: string) => {
     _setActiveView(view);
@@ -99,7 +99,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
-  }, [authFetch, API_URL]);
+  }, [authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleMarkNotificationsAsRead = useCallback(async () => {
     try {
@@ -108,7 +108,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
     }
-  }, [fetchNotifications, API_URL]);
+  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleClearAllNotifications = useCallback(async () => {
     try {
@@ -117,7 +117,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     } catch (error) {
       console.error("Failed to clear notifications:", error);
     }
-  }, [fetchNotifications, API_URL]);
+  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleDeleteNotification = useCallback(async (id: string) => {
     try {
@@ -126,7 +126,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     } catch (error) {
       console.error("Failed to delete notification:", error);
     }
-  }, [fetchNotifications, API_URL]);
+  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleNotificationClick = (notification: Notification) => {
     const order = orders.find(o => o.id === notification.orderId);
@@ -210,7 +210,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     handleSetActiveView('jobTypeDetails');
   };
 
-  const getDoctorFullNameById = (doctorId: any) => {
+  const getDoctorFullNameById = (doctorId: string | Doctor) => { // Changed type from any
     if (doctorId && typeof doctorId === 'object' && doctorId.firstName && doctorId.lastName) {
       return `${doctorId.firstName} ${doctorId.lastName}`;
     } else if (typeof doctorId === 'string') {
@@ -237,12 +237,10 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     openEditOrderModal();
   };
 
-  const getReportResults = () => { /* ... implementation ... */ };
-
   const mainContent = () => {
     switch (activeView) {
       case 'usersAdmin':
-        return currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div className="text-center py-4 text-red-500">Acceso denegado.</div>;
+        return currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div className="py-4 text-center text-red-500">Acceso denegado.</div>;
       case 'notifications':
         return (
           <NotificationsView 
@@ -425,8 +423,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
         handleLogout={handleLogout} 
         currentUser={currentUser}
       />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
           {mainContent()}
         </main>
       </div>

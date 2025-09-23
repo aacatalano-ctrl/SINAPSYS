@@ -27,13 +27,13 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
   };
 
   return (
-    <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto rounded-lg bg-white p-6 shadow-lg">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Notificaciones</h1>
         {notifications.length > 0 && (
           <button 
             onClick={onClearNotifications}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+            className="rounded-lg bg-red-500 px-4 py-2 font-bold text-white transition-colors duration-200 hover:bg-red-600"
           >
             Limpiar Todas
           </button>
@@ -41,7 +41,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
       </div>
 
       {notifications.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <Bell size={48} className="mx-auto text-gray-400" />
           <p className="mt-4 text-lg text-gray-600">No tienes notificaciones nuevas.</p>
         </div>
@@ -51,13 +51,13 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
             <li 
               key={notification.id}
               onClick={() => onNotificationClick(notification)}
-              className={`p-4 rounded-lg shadow transition-all duration-300 cursor-pointer flex items-start space-x-4 ${notification.read ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'}`}>
-              <div className={`mt-1 p-2 rounded-full ${notification.read ? 'bg-gray-300' : 'bg-blue-500'}`}>
+              className={`flex cursor-pointer items-start space-x-4 rounded-lg p-4 shadow transition-all duration-300 ${notification.read ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'}`}>
+              <div className={`mt-1 rounded-full p-2 ${notification.read ? 'bg-gray-300' : 'bg-blue-500'}`}>
                 <Bell size={20} className={`${notification.read ? 'text-gray-600' : 'text-white'}`} />
               </div>
-              <div className="flex-grow">
+              <div className="grow">
                 <p className={`font-semibold ${notification.read ? 'text-gray-700' : 'text-gray-900'}`}>{notification.message}</p>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
+                <div className="mt-1 flex items-center text-sm text-gray-500">
                   <Clock size={14} className="mr-1.5" />
                   <span>Hace {timeSince(notification.createdAt)}</span>
                 </div>
@@ -67,7 +67,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
                   e.stopPropagation(); // Prevent onNotificationClick from firing
                   onDeleteNotification(notification.id);
                 }}
-                className="text-red-500 hover:text-red-700 ml-4"
+                className="ml-4 text-red-500 hover:text-red-700"
                 title="Eliminar notificación"
               >
                 <Trash2 size={20} />
