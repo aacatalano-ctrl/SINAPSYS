@@ -59,10 +59,11 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(paymentAmount);
+    const parsedAmount = parseFloat(paymentAmount) || 0; // Ensure it's 0 if empty or NaN
 
     try {
-      if (!isNaN(parsedAmount) && parsedAmount > 0) {
+      // Only add payment if amount is positive
+      if (parsedAmount > 0) {
         if (parsedAmount > balance) {
           showNotification(`El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`, 'error');
           return;
@@ -70,11 +71,13 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
         await addPaymentToOrder(order._id, parsedAmount, 'Pago al completar');
       }
 
+      // Always update status to 'Completado'
       await handleUpdateOrderStatus(order._id, 'Completado', new Date().toISOString());
-      showNotification(`Orden ${order._id} marcada como completada.`, 'success');
+      showNotification(`Orden ${order.orderNumber} marcada como completada.`, 'success');
       onClose();
     } catch (error) {
       console.error("Error during order completion:", error);
+      showNotification('Error al confirmar la finalización.', 'error'); // Add notification for error
     }
   };
 
