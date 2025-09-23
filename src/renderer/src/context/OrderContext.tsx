@@ -34,7 +34,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const { showToast } = useUI();
   const { isDoctorsLoaded } = useDoctors();
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = '/api';
 
   const fetchOrders = useCallback(async () => {
     try {

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Doctor } from '../../types';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = '/api';
 
 interface DoctorContextType {
   doctors: Doctor[];

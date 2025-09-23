@@ -24,7 +24,7 @@ import Toast from './Toast';
 import { Doctor, Order, Notification, User } from '../../types';
 import { formatDate, formatDateTime, jobTypePrefixMap, jobTypeCosts } from '../utils/helpers';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = '/api';
 
 interface MainAppWrapperProps {
   handleLogout: () => void;

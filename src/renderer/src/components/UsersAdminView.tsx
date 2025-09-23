@@ -19,7 +19,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false); // New state for Add User modal
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = '/api';
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);

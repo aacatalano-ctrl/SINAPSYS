@@ -35,7 +35,7 @@ function App() {
   const [forgotPasswordSecurityQuestion, setForgotPasswordSecurityQuestion] = useState('');
   const [authError, setAuthError] = useState('');
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = '/api';
 
   const handleLogout = useCallback(() => {
     setCurrentUser(null);

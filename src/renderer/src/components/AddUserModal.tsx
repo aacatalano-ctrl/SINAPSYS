@@ -25,7 +25,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const { showToast } = useUI();
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = '/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
