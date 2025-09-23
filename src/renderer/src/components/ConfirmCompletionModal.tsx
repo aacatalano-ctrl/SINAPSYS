@@ -81,7 +81,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen,
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-        <h2 className="mb-4 text-2xl font-bold text-gray-800">Finalizar Orden: {order._id}</h2>
+        <h2 className="mb-4 text-2xl font-bold text-gray-800">Finalizar Orden: {order.orderNumber}</h2>
         <p className="mb-4 text-gray-700">
           Vas a marcar esta orden como <span className="font-bold text-green-600">Completada</span>.
         </p>
