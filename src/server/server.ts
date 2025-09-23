@@ -541,7 +541,7 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
     // Table Rows for Payments
     let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
-      order.payments.forEach(payment => {
+      order.payments.forEach((payment: Payment) => {
         const y = doc.y;
         totalPaid += payment.amount;
         doc.text(new Date(payment.date).toLocaleDateString(), itemX, y);
