@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus } from 'lucide-react';
 import { Order, User as UserType } from '../../types';
+import ConfirmCompletionModal from './ConfirmCompletionModal';
 
 interface OrderDetailsViewProps {
+    orderToComplete: Order | null;
+    setOrderToComplete: (order: Order | null) => void;
     order: Order;
     onBack: () => void;
     getDoctorFullNameById: (id: string) => string;
@@ -13,9 +16,11 @@ interface OrderDetailsViewProps {
     onAddNote: () => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, orderToComplete, setOrderToComplete }) => {
   const [isAbonando, setIsAbonando] = useState(false);
   const [abonoAmount, setAbonoAmount] = useState('');
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification } = useOrders();
 
   if (!order) return null;
@@ -86,7 +91,15 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
             <span className="mr-2 font-medium text-gray-700">Estado:</span>
             <select
               value={order.status}
-              onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value as 'Pendiente' | 'Procesando' | 'Completado')}
+              onChange={(e) => {
+                const newStatus = e.target.value as 'Pendiente' | 'Procesando' | 'Completado';
+                if (newStatus === 'Completado' && pendingBalance > 0) {
+                  setCurrentOrderForModal(order);
+                  setShowCompletionModal(true);
+                } else {
+                  handleUpdateOrderStatus(order._id, newStatus);
+                }
+              }}
               className={`rounded-lg p-2 font-semibold text-white ${
                 order.status === 'Pendiente' ? 'bg-yellow-500' :
                 order.status === 'Procesando' ? 'bg-blue-500' :
@@ -204,6 +217,15 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
           <Plus className="mr-2" /> Añadir Nota
         </button>
       </div>
+      <ConfirmCompletionModal
+        isOpen={showCompletionModal}
+        order={currentOrderForModal}
+        onClose={() => {
+          setShowCompletionModal(false);
+          setCurrentOrderForModal(null);
+          // No need to fetchOrders here, as handleUpdateOrderStatus (called by confirmCompletion) already does it.
+        }}
+      />
     </div>
   );
 };
