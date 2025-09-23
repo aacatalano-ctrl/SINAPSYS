@@ -372,8 +372,8 @@ app.post('/api/orders', async (req, res) => {
 
     await newOrder.save();
     res.status(201).json(newOrder);
-  } catch (error: unknown) {
-    if (error.code === 11000) {
+  } catch (error: any) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       console.error("Error de clave duplicada al crear la orden:", error);
       return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
     }
@@ -485,6 +485,102 @@ app.post('/api/orders/:orderId/notes', async (req, res) => {
   } catch (error) {
     console.error('Error al agregar nota:', error);
     res.status(500).json({ error: 'Error al agregar nota.' });
+  }
+});
+
+app.post('/api/orders/:orderId/receipt', async (req, res) => {
+  try {
+    const { order, currentUser } = req.body;
+
+    if (!order || !currentUser) {
+      return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
+    }
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=recibo-${order.orderNumber}.pdf`);
+
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('SINAPSIS Laboratorio Dental', { align: 'center' });
+    doc.fontSize(12).text('Recibo de Orden', { align: 'center' });
+    doc.moveDown(2);
+
+    // Order Info
+    doc.fontSize(14).text(`Orden: ${order.orderNumber}`, { continued: true });
+    doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
+    doc.moveDown();
+    doc.text(`Paciente: ${order.patientName}`);
+    const doctorName = order.doctorId?.firstName ? `${order.doctorId.firstName} ${order.doctorId.lastName}` : 'N/A';
+    doc.text(`Doctor: ${doctorName}`);
+    doc.text(`Trabajo: ${order.jobType}`);
+    doc.moveDown(2);
+
+    // Financials
+    doc.fontSize(16).text('Detalles Financieros', { underline: true });
+    doc.moveDown();
+    doc.fontSize(12);
+
+    const tableTop = doc.y;
+    const itemX = 50;
+    const descriptionX = 150;
+    const amountX = 450;
+
+    // Table Header
+    doc.font('Helvetica-Bold');
+    doc.text('Fecha', itemX, doc.y);
+    doc.text('Descripción', descriptionX, doc.y, { width: 300 });
+    doc.text('Monto', amountX, doc.y, { align: 'right' });
+    doc.font('Helvetica');
+    doc.moveDown();
+    const headerY = doc.y;
+    doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
+    
+    // Table Rows for Payments
+    let totalPaid = 0;
+    if (order.payments && order.payments.length > 0) {
+      order.payments.forEach(payment => {
+        const y = doc.y;
+        totalPaid += payment.amount;
+        doc.text(new Date(payment.date).toLocaleDateString(), itemX, y);
+        doc.text(payment.description, descriptionX, y, { width: 300 });
+        doc.text(`${payment.amount.toFixed(2)}`, amountX, y, { align: 'right' });
+        doc.moveDown();
+      });
+    } else {
+        doc.text('No hay pagos registrados.', itemX, doc.y);
+        doc.moveDown();
+    }
+    
+    const tableBottomY = doc.y;
+    doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
+    doc.moveDown();
+
+    // Totals
+    doc.font('Helvetica-Bold');
+    const totalsY = doc.y;
+    doc.text('Costo Total:', descriptionX, totalsY, { align: 'right', width: 200 });
+    doc.text(`${order.cost.toFixed(2)}`, amountX, totalsY, { align: 'right' });
+    doc.moveDown();
+    doc.text('Total Pagado:', descriptionX, doc.y, { align: 'right', width: 200 });
+    doc.text(`${totalPaid.toFixed(2)}`, amountX, doc.y, { align: 'right' });
+    doc.moveDown();
+    doc.text('Saldo Pendiente:', descriptionX, doc.y, { align: 'right', width: 200 });
+    doc.text(`${(order.cost - totalPaid).toFixed(2)}`, amountX, doc.y, { align: 'right' });
+    doc.font('Helvetica');
+    doc.moveDown(3);
+
+    // Footer
+    doc.fontSize(10).text(`Recibo generado por: ${currentUser.username}`, { align: 'center' });
+    doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
+
+    doc.end();
+
+  } catch (error) {
+    console.error('Error al generar el recibo PDF:', error);
+    res.status(500).json({ error: 'Error al generar el recibo.' });
   }
 });
 
@@ -608,7 +704,7 @@ app.get('/api/reports/daily-summary', async (req, res) => {
 
 app.get('/api/reports/pdf/:reportType', async (req, res) => {
   const { reportType } = req.params;
-  let data: unknown[] = [];
+  let data: any[] = [];
   let title = '';
 
   try {
@@ -703,7 +799,7 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
     doc.fontSize(20).text(title, { align: 'center' });
     doc.moveDown();
 
-    data.forEach(item => {
+    data.forEach((item: any) => {
       doc.fontSize(12).text(`ID: ${item._id?.doctorName || item._id || 'N/A'}`);
       doc.text(`Total Órdenes: ${item.totalOrders || item.count || 0}`);
       doc.text(`Ingresos Totales: $${item.totalIncome?.toFixed(2) || '0.00'}`);
