@@ -58,8 +58,6 @@ interface UIProviderProps {
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
   const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);

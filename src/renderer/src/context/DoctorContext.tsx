@@ -62,7 +62,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
       console.error('Failed to add doctor:', error);
       throw error; // Re-throw to allow error handling in components
     }
-  }, []);
+  }, [fetchDoctors]);
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
@@ -137,6 +137,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useDoctors = (): DoctorContextType => {
   const context = useContext(DoctorContext);
   if (context === undefined) {

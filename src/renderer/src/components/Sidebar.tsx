@@ -1,11 +1,11 @@
 import React from 'react';
 import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, BrainCircuit, Users } from 'lucide-react';
-import { Notification } from '../../types'; // Assuming types are in this location
+import { Notification, User } from '../../types'; // Assuming types are in this location
 
 interface SidebarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
-  currentUser: any; // Replace with a proper User type if available
+  currentUser: User | null;
   handleLogout: () => void;
   notifications: Notification[];
   markNotificationsAsRead: () => Promise<void>;
@@ -23,10 +23,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
   ];
 
   return (
-    <aside className="w-64 bg-gray-800 text-white flex flex-col p-4 shadow-lg">
-      <div className="flex items-center justify-center text-2xl font-orbitron font-bold mb-8 text-blue-400 tracking-wider">
-        <BrainCircuit className="mr-3 h-8 w-8 text-white drop-shadow-rose-glow" />
-                <span><span className="text-rose-400 text-4xl">S</span>INAPSIS</span>
+    <aside className="flex w-64 flex-col bg-gray-800 p-4 text-white shadow-lg">
+      <div className="mb-8 flex items-center justify-center font-orbitron text-2xl font-bold tracking-wider text-blue-400">
+        <BrainCircuit className="mr-3 size-8 text-white drop-shadow-rose-glow" />
+                <span><span className="text-4xl text-rose-400">S</span>INAPSIS</span>
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -34,10 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
           <button
             key={view}
             onClick={() => setCurrentView(view)}
-            className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${currentView === view ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
+            className={`flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${currentView === view ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`}
             title={label}
           >
-            <Icon className="mr-3 h-5 w-5" />
+            <Icon className="mr-3 size-5" />
             <span>{label}</span>
           </button>
         ))}
@@ -47,10 +47,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
           <button
             key="usersAdmin"
             onClick={() => setCurrentView('usersAdmin')}
-            className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${currentView === 'usersAdmin' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
+            className={`flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${currentView === 'usersAdmin' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`}
             title="Adm. Usuarios"
           >
-            <Users className="mr-3 h-5 w-5" />
+            <Users className="mr-3 size-5" />
             <span>Adm. Usuarios</span>
           </button>
         )}
@@ -63,13 +63,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
               markNotificationsAsRead();
             }
           }}
-          className={`flex items-center w-full p-3 rounded-lg transition-colors duration-200 ${currentView === 'notifications' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-gray-700 text-gray-300'}`}
+          className={`flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${currentView === 'notifications' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`}
           title="Notificaciones"
         >
           <div className="relative mx-auto"> {/* Centering the icon */}
-            <Bell className={`h-6 w-6 ${unreadNotificationsCount > 0 ? 'text-red-400 animate-pulse' : 'text-gray-400'}`} />
+            <Bell className={`size-6 ${unreadNotificationsCount > 0 ? 'animate-pulse text-red-400' : 'text-gray-400'}`} />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-1 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white border-2 border-gray-800">
+              <span className="absolute -right-2 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-gray-800 bg-red-600 text-xs font-bold text-white">
                 {unreadNotificationsCount}
               </span>
             )}
@@ -78,14 +78,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
       </nav>
 
       <div className="mt-auto border-t border-gray-700 pt-4">
-        <div className="flex items-center mb-4 px-2">
-          <span className="text-gray-400 text-sm">Usuario: {currentUser ? currentUser.username : 'Invitado'}</span>
+        <div className="mb-4 flex items-center px-2">
+          <span className="text-sm text-gray-400">Usuario: {currentUser ? currentUser.username : 'Invitado'}</span>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center w-full p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors duration-200"
+          className="flex w-full items-center rounded-lg p-3 text-gray-300 transition-colors duration-200 hover:bg-gray-700"
         >
-          <LogOut className="mr-3 h-5 w-5" />
+          <LogOut className="mr-3 size-5" />
           Cerrar Sesión
         </button>
       </div>
