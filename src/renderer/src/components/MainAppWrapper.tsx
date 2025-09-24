@@ -33,7 +33,7 @@ interface MainAppWrapperProps {
 }
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
-  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
+  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus, generatePaymentHistoryPDF } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
@@ -364,6 +364,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
             formatDate={formatDate}
             formatDateTime={formatDateTime}
             currentUser={currentUser}
+            generatePaymentHistoryPDF={generatePaymentHistoryPDF}
           />
         ) : null;
       case 'doctorDetails':

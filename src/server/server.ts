@@ -587,7 +587,8 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
 
 app.post('/api/orders/:orderId/payment-history-pdf', async (req, res) => {
   try {
-    const { order, currentUser } = req.body;
+    const { currentUser } = req.body;
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
@@ -943,6 +944,16 @@ app.put('/api/notifications/:id/read', async (req, res) => {
   } catch (error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({ error: 'Error al marcar notificación como leída.' });
+  }
+});
+
+app.put('/api/notifications/mark-all-read', async (req, res) => {
+  try {
+    await db.notifications.updateMany({}, { read: true });
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    res.status(500).json({ error: 'Error al marcar todas las notificaciones como leídas.' });
   }
 });
 

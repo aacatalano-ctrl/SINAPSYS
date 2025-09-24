@@ -55,7 +55,7 @@ export interface Note {
 export interface Order {
   _id?: string;
   orderNumber?: string;
-  doctorId: mongoose.Types.ObjectId | string;
+  doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
   jobType: string;
   cost: number;
