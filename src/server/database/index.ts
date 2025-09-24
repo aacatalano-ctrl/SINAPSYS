@@ -7,13 +7,13 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SINAPS
 // 1. Define Mongoose Schemas
 const paymentSchema = new mongoose.Schema<Payment>({
   amount: { type: Number, required: true },
-  date: { type: String, required: true }, // Consider using Date type
+  date: { type: Date, required: true },
   description: { type: String },
 });
 
 const noteSchema = new mongoose.Schema<Note>({
   text: { type: String, required: true },
-  timestamp: { type: String, required: true }, // Consider using Date type
+  timestamp: { type: Date, required: true },
   author: { type: String, required: true },
 });
 
@@ -33,8 +33,8 @@ const orderSchema = new mongoose.Schema<Order>({
   jobType: { type: String, required: true },
   cost: { type: Number, required: true },
   status: { type: String, required: true },
-  creationDate: { type: String, required: true }, // Consider using Date type
-  completionDate: { type: String }, // Consider using Date type
+  creationDate: { type: Date, required: true },
+  completionDate: { type: Date },
   priority: { type: String },
   caseDescription: { type: String },
   payments: [paymentSchema],
@@ -56,10 +56,13 @@ const userSchema = new mongoose.Schema<User>({
   status: { type: String, enum: ['active', 'blocked'], default: 'active' },
 });
 
-const notificationSchema = new mongoose.Schema<Notification>({
-  message: { type: String, required: true },
-  read: { type: Boolean, default: false },
-}, { timestamps: true }); // Fixed
+const notificationSchema = new mongoose.Schema<Notification>(
+  {
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true },
+); // Fixed
 
 // 2. Create Mongoose Models
 const DoctorModel = mongoose.model<Doctor>('Doctor', doctorSchema);
@@ -107,7 +110,7 @@ const initializeDb = async (): Promise<void> => {
 export {
   db,
   initializeDb,
-  connectDB // Export connectDB so it can be called from server.ts
+  connectDB, // Export connectDB so it can be called from server.ts
 };
 
 // Call connectDB when the module is loaded, but don't initializeDb here

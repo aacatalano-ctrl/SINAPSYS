@@ -6,7 +6,7 @@ async function purgeOldOrders(): Promise<void> {
 
   const query = {
     status: 'Completado',
-    completionDate: { $lt: oneYearAgo.toISOString() }
+    completionDate: { $lt: oneYearAgo.toISOString() },
   };
 
   try {
@@ -14,13 +14,11 @@ async function purgeOldOrders(): Promise<void> {
     if (result.deletedCount > 0) {
       console.log(`Successfully purged ${result.deletedCount} old completed orders.`);
     } else {
-      console.log("No old completed orders to purge.");
+      console.log('No old completed orders to purge.');
     }
   } catch (err) {
-    console.error("Error purging old orders:", err);
+    console.error('Error purging old orders:', err);
   }
 }
 
-export {
-  purgeOldOrders,
-};
+export { purgeOldOrders };

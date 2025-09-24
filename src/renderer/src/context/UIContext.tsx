@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 
 // Define User type
@@ -17,8 +16,7 @@ interface ToastState {
 // Define the shape of the context
 interface UIContextType {
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>; // Añadir authFetch
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -54,11 +52,12 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 // Create a provider component
 interface UIProviderProps {
   children: ReactNode;
+  currentUser: User | null;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+export const UIProvider: React.FC<UIProviderProps> = ({ children, currentUser, authFetch }) => {
+
   const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
   const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);
   const [isAddPaymentModalOpen, setAddPaymentModalOpen] = useState(false);
@@ -69,24 +68,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
 
-  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options?.headers,
-    };
-    const response = await fetch(url, { ...options, headers });
-    if (response.status === 401 || response.status === 403) {
-      // Token inválido o expirado, o acceso denegado
-      // This part needs to be handled by the component that uses authFetch, not here directly
-      // For now, we'll just log and let the caller handle it.
-      console.error('Authentication failed or token expired. Please log in again.');
-      // showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
-      // handleLogout(); // This would cause a circular dependency if called directly
-    }
-    return response;
-  }, []); // Dependencies for authFetch
+
 
   const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
   const closeAddDoctorModal = useCallback(() => setAddDoctorModalOpen(false), []);
@@ -99,7 +81,8 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 
   const openAuthModal = useCallback(() => setAuthModalOpen(true), []);
   const closeAuthModal = useCallback(() => {
-    if (currentUser) { // Only close auth modal if a user is logged in
+    if (currentUser) {
+      // Only close auth modal if a user is logged in
       setAuthModalOpen(false);
     }
   }, [currentUser]);
@@ -120,16 +103,18 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     setToast((prev) => ({ ...prev, show: false }));
   }, []);
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      hideToast();
-    }, 3000);
-  }, [hideToast]);
+  const showToast = useCallback(
+    (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+      setToast({ show: true, message, type });
+      setTimeout(() => {
+        hideToast();
+      }, 3000);
+    },
+    [hideToast],
+  );
 
   const value = {
     currentUser,
-    setCurrentUser,
     authFetch, // Añadir authFetch al valor del contexto
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
@@ -160,11 +145,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     hideToast,
   };
 
-  return (
-    <UIContext.Provider value={value}>
-      {children}
-    </UIContext.Provider>
-  );
+  return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 };
 
 // Create a custom hook to use the context

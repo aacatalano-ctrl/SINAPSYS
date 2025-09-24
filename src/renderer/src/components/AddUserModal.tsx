@@ -69,7 +69,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
       onUserAdded(); // Refresh user list in parent
       onClose();
     } catch (err: unknown) {
-      console.error("Error creating user:", err);
+      console.error('Error creating user:', err);
       let message = 'Error al crear usuario.';
       if (err instanceof Error) {
         message = err.message;
@@ -90,7 +90,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="newUsername" className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
+            <label htmlFor="newUsername" className="block text-sm font-medium text-gray-700">
+              Nombre de Usuario
+            </label>
             <input
               type="text"
               id="newUsername"
@@ -101,7 +103,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div className="relative">
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+              Contraseña
+            </label>
             <input
               type={showPassword ? 'text' : 'password'}
               id="newPassword"
@@ -122,7 +126,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             </span>
           </div>
           <div>
-            <label htmlFor="newSecurityQuestion" className="block text-sm font-medium text-gray-700">Pregunta de Seguridad</label>
+            <label
+              htmlFor="newSecurityQuestion"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Pregunta de Seguridad
+            </label>
             <input
               type="text"
               id="newSecurityQuestion"
@@ -133,7 +142,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newSecurityAnswer" className="block text-sm font-medium text-gray-700">Respuesta de Seguridad</label>
+            <label htmlFor="newSecurityAnswer" className="block text-sm font-medium text-gray-700">
+              Respuesta de Seguridad
+            </label>
             <input
               type="text"
               id="newSecurityAnswer"
@@ -144,7 +155,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newNombre" className="block text-sm font-medium text-gray-700">Nombre</label>
+            <label htmlFor="newNombre" className="block text-sm font-medium text-gray-700">
+              Nombre
+            </label>
             <input
               type="text"
               id="newNombre"
@@ -155,7 +168,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newApellido" className="block text-sm font-medium text-gray-700">Apellido</label>
+            <label htmlFor="newApellido" className="block text-sm font-medium text-gray-700">
+              Apellido
+            </label>
             <input
               type="text"
               id="newApellido"
@@ -166,7 +181,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newCedula" className="block text-sm font-medium text-gray-700">Cédula</label>
+            <label htmlFor="newCedula" className="block text-sm font-medium text-gray-700">
+              Cédula
+            </label>
             <input
               type="text"
               id="newCedula"
@@ -177,7 +194,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newDireccion" className="block text-sm font-medium text-gray-700">Dirección</label>
+            <label htmlFor="newDireccion" className="block text-sm font-medium text-gray-700">
+              Dirección
+            </label>
             <input
               type="text"
               id="newDireccion"
@@ -188,7 +207,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newRazonSocial" className="block text-sm font-medium text-gray-700">Razón Social</label>
+            <label htmlFor="newRazonSocial" className="block text-sm font-medium text-gray-700">
+              Razón Social
+            </label>
             <input
               type="text"
               id="newRazonSocial"
@@ -199,7 +220,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newRif" className="block text-sm font-medium text-gray-700">RIF</label>
+            <label htmlFor="newRif" className="block text-sm font-medium text-gray-700">
+              RIF
+            </label>
             <input
               type="text"
               id="newRif"
@@ -210,7 +233,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
             />
           </div>
           <div>
-            <label htmlFor="newUserRole" className="block text-sm font-medium text-gray-700">Rol</label>
+            <label htmlFor="newUserRole" className="block text-sm font-medium text-gray-700">
+              Rol
+            </label>
             <select
               id="newUserRole"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"

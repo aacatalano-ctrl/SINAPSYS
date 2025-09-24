@@ -10,7 +10,13 @@ interface EditUserModalProps {
   onUserUpdated: () => void; // Callback to refresh user list
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, authFetch, onUserUpdated }) => {
+const EditUserModal: React.FC<EditUserModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  authFetch,
+  onUserUpdated,
+}) => {
   const [username, setUsername] = useState(user.username);
   const [nombre, setNombre] = useState(user.nombre);
   const [apellido, setApellido] = useState(user.apellido);
@@ -68,7 +74,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
       onUserUpdated(); // Refresh user list in parent
       onClose();
     } catch (err: unknown) {
-      console.error("Error updating user:", err);
+      console.error('Error updating user:', err);
       let message = 'Error al actualizar usuario.';
       if (err instanceof Error) {
         message = err.message;
@@ -89,7 +95,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Nombre de Usuario
+            </label>
             <input
               type="text"
               id="username"
@@ -100,7 +108,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre</label>
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+              Nombre
+            </label>
             <input
               type="text"
               id="nombre"
@@ -111,7 +121,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido</label>
+            <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">
+              Apellido
+            </label>
             <input
               type="text"
               id="apellido"
@@ -122,7 +134,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="cedula" className="block text-sm font-medium text-gray-700">Cédula</label>
+            <label htmlFor="cedula" className="block text-sm font-medium text-gray-700">
+              Cédula
+            </label>
             <input
               type="text"
               id="cedula"
@@ -133,7 +147,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">Dirección</label>
+            <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">
+              Dirección
+            </label>
             <input
               type="text"
               id="direccion"
@@ -144,7 +160,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="razonSocial" className="block text-sm font-medium text-gray-700">Razón Social</label>
+            <label htmlFor="razonSocial" className="block text-sm font-medium text-gray-700">
+              Razón Social
+            </label>
             <input
               type="text"
               id="razonSocial"
@@ -155,7 +173,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="rif" className="block text-sm font-medium text-gray-700">RIF</label>
+            <label htmlFor="rif" className="block text-sm font-medium text-gray-700">
+              RIF
+            </label>
             <input
               type="text"
               id="rif"
@@ -166,7 +186,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             />
           </div>
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Rol</label>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              Rol
+            </label>
             <select
               id="role"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -178,7 +200,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
             </select>
           </div>
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">Estado</label>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              Estado
+            </label>
             <select
               id="status"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"

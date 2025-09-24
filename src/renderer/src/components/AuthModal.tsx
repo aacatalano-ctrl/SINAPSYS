@@ -1,7 +1,35 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordModal, setShowForgotPasswordModal, forgotPasswordStep, setForgotPasswordStep, forgotPasswordUsername, setForgotPasswordUsername, forgotPasswordSecurityQuestion, handleForgotPasswordSubmitAnswer, handleSetNewPassword, showNotification }: { onLogin: (username: string, password: string) => Promise<void>; onForgotPassword: (username: string) => Promise<void>; authError: string; showForgotPasswordModal: boolean; setShowForgotPasswordModal: React.Dispatch<React.SetStateAction<boolean>>; forgotPasswordStep: number; setForgotPasswordStep: React.Dispatch<React.SetStateAction<number>>; forgotPasswordUsername: string; setForgotPasswordUsername: React.Dispatch<React.SetStateAction<string>>; forgotPasswordSecurityQuestion: string; handleForgotPasswordSubmitAnswer: (answer: string) => Promise<void>; handleSetNewPassword: (newPassword: string) => Promise<void>; showNotification: (message: string, type?: string) => void; }) => {
+const AuthModal = ({
+  onLogin,
+  onForgotPassword,
+  authError,
+  showForgotPasswordModal,
+  setShowForgotPasswordModal,
+  forgotPasswordStep,
+  setForgotPasswordStep,
+  forgotPasswordUsername,
+  setForgotPasswordUsername,
+  forgotPasswordSecurityQuestion,
+  handleForgotPasswordSubmitAnswer,
+  handleSetNewPassword,
+  showNotification,
+}: {
+  onLogin: (username: string, password: string) => Promise<void>;
+  onForgotPassword: (username: string) => Promise<void>;
+  authError: string;
+  showForgotPasswordModal: boolean;
+  setShowForgotPasswordModal: React.Dispatch<React.SetStateAction<boolean>>;
+  forgotPasswordStep: number;
+  setForgotPasswordStep: React.Dispatch<React.SetStateAction<number>>;
+  forgotPasswordUsername: string;
+  setForgotPasswordUsername: React.Dispatch<React.SetStateAction<string>>;
+  forgotPasswordSecurityQuestion: string;
+  handleForgotPasswordSubmitAnswer: (answer: string) => Promise<void>;
+  handleSetNewPassword: (newPassword: string) => Promise<void>;
+  showNotification: (message: string, type?: string) => void;
+}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -34,16 +62,16 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
       <div className="w-full max-w-sm scale-100 rounded-lg bg-white p-8 opacity-100 shadow-2xl transition-all duration-300">
-        <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">
-          Iniciar Sesión
-        </h2>
+        <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">Iniciar Sesión</h2>
 
         {showForgotPasswordModal ? (
           <form onSubmit={handleForgotPasswordFormSubmit}>
             <h3 className="mb-4 text-xl font-semibold text-gray-700">Recuperar Contraseña</h3>
             {forgotPasswordStep === 1 && (
               <div className="mb-4">
-                <label htmlFor="fpUsername" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
+                <label htmlFor="fpUsername" className="mb-2 block text-sm font-bold text-gray-700">
+                  Nombre de Usuario:
+                </label>
                 <input
                   type="text"
                   id="fpUsername"
@@ -56,9 +84,21 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
             )}
             {forgotPasswordStep === 2 && (
               <div className="mb-4">
-                <label htmlFor="fpSecurityQuestion" className="mb-2 block text-sm font-bold text-gray-700">Pregunta Secreta:</label>
-                <p className="mb-2 rounded-lg bg-gray-100 p-3 text-gray-800">{forgotPasswordSecurityQuestion}</p>
-                <label htmlFor="fpSecurityAnswer" className="mb-2 block text-sm font-bold text-gray-700">Tu Respuesta:</label>
+                <label
+                  htmlFor="fpSecurityQuestion"
+                  className="mb-2 block text-sm font-bold text-gray-700"
+                >
+                  Pregunta Secreta:
+                </label>
+                <p className="mb-2 rounded-lg bg-gray-100 p-3 text-gray-800">
+                  {forgotPasswordSecurityQuestion}
+                </p>
+                <label
+                  htmlFor="fpSecurityAnswer"
+                  className="mb-2 block text-sm font-bold text-gray-700"
+                >
+                  Tu Respuesta:
+                </label>
                 <input
                   type="text"
                   id="fpSecurityAnswer"
@@ -71,8 +111,15 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
             )}
             {forgotPasswordStep === 3 && (
               <>
-                <div className="relative mb-4"> {/* Added relative for icon positioning */}
-                  <label htmlFor="newPassword" className="mb-2 block text-sm font-bold text-gray-700">Nueva Contraseña:</label>
+                <div className="relative mb-4">
+                  {' '}
+                  {/* Added relative for icon positioning */}
+                  <label
+                    htmlFor="newPassword"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Nueva Contraseña:
+                  </label>
                   <input
                     type={showNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newPassword"
@@ -92,8 +139,15 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                     )}
                   </span>
                 </div>
-                <div className="relative mb-6"> {/* Added relative for icon positioning */}
-                  <label htmlFor="newConfirmPassword" className="mb-2 block text-sm font-bold text-gray-700">Confirmar Nueva Contraseña:</label>
+                <div className="relative mb-6">
+                  {' '}
+                  {/* Added relative for icon positioning */}
+                  <label
+                    htmlFor="newConfirmPassword"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Confirmar Nueva Contraseña:
+                  </label>
                   <input
                     type={showConfirmNewPassword ? 'text' : 'password'} // Dynamic type
                     id="newConfirmPassword"
@@ -134,15 +188,20 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                 type="submit"
                 className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/75"
               >
-                {forgotPasswordStep === 1 ? 'Buscar Usuario' : forgotPasswordStep === 2 ? 'Verificar Respuesta' : 'Establecer Contraseña'}
+                {forgotPasswordStep === 1
+                  ? 'Buscar Usuario'
+                  : forgotPasswordStep === 2
+                    ? 'Verificar Respuesta'
+                    : 'Establecer Contraseña'}
               </button>
             </div>
           </form>
-
         ) : (
           <form onSubmit={handleAuthSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
+              <label htmlFor="username" className="mb-2 block text-sm font-bold text-gray-700">
+                Nombre de Usuario:
+              </label>
               <input
                 type="text"
                 id="username"
@@ -152,8 +211,12 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                 required
               />
             </div>
-            <div className="relative mb-6"> {/* Added relative for icon positioning */}
-              <label htmlFor="password" className="mb-2 block text-sm font-bold text-gray-700">Contraseña:</label>
+            <div className="relative mb-6">
+              {' '}
+              {/* Added relative for icon positioning */}
+              <label htmlFor="password" className="mb-2 block text-sm font-bold text-gray-700">
+                Contraseña:
+              </label>
               <input
                 type={showLoginPassword ? 'text' : 'password'} // Dynamic type
                 id="password"

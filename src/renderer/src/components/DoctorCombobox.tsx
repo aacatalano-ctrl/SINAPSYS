@@ -10,7 +10,10 @@ interface DoctorComboboxProps {
 }
 
 const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
-  doctors, selectedDoctor, onSelectDoctor, placeholder = "Selecciona o busca un doctor..."
+  doctors,
+  selectedDoctor,
+  onSelectDoctor,
+  placeholder = 'Selecciona o busca un doctor...',
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -19,14 +22,18 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
 
   useEffect(() => {
     if (selectedDoctor) {
-      setInputValue(`${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`);
+      setInputValue(
+        `${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`,
+      );
     } else {
       setInputValue('');
     }
   }, [selectedDoctor]);
 
-  const filteredDoctors = doctors.filter(doctor =>
-    `${doctor.title} ${doctor.firstName} ${doctor.lastName}`.toLowerCase().includes(inputValue.toLowerCase())
+  const filteredDoctors = doctors.filter((doctor) =>
+    `${doctor.title} ${doctor.firstName} ${doctor.lastName}`
+      .toLowerCase()
+      .includes(inputValue.toLowerCase()),
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,10 +51,10 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex(prev => (prev + 1) % filteredDoctors.length);
+      setHighlightedIndex((prev) => (prev + 1) % filteredDoctors.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlightedIndex(prev => (prev - 1 + filteredDoctors.length) % filteredDoctors.length);
+      setHighlightedIndex((prev) => (prev - 1 + filteredDoctors.length) % filteredDoctors.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (highlightedIndex !== -1) {
@@ -80,7 +87,11 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
         onFocus={() => setIsOpen(true)}
         onBlur={() => {
           // If input value doesn't match selected doctor, or is empty, clear selection
-          if (selectedDoctor && inputValue !== `${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`) {
+          if (
+            selectedDoctor &&
+            inputValue !==
+              `${selectedDoctor.title} ${selectedDoctor.firstName} ${selectedDoctor.lastName}`
+          ) {
             onSelectDoctor(null);
           } else if (!inputValue) {
             onSelectDoctor(null);
@@ -94,7 +105,7 @@ const DoctorCombobox: React.FC<DoctorComboboxProps> = ({
       />
       <button
         type="button"
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
       >
         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}

@@ -17,11 +17,24 @@ interface HistoryOrdersViewProps {
 }
 
 const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
-  orders, searchHistoryTerm, setFullClientView, getDoctorFullNameById, formatDate, sortOrdersColumn, sortOrdersDirection, handleSortOrders, calculateBalance, handleDeleteOrder
+  orders,
+  searchHistoryTerm,
+  setFullClientView,
+  getDoctorFullNameById,
+  formatDate,
+  sortOrdersColumn,
+  sortOrdersDirection,
+  handleSortOrders,
+  calculateBalance,
+  handleDeleteOrder,
 }) => {
   const completedOrders = orders; // Orders are already filtered in MainAppWrapper
-  const unpaidCompletedOrders = completedOrders.filter((order: Order) => calculateBalance(order) > 0);
-  const paidCompletedOrders = completedOrders.filter((order: Order) => calculateBalance(order) <= 0);
+  const unpaidCompletedOrders = completedOrders.filter(
+    (order: Order) => calculateBalance(order) > 0,
+  );
+  const paidCompletedOrders = completedOrders.filter(
+    (order: Order) => calculateBalance(order) <= 0,
+  );
 
   const filteredPaidOrders = paidCompletedOrders.filter((order: Order) => {
     if (!order) return false;
@@ -50,12 +63,14 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
       bValue = getDoctorFullNameById(b.doctorId);
     }
     if (sortOrdersColumn === 'creationDate' || sortOrdersColumn === 'completionDate') {
-        aValue = new Date(a.creationDate).getTime();
-        bValue = new Date(b.creationDate).getTime();
+      aValue = new Date(a.creationDate).getTime();
+      bValue = new Date(b.creationDate).getTime();
     }
 
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortOrdersDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      return sortOrdersDirection === 'asc'
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
     }
     if (typeof aValue === 'number' && typeof bValue === 'number') {
       return sortOrdersDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -76,21 +91,43 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
             <table className="min-w-full bg-white">
               <thead className="border-b border-red-200 bg-red-100">
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">Orden ID</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">Paciente</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">Doctor</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">Saldo Pendiente</th>
-                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">Fecha Finalización</th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">
+                    Orden ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">
+                    Paciente
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">
+                    Doctor
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">
+                    Saldo Pendiente
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-red-700">
+                    Fecha Finalización
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {unpaidCompletedOrders.map(order => (
-                  <tr key={order._id} className="cursor-pointer border-b border-red-100 hover:bg-red-50" onClick={() => setFullClientView(order)}>
-                    <td className="px-4 py-2 text-sm font-medium text-gray-800">{order.orderNumber}</td>
+                {unpaidCompletedOrders.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="cursor-pointer border-b border-red-100 hover:bg-red-50"
+                    onClick={() => setFullClientView(order)}
+                  >
+                    <td className="px-4 py-2 text-sm font-medium text-gray-800">
+                      {order.orderNumber}
+                    </td>
                     <td className="px-4 py-2 text-sm text-gray-800">{order.patientName}</td>
-                    <td className="px-4 py-2 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
-                    <td className="px-4 py-2 text-sm font-bold text-red-600">${calculateBalance(order).toFixed(2)}</td>
-                    <td className="px-4 py-2 text-sm text-gray-800">{order.completionDate ? formatDate(order.completionDate) : 'N/A'}</td>
+                    <td className="px-4 py-2 text-sm text-gray-800">
+                      {getDoctorFullNameById(order.doctorId)}
+                    </td>
+                    <td className="px-4 py-2 text-sm font-bold text-red-600">
+                      ${calculateBalance(order).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-gray-800">
+                      {order.completionDate ? formatDate(order.completionDate) : 'N/A'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -99,50 +136,120 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
         </div>
       )}
 
-      <div className="mb-6 flex items-center space-x-4">
-        {/* Search bar remains here */}
-      </div>
+      <div className="mb-6 flex items-center space-x-4">{/* Search bar remains here */}</div>
 
       <div className="mb-8">
         <h3 className="mb-4 text-2xl font-bold text-gray-800">Órdenes Completadas y Pagadas</h3>
         {sortedPaidOrders.length === 0 ? (
-          <p className="py-10 text-center text-gray-600">No hay órdenes completadas y pagadas que coincidan con la búsqueda.</p>
+          <p className="py-10 text-center text-gray-600">
+            No hay órdenes completadas y pagadas que coincidan con la búsqueda.
+          </p>
         ) : (
           <div className="overflow-x-auto rounded-lg shadow">
             <table className="min-w-full bg-white">
               <thead className="border-b border-gray-300 bg-gray-200">
                 <tr>
-                  <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortOrders('id')}>
-                    Orden ID {sortOrdersColumn === 'id' && (sortOrdersDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
+                  <th
+                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
+                    onClick={() => handleSortOrders('id')}
+                  >
+                    Orden ID{' '}
+                    {sortOrdersColumn === 'id' &&
+                      (sortOrdersDirection === 'asc' ? (
+                        <ArrowUp size={16} className="ml-1 inline" />
+                      ) : (
+                        <ArrowDown size={16} className="ml-1 inline" />
+                      ))}
                   </th>
-                  <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortOrders('patientName')}>
-                    Paciente {sortOrdersColumn === 'patientName' && (sortOrdersDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
+                  <th
+                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
+                    onClick={() => handleSortOrders('patientName')}
+                  >
+                    Paciente{' '}
+                    {sortOrdersColumn === 'patientName' &&
+                      (sortOrdersDirection === 'asc' ? (
+                        <ArrowUp size={16} className="ml-1 inline" />
+                      ) : (
+                        <ArrowDown size={16} className="ml-1 inline" />
+                      ))}
                   </th>
-                  <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortOrders('doctorId')}>
-                    Doctor {sortOrdersColumn === 'doctorId' && (sortOrdersDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
+                  <th
+                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
+                    onClick={() => handleSortOrders('doctorId')}
+                  >
+                    Doctor{' '}
+                    {sortOrdersColumn === 'doctorId' &&
+                      (sortOrdersDirection === 'asc' ? (
+                        <ArrowUp size={16} className="ml-1 inline" />
+                      ) : (
+                        <ArrowDown size={16} className="ml-1 inline" />
+                      ))}
                   </th>
-                  <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortOrders('jobType')}>
-                    Tipo de Trabajo {sortOrdersColumn === 'jobType' && (sortOrdersDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
+                  <th
+                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
+                    onClick={() => handleSortOrders('jobType')}
+                  >
+                    Tipo de Trabajo{' '}
+                    {sortOrdersColumn === 'jobType' &&
+                      (sortOrdersDirection === 'asc' ? (
+                        <ArrowUp size={16} className="ml-1 inline" />
+                      ) : (
+                        <ArrowDown size={16} className="ml-1 inline" />
+                      ))}
                   </th>
-                  <th className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700" onClick={() => handleSortOrders('completionDate')}>
-                    Fecha Finalización {sortOrdersColumn === 'completionDate' && (sortOrdersDirection === 'asc' ? <ArrowUp size={16} className="ml-1 inline" /> : <ArrowDown size={16} className="ml-1 inline" />)}
+                  <th
+                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
+                    onClick={() => handleSortOrders('completionDate')}
+                  >
+                    Fecha Finalización{' '}
+                    {sortOrdersColumn === 'completionDate' &&
+                      (sortOrdersDirection === 'asc' ? (
+                        <ArrowUp size={16} className="ml-1 inline" />
+                      ) : (
+                        <ArrowDown size={16} className="ml-1 inline" />
+                      ))}
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">Acciones</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {sortedPaidOrders.map(order => (
-                  <tr key={order._id} className="cursor-pointer border-b border-gray-200 hover:bg-gray-50" onClick={() => setFullClientView(order)}>
+                {sortedPaidOrders.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="cursor-pointer border-b border-gray-200 hover:bg-gray-50"
+                    onClick={() => setFullClientView(order)}
+                  >
                     <td className="px-4 py-3 text-sm font-medium text-gray-800">
                       {order.orderNumber}
-                      {order.notes.length > 0 && <MessageSquare size={16} className="ml-2 inline text-blue-500" title="Esta orden tiene notas" />}
+                      {order.notes.length > 0 && (
+                        <MessageSquare
+                          size={16}
+                          className="ml-2 inline text-blue-500"
+                          title="Esta orden tiene notas"
+                        />
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">{order.patientName}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{getDoctorFullNameById(order.doctorId)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{getJobTypeCategory(order.jobType)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{formatDate(order.completionDate || '')}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">
-                      <button onClick={(e) => {e.stopPropagation(); handleDeleteOrder(order._id);}} className="text-red-600 hover:text-red-800" title="Eliminar Orden">
+                      {getDoctorFullNameById(order.doctorId)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {getJobTypeCategory(order.jobType)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {formatDate(order.completionDate || '')}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOrder(order._id);
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        title="Eliminar Orden"
+                      >
                         <Trash2 size={20} />
                       </button>
                     </td>

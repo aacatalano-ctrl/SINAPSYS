@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb+srv://aacatalano:boxy1983.@sinapsys.rce6a6o.mongodb.net/SINAPSYS?retryWrites=true&w=majority&appName=SINAPSYS';
+const MONGODB_URI =
+  'mongodb+srv://aacatalano:boxy1983.@sinapsys.rce6a6o.mongodb.net/SINAPSYS?retryWrites=true&w=majority&appName=SINAPSYS';
 
 const userSchema = new mongoose.Schema({}, { strict: false });
 const User = mongoose.model('User', userSchema);
@@ -20,7 +21,6 @@ async function cleanup() {
     console.log(`Se encontraron ${userCount} usuarios. Eliminando...`);
     const deleteResult = await User.deleteMany({});
     console.log(`Éxito. Se eliminaron ${deleteResult.deletedCount} usuarios.`);
-
   } catch (error) {
     console.error('Error durante la limpieza:', error);
   } finally {

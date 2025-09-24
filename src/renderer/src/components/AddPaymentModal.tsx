@@ -4,13 +4,18 @@ import { Plus, Minus } from 'lucide-react';
 import { Order } from '../../types';
 
 interface AddPaymentModalProps {
-    order: Order;
-    onClose: () => void;
-    isOpen: boolean;
-    onAddPayment: (amount: number, description: string) => Promise<void>;
+  order: Order;
+  onClose: () => void;
+  isOpen: boolean;
+  onAddPayment: (amount: number, description: string) => Promise<void>;
 }
 
-const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpen, onAddPayment }) => {
+const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
+  order,
+  onClose,
+  isOpen,
+  onAddPayment,
+}) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const { calculateBalance, showNotification } = useOrders();
@@ -33,7 +38,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
   const handleStepperClick = (increment: boolean) => {
     const currentVal = parseFloat(String(amount).replace(',', '.')) || 0;
     let newValue = currentVal + (increment ? 10 : -10);
-    
+
     if (newValue > balance) {
       newValue = balance;
     } else if (newValue < 0) {
@@ -46,7 +51,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Normalize the value at the last possible moment, before validation and submission.
     const normalizedAmount = String(amount).replace(',', '.');
     const parsedAmount = parseFloat(normalizedAmount);
@@ -56,7 +61,10 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
       return;
     }
     if (parsedAmount > balance) {
-      showNotification(`El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`, 'error');
+      showNotification(
+        `El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`,
+        'error',
+      );
       return;
     }
     try {
@@ -64,7 +72,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
       showNotification('Pago registrado con éxito.', 'success');
       onClose();
     } catch (error) {
-      console.error("Failed to save payment:", error);
+      console.error('Failed to save payment:', error);
       showNotification('Error al registrar el pago.', 'error');
     }
   };
@@ -76,14 +84,25 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-        <h2 className="mb-4 text-2xl font-bold text-gray-800">Registrar Pago para Orden: {order._id}</h2>
+        <h2 className="mb-4 text-2xl font-bold text-gray-800">
+          Registrar Pago para Orden: {order._id}
+        </h2>
         <div className="mb-4 rounded-lg border border-blue-200 bg-blue-100 p-3">
-          <p className="text-sm text-blue-800"><span className="font-semibold">Costo Total:</span> ${order.cost.toFixed(2)}</p>
-          <p className="text-lg text-blue-900"><span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}</p>
+          <p className="text-sm text-blue-800">
+            <span className="font-semibold">Costo Total:</span> ${order.cost.toFixed(2)}
+          </p>
+          <p className="text-lg text-blue-900">
+            <span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}
+          </p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="paymentAmount" className="mb-2 block text-sm font-semibold text-gray-700">Monto del Pago:</label>
+            <label
+              htmlFor="paymentAmount"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
+              Monto del Pago:
+            </label>
             <div className="flex w-40 items-center overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
               <span className="pl-3 text-gray-500">$</span>
               <input
@@ -117,10 +136,17 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
                 </button>
               </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Ingresa el monto o usa los botones para ajustar.</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Ingresa el monto o usa los botones para ajustar.
+            </p>
           </div>
           <div className="mb-6">
-            <label htmlFor="paymentDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción (opcional):</label>
+            <label
+              htmlFor="paymentDescription"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
+              Descripción (opcional):
+            </label>
             <input
               type="text"
               id="paymentDescription"
