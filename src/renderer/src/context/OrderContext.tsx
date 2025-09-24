@@ -18,6 +18,7 @@ interface OrderContextType {
   handleDeleteOrder: (id: string) => Promise<void>;
   handleUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
   generateReceiptPDF: (order: Order, currentUser: User) => Promise<void>;
+  generatePaymentHistoryPDF: (order: Order, currentUser: User) => Promise<void>;
   confirmCompletion: (order: Order, paymentAmount: number) => Promise<void>;
 }
 
@@ -193,6 +194,30 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
     }
   };
 
+  const generatePaymentHistoryPDF = async (order: Order, currentUser: User): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order, currentUser }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${order._id}-HistorialDePagos.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showToast('Historial de pagos descargado.');
+    } catch (error) {
+      console.error("Error generating payment history PDF:", error);
+      showToast('Error al generar el historial de pagos PDF.', 'error');
+    }
+  };
+
   const confirmCompletion = async (order: Order, paymentAmount: number): Promise<void> => {
     if (!order) return;
     try {
@@ -227,6 +252,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       handleDeleteOrder,
       handleUpdateOrder,
       generateReceiptPDF,
+      generatePaymentHistoryPDF,
       confirmCompletion,
     }}>
       {children}

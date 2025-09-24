@@ -12,9 +12,10 @@ interface OrderDetailsViewProps {
     formatDateTime: (dateString: string) => string;
     currentUser: UserType | null;
     onAddNote: () => void;
+    generatePaymentHistoryPDF: (order: Order, currentUser: UserType) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF }) => {
   const [isAbonando, setIsAbonando] = useState(false);
   const [abonoAmount, setAbonoAmount] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -165,7 +166,15 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
       </div>
 
       <div className="mb-8 rounded-lg bg-white p-6 shadow-xl">
-        <h3 className="mb-4 flex items-center text-xl font-semibold text-gray-800"><DollarSign className="mr-2" /> Historial de Pagos</h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="flex items-center text-xl font-semibold text-gray-800"><DollarSign className="mr-2" /> Historial de Pagos</h3>
+          <button
+            onClick={() => generatePaymentHistoryPDF(order, currentUser)}
+            className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
+          >
+            <ClipboardList className="mr-2" /> Generar PDF de Abonos
+          </button>
+        </div>
         {order.payments.length === 0 ? (
           <p className="text-gray-600">No hay pagos registrados para esta orden.</p>
         ) : (
