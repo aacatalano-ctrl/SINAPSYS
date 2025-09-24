@@ -372,7 +372,7 @@ app.post('/api/orders', async (req, res) => {
 
     await newOrder.save();
     res.status(201).json(newOrder);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       console.error("Error de clave duplicada al crear la orden:", error);
       return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
@@ -390,7 +390,7 @@ app.put('/api/orders/:id', async (req, res) => {
     }
 
     // Immediate notification on completion with balance
-    const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: any) => sum + p.amount, 0) || 0);
+    const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
     console.log(`Balance calculado para la orden ${updatedOrder.orderNumber}: ${currentBalance}`);
     if (req.body.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${updatedOrder.balance.toFixed(2)}.`;
@@ -525,7 +525,6 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
     doc.moveDown();
     doc.fontSize(12);
 
-    const tableTop = doc.y;
     const itemX = 50;
     const descriptionX = 150;
     const amountX = 450;
@@ -706,7 +705,15 @@ app.get('/api/reports/daily-summary', async (req, res) => {
 
 app.get('/api/reports/pdf/:reportType', async (req, res) => {
   const { reportType } = req.params;
-  let data: any[] = [];
+  type ReportItem = {
+    _id: string | { doctorName?: string };
+    totalIncome?: number;
+    totalPaid?: number;
+    totalBalance?: number;
+    count?: number;
+    totalOrders?: number;
+  };
+  let data: ReportItem[] = [];
   let title = '';
 
   try {
@@ -801,12 +808,12 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
     doc.fontSize(20).text(title, { align: 'center' });
     doc.moveDown();
 
-    data.forEach((item: any) => {
-      doc.fontSize(12).text(`ID: ${item._id?.doctorName || item._id || 'N/A'}`);
+    data.forEach((item: ReportItem) => {
+      doc.fontSize(12).text(`ID: ${typeof item._id === 'string' ? item._id : item._id?.doctorName || 'N/A'}`);
       doc.text(`Total Órdenes: ${item.totalOrders || item.count || 0}`);
-      doc.text(`Ingresos Totales: $${item.totalIncome?.toFixed(2) || '0.00'}`);
-      doc.text(`Pagado Total: $${item.totalPaid?.toFixed(2) || '0.00'}`);
-      doc.text(`Balance Pendiente: $${item.totalBalance?.toFixed(2) || '0.00'}`);
+      doc.text(`Ingresos Totales: ${item.totalIncome?.toFixed(2) || '0.00'}`);
+      doc.text(`Pagado Total: ${item.totalPaid?.toFixed(2) || '0.00'}`);
+      doc.text(`Balance Pendiente: ${item.totalBalance?.toFixed(2) || '0.00'}`);
       doc.moveDown();
     });
 

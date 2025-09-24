@@ -81,7 +81,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl max-h-[85vh] overflow-y-auto">
+      <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-8 shadow-xl">
         <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order._id}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

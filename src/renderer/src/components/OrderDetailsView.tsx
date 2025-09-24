@@ -5,8 +5,6 @@ import { Order, User as UserType } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 
 interface OrderDetailsViewProps {
-    orderToComplete: Order | null;
-    setOrderToComplete: (order: Order | null) => void;
     order: Order;
     onBack: () => void;
     getDoctorFullNameById: (id: string) => string;
@@ -16,7 +14,7 @@ interface OrderDetailsViewProps {
     onAddNote: () => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, orderToComplete, setOrderToComplete }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote }) => {
   const [isAbonando, setIsAbonando] = useState(false);
   const [abonoAmount, setAbonoAmount] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
