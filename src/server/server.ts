@@ -185,6 +185,10 @@ app.post('/api/users/security-question', async (req, res) => {
     }
   } catch (error) {
     console.error('Error al buscar la pregunta de seguridad:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor al buscar la pregunta de seguridad.' });
+  }
+});
+
 app.post('/api/users/verify-answer', async (req, res) => {
   const validation = verifyAnswerSchema.safeParse(req.body);
   if (!validation.success) {
