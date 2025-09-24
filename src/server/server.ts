@@ -83,6 +83,18 @@ const updateDoctorSchema = z.object({
   address: z.string().optional().or(z.literal('')),
 });
 
+const paymentSchema = z.object({
+  amount: z.number().positive("El monto del pago debe ser un número positivo."),
+  date: z.string().min(1, "La fecha del pago es requerida."),
+  description: z.string().optional().or(z.literal('')),
+});
+
+const noteSchema = z.object({
+  text: z.string().min(1, "El texto de la nota es requerido."),
+  timestamp: z.string().min(1, "La marca de tiempo de la nota es requerida."),
+  author: z.string().min(1, "El autor de la nota es requerido."),
+});
+
 const updateOrderSchema = z.object({
   doctorId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
     message: "El ID del doctor no es válido.",
@@ -277,18 +289,6 @@ const createDoctorSchema = z.object({
   email: z.string().email("El formato del email no es válido.").optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
-});
-
-const paymentSchema = z.object({
-  amount: z.number().positive("El monto del pago debe ser un número positivo."),
-  date: z.string().min(1, "La fecha del pago es requerida."),
-  description: z.string().optional().or(z.literal('')),
-});
-
-const noteSchema = z.object({
-  text: z.string().min(1, "El texto de la nota es requerido."),
-  timestamp: z.string().min(1, "La marca de tiempo de la nota es requerida."),
-  author: z.string().min(1, "El autor de la nota es requerido."),
 });
 
 const createOrderSchema = z.object({
