@@ -12,6 +12,7 @@ import { purgeOldOrders } from './database/maintenance.js';
 import { checkUnpaidOrders, createNotification } from './database/notifications.js';
 import { jobTypePrefixMap } from './database/constants.js';
 import type { Payment } from '../types.js';
+import { z } from 'zod';
 
 // --- SEQUENCE COUNTER SCHEMA ---
 const SequenceSchema = new mongoose.Schema({
@@ -267,7 +268,7 @@ app.delete('/api/users/:id', adminAuthMiddleware, async (req, res) => {
   }
 });
 
-import { z } from 'zod';
+
 
 const createDoctorSchema = z.object({
   title: z.string().min(1, "El título es requerido."),
