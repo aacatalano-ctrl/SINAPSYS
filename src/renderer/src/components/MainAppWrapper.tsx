@@ -129,7 +129,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleNotificationClick = (notification: Notification) => {
-    const order = orders.find(o => o.id === notification.orderId);
+    const order = orders.find(o => o._id === notification.orderId);
     if (order) {
       handleViewOrderDetails(order);
     }
