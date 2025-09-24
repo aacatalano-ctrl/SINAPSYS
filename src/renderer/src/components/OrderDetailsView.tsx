@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus } from 'lucide-react';
+import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus, Edit } from 'lucide-react';
 import { Order, User as UserType } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 
 interface OrderDetailsViewProps {
     order: Order;
     onBack: () => void;
+    onEditOrder: (order: Order) => void;
     getDoctorFullNameById: (id: string) => string;
     formatDate: (dateString: string) => string;
     formatDateTime: (dateString: string) => string;
@@ -15,7 +16,7 @@ interface OrderDetailsViewProps {
     generatePaymentHistoryPDF: (order: Order, currentUser: UserType) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF }) => {
   const [isAbonando, setIsAbonando] = useState(false);
   const [abonoAmount, setAbonoAmount] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -54,12 +55,20 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, getD
 
   return (
     <div className="rounded-lg bg-white p-8 shadow-xl">
-      <button
-        onClick={onBack}
-        className="mb-6 flex items-center font-semibold text-blue-600 hover:text-blue-800"
-      >
-        <ArrowLeft className="mr-2" /> Volver a la Lista
-      </button>
+      <div className="mb-6 flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="flex items-center font-semibold text-blue-600 hover:text-blue-800"
+        >
+          <ArrowLeft className="mr-2" /> Volver a la Lista
+        </button>
+        <button
+          onClick={() => onEditOrder(order)}
+          className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-green-700"
+        >
+          <Edit className="mr-2" size={20} /> Editar Orden
+        </button>
+      </div>
       <h2 className="mb-6 flex items-center text-3xl font-bold text-gray-800">
         <ClipboardList className="mr-3 text-blue-600" size={30} /> Detalles de la Orden: {order.orderNumber}
       </h2>

@@ -86,7 +86,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-8 shadow-xl">
         <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order.orderNumber}</h3>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
             <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
             <DoctorCombobox
