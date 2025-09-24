@@ -63,23 +63,42 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedDoctor || !formData.patientName || !formData.jobType || isNaN(formData.cost)) {
-      showNotification('Por favor, completa todos los campos obligatorios, incluyendo el doctor.', 'error');
+    if (!selectedDoctor) {
+      showNotification('Por favor, selecciona un doctor.', 'error');
       return;
     }
 
-    const updatedOrderData: Partial<Order> = {
-      ...formData,
-      doctorId: selectedDoctor._id, // Use the id from the selected doctor object
-      payments: order.payments ? [...order.payments] : [],
+    // Construct the payload manually to avoid sending extraneous fields.
+    const updatedOrderData: Partial<Omit<Order, '_id'>> = {
+      patientName: formData.patientName,
+      jobType: formData.jobType,
+      cost: formData.cost,
+      priority: formData.priority,
+      caseDescription: formData.caseDescription,
+      doctorId: selectedDoctor._id,
     };
 
-    if (updatedOrderData.payments && updatedOrderData.payments.length > 0) {
-      updatedOrderData.payments[0].amount = parseFloat(formData.initialPaymentAmount);
-    }
+    // Handle payment update logic separately.
+    const payments = order.payments ? [...order.payments] : [];
+    const initialPaymentAmount = parseFloat(formData.initialPaymentAmount);
 
-    onSaveOrder(formData.id, updatedOrderData);
-    onClose();
+    if (!isNaN(initialPaymentAmount)) {
+      if (payments.length > 0) {
+        payments[0].amount = initialPaymentAmount;
+      }
+    }
+    updatedOrderData.payments = payments;
+
+    // onSaveOrder is handleUpdateOrder from the context, which is async.
+    // We chain .then() to ensure the modal only closes on successful update.
+    onSaveOrder(order._id, updatedOrderData)
+      .then(() => {
+        onClose();
+      })
+      .catch((error) => {
+        // The context's handleUpdateOrder already shows a toast on error.
+        console.error("Failed to update order:", error);
+      });
   };
 
   return (

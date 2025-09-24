@@ -14,6 +14,8 @@ interface OrderContextType {
   calculateBalance: (order: Order) => number;
   addPaymentToOrder: (orderId: string, amount: number, description: string) => Promise<void>;
   handleSaveNote: (orderId: string, noteText: string) => Promise<void>;
+  handleUpdateNote: (orderId: string, noteId: string, newText: string) => Promise<void>;
+  handleDeleteNote: (orderId: string, noteId: string) => Promise<void>;
   handleUpdateOrderStatus: (orderId: string, newStatus: 'Pendiente' | 'Procesando' | 'Completado', completionDate?: string | null) => Promise<void>;
   handleDeleteOrder: (id: string) => Promise<void>;
   handleUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
@@ -148,6 +150,40 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
     }
   };
 
+  const handleUpdateNote = async (orderId: string, noteId: string, newText: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newText }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      await fetchOrders();
+      showToast('Nota actualizada con éxito.', 'success');
+    } catch (error) {
+      console.error("Failed to update note:", error);
+      showToast('Error al actualizar la nota.', 'error');
+      throw error;
+    }
+  };
+
+  const handleDeleteNote = async (orderId: string, noteId: string): Promise<void> => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+      try {
+        const response = await fetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        await fetchOrders();
+        showToast('Nota eliminada con éxito.', 'success');
+      } catch (error) {
+        console.error("Failed to delete note:", error);
+        showToast('Error al eliminar la nota.', 'error');
+        throw error;
+      }
+    }
+  };
+
   const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status'], completionDate: string | null = null): Promise<void> => {
     const updateFields: Partial<Order> = { status: newStatus };
     if (newStatus === 'Completado') {
@@ -248,6 +284,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       calculateBalance,
       addPaymentToOrder,
       handleSaveNote,
+      handleUpdateNote,
+      handleDeleteNote,
       handleUpdateOrderStatus,
       handleDeleteOrder,
       handleUpdateOrder,

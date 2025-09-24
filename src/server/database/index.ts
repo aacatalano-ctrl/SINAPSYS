@@ -57,9 +57,10 @@ const userSchema = new mongoose.Schema<User>({
 });
 
 const notificationSchema = new mongoose.Schema<Notification>({
+  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
   message: { type: String, required: true },
   read: { type: Boolean, default: false },
-}, { timestamps: true }); // Fixed
+}, { timestamps: true });
 
 // 2. Create Mongoose Models
 const DoctorModel = mongoose.model<Doctor>('Doctor', doctorSchema);

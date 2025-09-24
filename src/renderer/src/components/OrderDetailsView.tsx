@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus, Edit } from 'lucide-react';
+import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus, Edit, Trash2, Save } from 'lucide-react';
 import { Order, User as UserType } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 
@@ -21,7 +21,9 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
   const [abonoAmount, setAbonoAmount] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
-  const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification } = useOrders();
+  const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification, handleUpdateNote, handleDeleteNote } = useOrders();
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteText, setEditingNoteText] = useState('');
 
   if (!order) return null;
 
@@ -179,7 +181,8 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
           <h3 className="flex items-center text-xl font-semibold text-gray-800"><DollarSign className="mr-2" /> Historial de Pagos</h3>
           <button
             onClick={() => generatePaymentHistoryPDF(order, currentUser)}
-            className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
+            disabled={order.payments.length === 0}
+            className="flex items-center rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             <ClipboardList className="mr-2" /> Generar PDF de Abonos
           </button>
@@ -217,11 +220,66 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
         ) : (
           <div className="mb-4 space-y-4">
             {order.notes.map((note) => (
-              <div key={note.id || note.timestamp} className="rounded-lg border border-gray-200 bg-gray-100 p-4">
-                <p className="text-gray-800">{note.text}</p>
-                <p className="mt-2 text-right text-xs text-gray-500">
-                  <span className="font-semibold">{note.author}</span> el {formatDateTime(note.timestamp)}
-                </p>
+              <div key={note._id} className="rounded-lg border border-gray-200 bg-gray-100 p-4">
+                {editingNoteId === note._id ? (
+                  <>
+                    <textarea
+                      value={editingNoteText}
+                      onChange={(e) => setEditingNoteText(e.target.value)}
+                      className="w-full resize-y appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                    />
+                    <div className="mt-2 flex items-center justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          handleUpdateNote(order._id, editingNoteId, editingNoteText);
+                          setEditingNoteId(null);
+                          setEditingNoteText('');
+                        }}
+                        className="flex items-center rounded-lg bg-green-600 px-3 py-1 text-sm font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
+                      >
+                        <Save size={16} className="mr-1" /> Guardar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingNoteId(null);
+                          setEditingNoteText('');
+                        }}
+                        className="rounded-lg bg-gray-300 px-3 py-1 text-sm font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-800">{note.text}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-gray-500">
+                        <span className="font-semibold">{note.author}</span> el {formatDateTime(note.timestamp)}
+                      </p>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => {
+                            setEditingNoteId(note._id);
+                            setEditingNoteText(note.text);
+                          }}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Editar Nota"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteNote(order._id, note._id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Eliminar Nota"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

@@ -497,6 +497,58 @@ app.post('/api/orders/:orderId/notes', async (req, res) => {
   }
 });
 
+app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
+  try {
+    const { orderId, noteId } = req.params;
+    const { text } = req.body;
+
+    const order = await db.orders.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    const note = order.notes.id(noteId);
+    if (!note) {
+      return res.status(404).json({ error: 'Nota no encontrada.' });
+    }
+
+    note.text = text;
+    note.timestamp = new Date().toISOString(); // Update timestamp on edit
+
+    await order.save();
+    res.json(order);
+  } catch (error) {
+    console.error('Error al actualizar la nota:', error);
+    res.status(500).json({ error: 'Error al actualizar la nota.' });
+  }
+});
+
+app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
+  try {
+    const { orderId, noteId } = req.params;
+
+    const order = await db.orders.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    const note = order.notes.id(noteId);
+
+    if (!note) {
+      return res.status(404).json({ error: 'Nota no encontrada.' });
+    }
+
+    // Mongoose subdocuments have a .remove() method.
+    note.remove();
+
+    await order.save();
+    res.json(order);
+  } catch (error) {
+    console.error('Error al eliminar la nota:', error);
+    res.status(500).json({ error: 'Error al eliminar la nota.' });
+  }
+});
+
 app.post('/api/orders/:orderId/receipt', async (req, res) => {
   try {
     const { currentUser } = req.body;
