@@ -38,12 +38,28 @@ app.use((req, res, next) => {
 
 // --- API ENDPOINTS ---
 
+const createUserSchema = z.object({
+  username: z.string({ required_error: "El nombre de usuario es requerido." }).min(1, "El nombre de usuario no puede estar vacío."),
+  password: z.string({ required_error: "La contraseña es requerida." }).min(6, "La contraseña debe tener al menos 6 caracteres."),
+  securityQuestion: z.string({ required_error: "La pregunta de seguridad es requerida." }).min(1, "La pregunta de seguridad no puede estar vacía."),
+  securityAnswer: z.string({ required_error: "La respuesta de seguridad es requerida." }).min(1, "La respuesta de seguridad no puede estar vacía."),
+  nombre: z.string({ required_error: "El nombre es requerido." }).min(1, "El nombre no puede estar vacío."),
+  apellido: z.string({ required_error: "El apellido es requerido." }).min(1, "El apellido no puede estar vacío."),
+  cedula: z.string({ required_error: "La cédula es requerida." }).min(1, "La cédula no puede estar vacía."),
+  direccion: z.string({ required_error: "La dirección es requerida." }).min(1, "La dirección no puede estar vacía."),
+  razonSocial: z.string({ required_error: "La razón social es requerida." }).min(1, "La razón social no puede estar vacía."),
+  rif: z.string({ required_error: "El RIF es requerido." }).min(1, "El RIF no puede estar vacío."),
+  role: z.enum(['admin', 'user'], { invalid_type_error: "El rol debe ser 'admin' o 'user'." }).default('user').optional(),
+  status: z.enum(['active', 'blocked'], { invalid_type_error: "El estado debe ser 'active' o 'blocked'." }).default('active').optional(),
+});
+
 // --- USER AUTHENTICATION ---
 app.post('/api/users', adminAuthMiddleware, async (req, res) => {
-  const { username, password, securityQuestion, securityAnswer, nombre, apellido, cedula, direccion, razonSocial, rif, role } = req.body;
-  if (!username || !password || !securityQuestion || !securityAnswer || !nombre || !apellido || !cedula || !direccion || !razonSocial || !rif) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos.' });
+  const validation = createUserSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
   }
+  const { username, password, securityQuestion, securityAnswer, nombre, apellido, cedula, direccion, razonSocial, rif, role, status } = validation.data;
 
   try {
     const existingUser = await db.users.findOne({ username });
@@ -194,7 +210,7 @@ app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
     }
 
     if (userToModify.role === 'admin') {
-      if (masterCode !== '868686') {
+      if (masterCode !== process.env.MASTER_CODE) {
         return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
@@ -223,7 +239,7 @@ app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
     }
 
     if (userToModify.role === 'admin') {
-      if (masterCode !== '868686') {
+      if (masterCode !== process.env.MASTER_CODE) {
         return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
@@ -254,6 +270,45 @@ app.delete('/api/users/:id', adminAuthMiddleware, async (req, res) => {
   }
 });
 
+import { z } from 'zod';
+
+const createDoctorSchema = z.object({
+  title: z.string({ required_error: "El título es requerido." }).min(1, "El título no puede estar vacío."),
+  firstName: z.string({ required_error: "El nombre es requerido." }).min(1, "El nombre no puede estar vacío."),
+  lastName: z.string({ required_error: "El apellido es requerido." }).min(1, "El apellido no puede estar vacío."),
+  email: z.string().email("El formato del email no es válido.").optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+});
+
+const paymentSchema = z.object({
+  amount: z.number().positive("El monto del pago debe ser un número positivo."),
+  date: z.string().min(1, "La fecha del pago es requerida."),
+  description: z.string().optional().or(z.literal('')),
+});
+
+const noteSchema = z.object({
+  text: z.string().min(1, "El texto de la nota es requerido."),
+  timestamp: z.string().min(1, "La marca de tiempo de la nota es requerida."),
+  author: z.string().min(1, "El autor de la nota es requerido."),
+});
+
+const createOrderSchema = z.object({
+  doctorId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "El ID del doctor no es válido.",
+  }),
+  patientName: z.string().min(1, "El nombre del paciente es requerido."),
+  jobType: z.string().min(1, "El tipo de trabajo es requerido."),
+  cost: z.number().positive("El costo debe ser un número positivo."),
+  status: z.string().min(1, "El estado de la orden es requerido."),
+  creationDate: z.string().min(1, "La fecha de creación es requerida."),
+  completionDate: z.string().optional().or(z.literal('')),
+  priority: z.string().optional().or(z.literal('')),
+  caseDescription: z.string().optional().or(z.literal('')),
+  payments: z.array(paymentSchema).optional(),
+  notes: z.array(noteSchema).optional(),
+});
+
 // --- DOCTORS ---
 app.get('/api/doctors', async (req, res) => {
   try {
@@ -266,13 +321,19 @@ app.get('/api/doctors', async (req, res) => {
 });
 
 app.post('/api/doctors', async (req, res) => {
+  const validation = createDoctorSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+
   try {
-    const newDoctor = new db.doctors(req.body);
+    const newDoctor = new db.doctors(validation.data);
     await newDoctor.save();
     res.status(201).json(newDoctor);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    res.status(400).json({ error: 'Error al agregar doctor' });
+    // Handle potential database errors, e.g., unique constraint violation
+    console.error("Error al agregar doctor:", error);
+    res.status(500).json({ error: 'Error interno del servidor al agregar el doctor.' });
   }
 });
 
@@ -348,8 +409,13 @@ app.get('/api/orders/:id', async (req, res) => {
 });
 
 app.post('/api/orders', async (req, res) => {
+  const validation = createOrderSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+
   try {
-    const orderData = req.body;
+    const orderData = validation.data; // Use validated data
 
     const category = orderData.jobType.split(' - ')[0].trim();
     const prefix = jobTypePrefixMap[category] || 'ORD';
@@ -378,7 +444,7 @@ app.post('/api/orders', async (req, res) => {
       return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
     }
     console.error("Error creating order:", error);
-    res.status(400).json({ error: 'Error al crear la orden.' });
+    res.status(500).json({ error: 'Error interno del servidor al crear la orden.' }); // Changed 400 to 500 for internal errors
   }
 });
 
