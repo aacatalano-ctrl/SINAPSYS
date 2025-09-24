@@ -72,7 +72,7 @@ export interface Order {
 
 export interface Notification {
   _id?: string;
-  orderId: string;
+  orderId: mongoose.Types.ObjectId | string;
   message: string;
   createdAt: string;
   read: boolean;

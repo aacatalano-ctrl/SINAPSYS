@@ -507,7 +507,7 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const note = order.notes.id(noteId);
+    const note = (order.notes as any).id(noteId);
     if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }
@@ -532,7 +532,7 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const note = order.notes.id(noteId);
+    const note = (order.notes as any).id(noteId);
 
     if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
