@@ -197,6 +197,21 @@ app.post('/api/users/verify-answer', async (req, res) => {
   const { username, answer } = validation.data;
 
   try {
+    const user = await db.users.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+    const isMatch = await bcrypt.compare(answer, user.securityAnswer!);
+    if (isMatch) {
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, message: 'Respuesta de seguridad incorrecta.' });
+    }
+  } catch (error) {
+    console.error('Error al verificar la respuesta:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al verificar la respuesta.' });
+  }
+});
 
 
 app.post('/api/users/reset-password', async (req, res) => {
