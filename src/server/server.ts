@@ -431,9 +431,16 @@ app.post('/api/orders/:orderId/payments', async (req, res) => {
 
     order.payments.push(payment);
     order.balance -= payment.amount;
-    order.paidAmount += payment.amount;
-
     await order.save();
+
+    const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    const balance = order.cost - totalPaid;
+
+    if (balance <= 0) {
+      const message = `La orden ${order.orderNumber} ha sido pagada en su totalidad.`;
+      createNotification(order._id.toString(), message).catch(console.error);
+    }
+
     res.status(201).json(order);
   } catch (error) {
     console.error('Error al agregar pago:', error);

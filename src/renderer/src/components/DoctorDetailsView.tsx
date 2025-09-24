@@ -6,9 +6,10 @@ import { Doctor, Order, Payment } from '../../types'; // Import Doctor, Order, P
 interface DoctorDetailsViewProps {
              doctor: Doctor;
              onBack: () => void;
+             onViewOrderDetails: (order: Order) => void;
            }
 
-           const DoctorDetailsView: React.FC<DoctorDetailsViewProps> = ({ doctor, onBack }) => {
+           const DoctorDetailsView: React.FC<DoctorDetailsViewProps> = ({ doctor, onBack, onViewOrderDetails }) => {
   const { orders, calculateBalance } = useOrders(); // Use useOrders hook directly
   if (!doctor) return null;
 
@@ -67,7 +68,7 @@ interface DoctorDetailsViewProps {
               </thead>
               <tbody>
                 {activeDoctorOrders.map(order => (
-                  <tr key={order._id} className="cursor-pointer border-b border-gray-200 hover:bg-gray-50" onClick={() => { /* setFullClientView(order) */ }}>
+                  <tr key={order._id} className="cursor-pointer border-b border-gray-200 hover:bg-gray-50" onClick={() => onViewOrderDetails(order)}>
                     <td className="px-4 py-2 text-sm font-medium text-gray-800">{order.orderNumber}</td>
                     <td className="px-4 py-2 text-sm text-gray-800">{order.patientName}</td>
                     <td className="px-4 py-2 text-sm text-gray-800">{order.jobType}</td>

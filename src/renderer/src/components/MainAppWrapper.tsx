@@ -222,7 +222,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   };
 
   const handleViewOrderDetails = (order: Order) => {
-    console.log("Viewing details for order ID:", order._id);
+    console.log("Viewing details for order ID:", order.orderNumber);
     setSelectedOrder(order);
     handleSetActiveView('orderDetails');
   };
