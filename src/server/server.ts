@@ -127,6 +127,33 @@ app.post('/api/login', async (req, res) => {
   }
   const { username, password } = validation.data;
 
+  try {
+    const user = await db.users.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
+    }
+
+    if (user.status === 'blocked') {
+      return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password!);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.json({ success: true, user: { username: user.username, role: user.role }, token });
+  } catch (error) {
+    console.error(`Error during login for user ${username}:`, error);
+    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+  }
+});
+
 
 const securityQuestionSchema = z.object({
   username: z.string().min(1, "El nombre de usuario es requerido."),
