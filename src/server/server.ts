@@ -53,87 +53,89 @@ const createUserSchema = z.object({
   status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }).default('active').optional(),
 });
 
-// --- USER AUTHENTICATION ---
-app.post('/api/users', adminAuthMiddleware, async (req, res) => {
-  const validation = createUserSchema.safeParse(req.body);
-  if (!validation.success) {
-    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
-  }
-  const { username, password, securityQuestion, securityAnswer, nombre, apellido, cedula, direccion, razonSocial, rif, role, status } = validation.data;
+const updateUserSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario no puede estar vacío.").optional(),
+  securityQuestion: z.string().min(1, "La pregunta de seguridad no puede estar vacía.").optional(),
+  securityAnswer: z.string().min(1, "La respuesta de seguridad no puede estar vacía.").optional(),
+  nombre: z.string().min(1, "El nombre no puede estar vacío.").optional(),
+  apellido: z.string().min(1, "El apellido no puede estar vacío.").optional(),
+  cedula: z.string().min(1, "La cédula no puede estar vacía.").optional(),
+  direccion: z.string().min(1, "La dirección no puede estar vacía.").optional(),
+  razonSocial: z.string().min(1, "La razón social no puede estar vacía.").optional(),
+  rif: z.string().min(1, "El RIF no puede estar vacío.").optional(),
+  role: z.enum(['admin', 'user'], { message: "El rol debe ser 'admin' o 'user'." }).optional(),
+  status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }).optional(),
+  masterCode: z.string().optional(),
+});
 
-  try {
-    const existingUser = await db.users.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Este nombre de usuario ya existe.' });
-    }
+const updateUserStatusSchema = z.object({
+  status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }),
+  masterCode: z.string().optional(),
+});
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
+const updateDoctorSchema = z.object({
+  title: z.string().min(1, "El título no puede estar vacío.").optional(),
+  firstName: z.string().min(1, "El nombre no puede estar vacío.").optional(),
+  lastName: z.string().min(1, "El apellido no puede estar vacío.").optional(),
+  email: z.string().email("El formato del email no es válido.").optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+});
 
-    const newUser = new db.users({
-      username,
-      password: hashedPassword,
-      securityQuestion,
-      securityAnswer: hashedAnswer,
-      nombre,
-      apellido,
-      cedula,
-      direccion,
-      razonSocial,
-      rif,
-      role: role || 'user',
-      status: 'active',
-    });
+const updateOrderSchema = z.object({
+  doctorId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "El ID del doctor no es válido.",
+  }).optional(),
+  patientName: z.string().min(1, "El nombre del paciente es requerido.").optional(),
+  jobType: z.string().min(1, "El tipo de trabajo es requerido.").optional(),
+  cost: z.number().positive("El costo debe ser un número positivo.").optional(),
+  status: z.string().min(1, "El estado de la orden es requerido.").optional(),
+  creationDate: z.string().min(1, "La fecha de creación es requerida.").optional(),
+  completionDate: z.string().optional().or(z.literal('')),
+  priority: z.string().optional().or(z.literal('')),
+  caseDescription: z.string().optional().or(z.literal('')),
+  payments: z.array(paymentSchema).optional(),
+  notes: z.array(noteSchema).optional(),
+});
 
-    await newUser.save();
-    res.status(201).json({ username: newUser.username, role: newUser.role, nombre: newUser.nombre, apellido: newUser.apellido, cedula: newUser.cedula, direccion: newUser.direccion, razonSocial: newUser.razonSocial, rif: newUser.rif });
-  } catch (error) {
-    console.error('Error al crear el usuario:', error);
-    res.status(500).json({ error: 'Error al crear el usuario.' });
-  }
+const updateNoteSchema = z.object({
+  text: z.string().min(1, "El texto de la nota es requerido."),
+});
+
+const loginSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario es requerido."),
+  password: z.string().min(1, "La contraseña es requerida."),
 });
 
 app.post('/api/login', async (req, res) => {
-  console.log('Login attempt received.');
-  const { username, password } = req.body;
-  if (!username || !password) {
-    console.log('Login attempt: Missing username or password.');
-    return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
+  const validation = loginSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ success: false, errors: validation.error.flatten().fieldErrors });
   }
-  try {
-    console.log(`Login attempt for user: ${username}`);
-    const user = await db.users.findOne({ username });
-    if (!user) {
-      console.log(`Login attempt for user ${username}: User not found.`);
-      return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
-    }
+  const { username, password } = validation.data;
 
-    if (user.status === 'blocked') {
-      console.log(`Login attempt for user ${username}: User is blocked.`);
-      return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
-    }
 
-    const isMatch = await bcrypt.compare(password, user.password!);
-    if (!isMatch) {
-      console.log(`Login attempt for user ${username}: Incorrect password.`);
-      return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
-    }
+const securityQuestionSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario es requerido."),
+});
 
-    const token = jwt.sign(
-      { userId: user._id, username: user.username, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-    console.log(`Login successful for user: ${username}`);
-    res.json({ success: true, user: { username: user.username, role: user.role }, token });
-  } catch (error) {
-    console.error(`Error during login for user ${username}:`, error);
-    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
-  }
+const verifyAnswerSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario es requerido."),
+  answer: z.string().min(1, "La respuesta de seguridad es requerida."),
+});
+
+const resetPasswordSchema = z.object({
+  username: z.string().min(1, "El nombre de usuario es requerido."),
+  newPassword: z.string().min(6, "La nueva contraseña debe tener al menos 6 caracteres."),
 });
 
 app.post('/api/users/security-question', async (req, res) => {
-  const { username } = req.body;
+  const validation = securityQuestionSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ success: false, errors: validation.error.flatten().fieldErrors });
+  }
+  const { username } = validation.data;
+
   try {
     const user = await db.users.findOne({ username });
     if (user) {
@@ -141,48 +143,38 @@ app.post('/api/users/security-question', async (req, res) => {
     } else {
       res.status(404).json({ success: false, error: 'Usuario no encontrado' });
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Error al buscar la pregunta de seguridad.' });
-  }
-});
-
+    console.error('Error al buscar la pregunta de seguridad:', error);
 app.post('/api/users/verify-answer', async (req, res) => {
-  const { username, answer } = req.body;
+  const validation = verifyAnswerSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ success: false, errors: validation.error.flatten().fieldErrors });
+  }
+  const { username, answer } = validation.data;
+
+  try {
+
+
+app.post('/api/users/reset-password', async (req, res) => {
+  const validation = resetPasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ success: false, errors: validation.error.flatten().fieldErrors });
+  }
+  const { username, newPassword } = validation.data;
+
   try {
     const user = await db.users.findOne({ username });
     if (!user) {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+      return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
     }
-    const isMatch = await bcrypt.compare(answer, user.securityAnswer!);
-    if (isMatch) {
-      res.json({ success: true });
-    } else {
-      res.status(401).json({ success: false, message: 'Respuesta de seguridad incorrecta.' });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al verificar la respuesta.' });
-  }
-});
 
-app.post('/api/users/reset-password', async (req, res) => {
-  const { username, newPassword } = req.body;
-  try {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const updatedUser = await db.users.findOneAndUpdate(
-      { username },
-      { password: hashedPassword },
-      { new: true }
-    );
-    if (updatedUser) {
-      res.json({ success: true });
-    } else {
-      res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    await db.users.updateOne({ username }, { $set: { password: hashedPassword } });
+
+    res.json({ success: true, message: 'Contraseña restablecida exitosamente' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al restablecer la contraseña.' });
+    console.error('Error al restablecer la contraseña:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -198,12 +190,13 @@ app.get('/api/users', adminAuthMiddleware, async (req, res) => {
 });
 
 app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
-  try {
-    const { status, masterCode } = req.body;
-    if (!['active', 'blocked'].includes(status)) {
-      return res.status(400).json({ error: 'Estado no válido.' });
-    }
+  const validation = updateUserStatusSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const { status, masterCode } = validation.data;
 
+  try {
     const userToModify = await db.users.findById(req.params.id);
     if (!userToModify) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
@@ -229,7 +222,11 @@ app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
 });
 
 app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
-  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status, masterCode } = req.body;
+  const validation = updateUserSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status, masterCode } = validation.data;
   const userId = req.params.id;
 
   try {
@@ -338,15 +335,20 @@ app.post('/api/doctors', async (req, res) => {
 });
 
 app.put('/api/doctors/:id', async (req, res) => {
+  const validation = updateDoctorSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+
   try {
-    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, validation.data, { new: true });
     if (!updatedDoctor) {
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
     res.json(updatedDoctor);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    res.status(400).json({ error: 'Error al actualizar doctor.' });
+    console.error('Error al actualizar doctor:', error);
+    res.status(500).json({ error: 'Error interno del servidor al actualizar el doctor.' });
   }
 });
 
@@ -449,8 +451,13 @@ app.post('/api/orders', async (req, res) => {
 });
 
 app.put('/api/orders/:id', async (req, res) => {
+  const validation = updateOrderSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+
   try {
-    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('doctorId');
+    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
@@ -458,16 +465,16 @@ app.put('/api/orders/:id', async (req, res) => {
     // Immediate notification on completion with balance
     const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
     console.log(`Balance calculado para la orden ${updatedOrder.orderNumber}: ${currentBalance}`);
-    if (req.body.status === 'Completado' && currentBalance > 0) {
+    if (validation.data.status === 'Completado' && currentBalance > 0) { // Use validated data for status check
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
       // Fire and forget notification creation
       createNotification(updatedOrder._id.toString(), message).catch(console.error);
     }
 
     res.json(updatedOrder);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    res.status(400).json({ error: 'Error al actualizar la orden.' });
+    console.error('Error al actualizar la orden:', error);
+    res.status(500).json({ error: 'Error interno del servidor al actualizar la orden.' });
   }
 });
 
@@ -486,17 +493,21 @@ app.delete('/api/orders/:id', async (req, res) => {
 
 // --- PAYMENTS ---
 app.post('/api/orders/:orderId/payments', async (req, res) => {
+  const validation = paymentSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const paymentData = validation.data;
+
   try {
     const { orderId } = req.params;
-    const payment: Payment = req.body;
-
     const order = await db.orders.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    order.payments.push(payment);
-    order.balance -= payment.amount;
+    order.payments.push(paymentData);
+    order.balance -= paymentData.amount;
     await order.save();
 
     const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
@@ -510,7 +521,7 @@ app.post('/api/orders/:orderId/payments', async (req, res) => {
     res.status(201).json(order);
   } catch (error) {
     console.error('Error al agregar pago:', error);
-    res.status(500).json({ error: 'Error al agregar pago.' });
+    res.status(500).json({ error: 'Error interno del servidor al agregar pago.' });
   }
 });
 
@@ -541,10 +552,14 @@ app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
 });
 
 app.post('/api/orders/:orderId/notes', async (req, res) => {
+  const validation = noteSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const noteData = validation.data;
+
   try {
     const { orderId } = req.params;
-    const note = req.body;
-
     const order = await db.orders.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
@@ -553,21 +568,25 @@ app.post('/api/orders/:orderId/notes', async (req, res) => {
     if (!order.notes) {
       order.notes = [];
     }
-    order.notes.push(note);
+    order.notes.push(noteData);
 
     await order.save();
     res.status(201).json(order);
   } catch (error) {
     console.error('Error al agregar nota:', error);
-    res.status(500).json({ error: 'Error al agregar nota.' });
+    res.status(500).json({ error: 'Error interno del servidor al agregar nota.' });
   }
 });
 
 app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
+  const validation = updateNoteSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const { text } = validation.data;
+
   try {
     const { orderId, noteId } = req.params;
-    const { text } = req.body;
-
     const order = await db.orders.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
@@ -585,7 +604,7 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error('Error al actualizar la nota:', error);
-    res.status(500).json({ error: 'Error al actualizar la nota.' });
+    res.status(500).json({ error: 'Error interno del servidor al actualizar la nota.' });
   }
 });
 
