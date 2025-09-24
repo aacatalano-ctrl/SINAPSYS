@@ -4,19 +4,14 @@ import { Order } from '../../types';
 import { Plus, Minus } from 'lucide-react';
 
 interface ConfirmCompletionModalProps {
-  isOpen: boolean;
-  order: Order | null;
-  onClose: () => void;
+    isOpen: boolean;
+    order: Order | null;
+    onClose: () => void;
 }
 
-const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
-  isOpen,
-  order,
-  onClose,
-}) => {
+const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({ isOpen, order, onClose }) => {
   const [paymentAmount, setPaymentAmount] = useState('');
-  const { calculateBalance, addPaymentToOrder, handleUpdateOrderStatus, showNotification } =
-    useOrders();
+  const { calculateBalance, addPaymentToOrder, handleUpdateOrderStatus, showNotification } = useOrders();
 
   const balance = useMemo(() => {
     if (!order) return 0;
@@ -52,7 +47,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
     let currentVal = parseFloat(paymentAmount);
     if (isNaN(currentVal)) currentVal = 0;
     let newValue = currentVal + (increment ? 10 : -10);
-
+    
     if (newValue > balance) {
       newValue = balance;
     } else if (newValue < 0) {
@@ -70,10 +65,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
       // Only add payment if amount is positive
       if (parsedAmount > 0) {
         if (parsedAmount > balance) {
-          showNotification(
-            `El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`,
-            'error',
-          );
+          showNotification(`El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`, 'error');
           return;
         }
         await addPaymentToOrder(order._id, parsedAmount, 'Pago al completar');
@@ -82,38 +74,28 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
       // Always update status to 'Completado'
       await handleUpdateOrderStatus(order._id, 'Completado', new Date().toISOString());
       showNotification(`Orden ${order.orderNumber} marcada como completada.`, 'success');
+      onClose();
     } catch (error) {
-      console.error('Error during order completion:', error);
-      showNotification('Error al confirmar la finalización.', 'error');
-    } finally {
-      onClose(); // Ensure modal closes regardless of success or error
+      console.error("Error during order completion:", error);
+      showNotification('Error al confirmar la finalización.', 'error'); // Add notification for error
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-        <h2 className="mb-4 text-2xl font-bold text-gray-800">
-          Finalizar Orden: {order.orderNumber}
-        </h2>
+        <h2 className="mb-4 text-2xl font-bold text-gray-800">Finalizar Orden: {order.orderNumber}</h2>
         <p className="mb-4 text-gray-700">
           Vas a marcar esta orden como <span className="font-bold text-green-600">Completada</span>.
         </p>
-
+        
         <div className="mb-6 rounded-lg border border-blue-200 bg-blue-100 p-3">
-          <p className="text-lg text-blue-900">
-            <span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}
-          </p>
+          <p className="text-lg text-blue-900"><span className="font-semibold">Saldo Pendiente:</span> ${balance.toFixed(2)}</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <label
-              htmlFor="finalPayment"
-              className="mb-2 block text-sm font-semibold text-gray-700"
-            >
-              Abono Adicional (Opcional):
-            </label>
+            <label htmlFor="finalPayment" className="mb-2 block text-sm font-semibold text-gray-700">Abono Adicional (Opcional):</label>
             <div className="flex w-40 items-center overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
               <span className="pl-3 text-gray-500">$</span>
               <input
@@ -146,9 +128,7 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
                 </button>
               </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Deja en blanco o en 0 si no hay pago adicional.
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Deja en blanco o en 0 si no hay pago adicional.</p>
           </div>
 
           <div className="flex justify-end space-x-4">

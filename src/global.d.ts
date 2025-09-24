@@ -6,9 +6,7 @@ interface Window {
     deleteDoctor: (id: string) => Promise<void>;
 
     getOrders: () => Promise<Order[]>;
-    addOrder: (
-      order: Omit<Order, 'id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
-    ) => Promise<Order>; // Assuming id, status, creationDate, payments, notes are generated/managed by backend
+    addOrder: (order: Omit<Order, 'id' | 'status' | 'creationDate' | 'payments' | 'notes'>) => Promise<Order>; // Assuming id, status, creationDate, payments, notes are generated/managed by backend
     updateOrder: (id: string, updatedFields: Partial<Order>) => Promise<Order>;
     deleteOrder: (id: string) => Promise<void>;
     deleteOrdersByDate: (dates: { startDate: string; endDate: string }) => Promise<number>; // Returns number of deleted orders

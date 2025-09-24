@@ -1,8 +1,9 @@
+
+
 import mongoose from 'mongoose';
 
 // --- CONFIGURACIÓN ---
-const MONGODB_URI =
-  'mongodb+srv://aacatalano:Toto1983.@sinapsys.rce6a6o.mongodb.net/?retryWrites=true&w=majority&appName=SINAPSYS';
+const MONGODB_URI = 'mongodb+srv://aacatalano:Toto1983.@sinapsys.rce6a6o.mongodb.net/?retryWrites=true&w=majority&appName=SINAPSYS';
 // -------------------
 
 // Define un esquema simple solo para poder acceder a la colección
@@ -26,6 +27,7 @@ async function checkCounts() {
     console.log(` Doctores encontrados: ${doctorCount}`);
     console.log(` Órdenes encontradas:  ${orderCount}`);
     console.log('--------------------');
+
   } catch (error) {
     console.error('Error durante la verificación:', error);
   } finally {

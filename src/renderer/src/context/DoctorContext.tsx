@@ -42,74 +42,61 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const addDoctor = useCallback(
-    async (doctor: Omit<Doctor, 'id'>) => {
-      try {
-        const response = await fetch(`${API_URL}/doctors`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(doctor),
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const newDoctor = await response.json(); // Get the newly created doctor from the response
-        setDoctors((prevDoctors) => [...prevDoctors, newDoctor]); // Immediately add to state
-        await fetchDoctors(); // Refresh list to ensure full consistency
-        return newDoctor; // Return the new doctor for potential use in CreateOrderView
-      } catch (error) {
-        console.error('Failed to add doctor:', error);
-        throw error; // Re-throw to allow error handling in components
+  const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
+    try {
+      const response = await fetch(`${API_URL}/doctors`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(doctor),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    },
-    [fetchDoctors],
-  );
+      const newDoctor = await response.json(); // Get the newly created doctor from the response
+      setDoctors(prevDoctors => [...prevDoctors, newDoctor]); // Immediately add to state
+      await fetchDoctors(); // Refresh list to ensure full consistency
+      return newDoctor; // Return the new doctor for potential use in CreateOrderView
+    } catch (error) {
+      console.error('Failed to add doctor:', error);
+      throw error; // Re-throw to allow error handling in components
+    }
+  }, [fetchDoctors]);
 
-  const updateDoctor = useCallback(
-    async (id: string, fields: Partial<Doctor>) => {
+  const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
+    try {
+      const response = await fetch(`${API_URL}/doctors/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fields),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      await fetchDoctors(); // Refresh list
+    } catch (error) {
+      console.error('Failed to update doctor:', error);
+    }
+  }, [fetchDoctors]);
+
+  const deleteDoctor = useCallback(async (id: string) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {
       try {
         const response = await fetch(`${API_URL}/doctors/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(fields),
+          method: 'DELETE',
         });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         await fetchDoctors(); // Refresh list
       } catch (error) {
-        console.error('Failed to update doctor:', error);
+        console.error('Failed to delete doctor:', error);
       }
-    },
-    [fetchDoctors],
-  );
-
-  const deleteDoctor = useCallback(
-    async (id: string) => {
-      if (
-        window.confirm(
-          '¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.',
-        )
-      ) {
-        try {
-          const response = await fetch(`${API_URL}/doctors/${id}`, {
-            method: 'DELETE',
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          await fetchDoctors(); // Refresh list
-        } catch (error) {
-          console.error('Failed to delete doctor:', error);
-        }
-      }
-    },
-    [fetchDoctors],
-  );
+    }
+  }, [fetchDoctors]);
 
   const exportDoctors = useCallback(async () => {
     try {
@@ -143,7 +130,11 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
     exportDoctors,
   };
 
-  return <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>;
+  return (
+    <DoctorContext.Provider value={value}>
+      {children}
+    </DoctorContext.Provider>
+  );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

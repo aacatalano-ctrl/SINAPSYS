@@ -9,8 +9,8 @@ export const jobCategories = [
 export const jobTypePrefixMap: { [key: string]: string } = {
   'PRÓTESIS FIJA': 'PTF',
   'DPR METAL ACRÍLICO': 'DMA',
-  ACRÍLICO: 'ACR',
-  FLEXIBLE: 'FLX',
+  'ACRÍLICO': 'ACR',
+  'FLEXIBLE': 'FLX',
   'FLUJO DIGITAL': 'FLD',
 };
 

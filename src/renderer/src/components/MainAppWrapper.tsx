@@ -32,71 +32,17 @@ interface MainAppWrapperProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
-  handleLogout,
-  currentUser,
-  authFetch,
-}) => {
-  const {
-    orders,
-    addOrder,
-    updateOrder,
-    fetchOrders,
-    addPaymentToOrder,
-    handleSaveNote,
-    exportOrdersToExcel,
-    generateReport,
-    fetchReports,
-    fetchOrdersByDoctor,
-    fetchOrdersByPatient,
-    fetchOrdersByDateRange,
-    fetchOrdersByStatus,
-    fetchOrdersByJobType,
-    fetchOrdersBySearchTerm,
-    calculateBalance,
-    sortOrdersColumn,
-    sortOrdersDirection,
-    handleSortOrders,
-    handleDeleteOrder,
-    handleUpdateOrderStatus,
-  } = useOrders();
-  const {
-    isAddDoctorModalOpen,
-    isAddNoteModalOpen,
-    isAddPaymentModalOpen,
-    isConfirmCompletionModalOpen,
-    isEditOrderModalOpen,
-    toast,
-    openAddDoctorModal: _openAddDoctorModal,
-    closeAddDoctorModal: _closeAddDoctorModal,
-    openAddNoteModal,
-    closeAddNoteModal,
-    openAddPaymentModal,
-    closeAddPaymentModal,
-    openConfirmCompletionModal,
-    closeConfirmCompletionModal,
-    openEditOrderModal,
-    closeEditOrderModal,
-    showToast,
-    hideToast,
-  } = useUI();
-  const {
-    doctors,
-    addDoctor,
-    updateDoctor,
-    deleteDoctor,
-    fetchDoctors,
-    exportDoctors,
-    editingDoctor,
-    setEditingDoctor,
-  } = useDoctors();
+const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
+  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
+  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
+  const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
   const [activeView, _setActiveView] = useState<string>('createOrder');
   const [, setViewHistory] = useState<string[]>(['existingOrders']); // Renamed viewHistory to _viewHistory
 
   const handleSetActiveView = useCallback((view: string) => {
     _setActiveView(view);
-    setViewHistory((prevHistory) => {
+    setViewHistory(prevHistory => {
       if (prevHistory[prevHistory.length - 1] !== view) {
         return [...prevHistory, view];
       }
@@ -105,7 +51,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
   }, []);
 
   const goBack = useCallback(() => {
-    setViewHistory((prevHistory) => {
+    setViewHistory(prevHistory => {
       if (prevHistory.length > 1) {
         const newHistory = prevHistory.slice(0, prevHistory.length - 1);
         _setActiveView(newHistory[newHistory.length - 1]);
@@ -129,7 +75,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
 
   const openAddDoctorModal = useCallback(() => {
-    return new Promise<string | null>((resolve) => {
+    return new Promise<string | null>(resolve => {
       resolveAddDoctorPromise.current = resolve;
       _openAddDoctorModal();
     });
@@ -142,18 +88,16 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       resolveAddDoctorPromise.current = null;
     }
   }, [_closeAddDoctorModal]);
-
+  
   // --- Notifications State and Handlers ---
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async () => {
     try {
-      const fetchedNotifications = await authFetch(`${API_URL}/notifications`).then((res) =>
-        res.json(),
-      );
+      const fetchedNotifications = await authFetch(`${API_URL}/notifications`).then(res => res.json());
       setNotifications(fetchedNotifications);
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      console.error("Failed to fetch notifications:", error);
     }
   }, [authFetch]); // Removed API_URL from dependencies as it's a constant
 
@@ -162,7 +106,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       await authFetch(`${API_URL}/notifications/mark-all-read`, { method: 'PUT' });
       fetchNotifications(); // Refresh notifications list
     } catch (error) {
-      console.error('Failed to mark notifications as read:', error);
+      console.error("Failed to mark notifications as read:", error);
     }
   }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
@@ -171,24 +115,21 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       await authFetch(`${API_URL}/notifications`, { method: 'DELETE' });
       fetchNotifications(); // Refresh to show empty list
     } catch (error) {
-      console.error('Failed to clear notifications:', error);
+      console.error("Failed to clear notifications:", error);
     }
   }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
-  const handleDeleteNotification = useCallback(
-    async (id: string) => {
-      try {
-        await authFetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
-        fetchNotifications(); // Refresh notifications list
-      } catch (error) {
-        console.error('Failed to delete notification:', error);
-      }
-    },
-    [fetchNotifications, authFetch],
-  ); // Removed API_URL from dependencies as it's a constant
+  const handleDeleteNotification = useCallback(async (id: string) => {
+    try {
+      await authFetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
+      fetchNotifications(); // Refresh notifications list
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
+    }
+  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleNotificationClick = (notification: Notification) => {
-    const order = orders.find((o) => o.id === notification.orderId);
+    const order = orders.find(o => o.id === notification.orderId);
     if (order) {
       handleViewOrderDetails(order);
     }
@@ -208,7 +149,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
   // Other useEffects...
   useEffect(() => {
     if (selectedOrder) {
-      const updatedOrder = orders.find((o) => o._id === selectedOrder._id);
+      const updatedOrder = orders.find(o => o._id === selectedOrder._id);
       if (updatedOrder) {
         setSelectedOrder(updatedOrder);
       }
@@ -242,17 +183,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [
-    isAddDoctorModalOpen,
-    closeAddDoctorModal,
-    isEditOrderModalOpen,
-    closeEditOrderModal,
-    isAddNoteModalOpen,
-    closeAddNoteModal,
-    isAddPaymentModalOpen,
-    closeAddPaymentModal,
-    isConfirmCompletionModalOpen,
-    closeConfirmCompletionModal,
-    goBack, // Include goBack in dependencies
+    isAddDoctorModalOpen, closeAddDoctorModal,
+    isEditOrderModalOpen, closeEditOrderModal,
+    isAddNoteModalOpen, closeAddNoteModal,
+    isAddPaymentModalOpen, closeAddPaymentModal,
+    isConfirmCompletionModalOpen, closeConfirmCompletionModal,
+    goBack // Include goBack in dependencies
   ]);
 
   const handleSortDoctors = (column: string) => {
@@ -274,8 +210,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
     handleSetActiveView('jobTypeDetails');
   };
 
-  const getDoctorFullNameById = (doctorId: string | Doctor) => {
-    // Changed type from any
+  const getDoctorFullNameById = (doctorId: string | Doctor) => { // Changed type from any
     if (doctorId && typeof doctorId === 'object' && doctorId.firstName && doctorId.lastName) {
       return `${doctorId.firstName} ${doctorId.lastName}`;
     } else if (typeof doctorId === 'string') {
@@ -287,7 +222,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
   };
 
   const handleViewOrderDetails = (order: Order) => {
-    console.log('Viewing details for order ID:', order._id);
+    console.log("Viewing details for order ID:", order._id);
     setSelectedOrder(order);
     handleSetActiveView('orderDetails');
   };
@@ -305,14 +240,10 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
   const mainContent = () => {
     switch (activeView) {
       case 'usersAdmin':
-        return currentUser.role === 'admin' ? (
-          <UsersAdminView authFetch={authFetch} />
-        ) : (
-          <div className="py-4 text-center text-red-500">Acceso denegado.</div>
-        );
+        return currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div className="py-4 text-center text-red-500">Acceso denegado.</div>;
       case 'notifications':
         return (
-          <NotificationsView
+          <NotificationsView 
             notifications={notifications}
             onNotificationClick={handleNotificationClick}
             onClearNotifications={handleClearAllNotifications}
@@ -341,11 +272,11 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       case 'existingOrders':
         return (
           <ExistingOrdersView
-            orders={orders.filter((o) => o.status !== 'Completado')}
+            orders={orders.filter(o => o.status !== 'Completado')}
             onViewDetails={handleViewOrderDetails}
             onEditOrder={handleEditOrder}
             onConfirmCompletion={(order) => {
-              console.log('Setting order to complete with ID:', order._id);
+              console.log("Setting order to complete with ID:", order._id);
               setOrderToComplete(order);
               openConfirmCompletionModal();
             }}
@@ -354,7 +285,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
               openAddPaymentModal();
             }}
             onAddNote={(orderId) => {
-              const order = orders.find((o) => o._id === orderId);
+              const order = orders.find(o => o._id === orderId);
               if (order) {
                 setSelectedOrder(order);
                 openAddNoteModal();
@@ -374,7 +305,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
       case 'historyOrders':
         return (
           <HistoryOrdersView
-            orders={orders.filter((o) => o.status === 'Completado')}
+            orders={orders.filter(o => o.status === 'Completado')}
             searchHistoryTerm={searchHistoryTerm}
             setSearchHistoryTerm={setSearchHistoryTerm}
             setFullClientView={handleViewOrderDetails} // Corrected prop name
@@ -439,7 +370,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
         return selectedDoctor ? (
           <DoctorDetailsView
             doctor={selectedDoctor}
-            orders={orders.filter((o) => o.doctorId === selectedDoctor.id)}
+            orders={orders.filter(o => o.doctorId === selectedDoctor.id)}
             onBack={goBack}
             onViewOrderDetails={handleViewOrderDetails}
           />
@@ -448,7 +379,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
         return selectedJobType ? (
           <JobTypeDetailsView
             jobType={selectedJobType}
-            orders={orders.filter((o) => o.jobType === selectedJobType)}
+            orders={orders.filter(o => o.jobType === selectedJobType)}
             onBack={goBack}
             onViewOrderDetails={handleViewOrderDetails}
             getDoctorFullNameById={getDoctorFullNameById}
@@ -476,7 +407,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
             onBack={goBack}
           />
         );
-      // Other cases...
+        // Other cases...
       default:
         return <div />; // Fallback
     }
@@ -484,12 +415,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar
-        currentView={activeView}
-        setCurrentView={handleSetActiveView}
-        notifications={notifications}
-        markNotificationsAsRead={handleMarkNotificationsAsRead}
-        handleLogout={handleLogout}
+      <Sidebar 
+        currentView={activeView} 
+        setCurrentView={handleSetActiveView} 
+        notifications={notifications} 
+        markNotificationsAsRead={handleMarkNotificationsAsRead} 
+        handleLogout={handleLogout} 
         currentUser={currentUser}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -537,9 +468,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
           isOpen={isAddPaymentModalOpen}
           onClose={closeAddPaymentModal}
           order={selectedOrderForPayment}
-          onAddPayment={(amount, description) =>
-            addPaymentToOrder(selectedOrderForPayment._id, amount, description)
-          }
+          onAddPayment={(amount, description) => addPaymentToOrder(selectedOrderForPayment._id, amount, description)}
         />
       )}
       {isConfirmCompletionModalOpen && orderToComplete && (
@@ -550,7 +479,13 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({
         />
       )}
 
-      {toast.show && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 };

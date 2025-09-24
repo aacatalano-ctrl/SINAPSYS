@@ -16,7 +16,7 @@ import type { Payment } from '../types.js';
 // --- SEQUENCE COUNTER SCHEMA ---
 const SequenceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  seq: { type: Number, default: 0 },
+  seq: { type: Number, default: 0 }
 });
 const Sequence = mongoose.model('Sequence', SequenceSchema);
 
@@ -40,31 +40,8 @@ app.use((req, res, next) => {
 
 // --- USER AUTHENTICATION ---
 app.post('/api/users', adminAuthMiddleware, async (req, res) => {
-  const {
-    username,
-    password,
-    securityQuestion,
-    securityAnswer,
-    nombre,
-    apellido,
-    cedula,
-    direccion,
-    razonSocial,
-    rif,
-    role,
-  } = req.body;
-  if (
-    !username ||
-    !password ||
-    !securityQuestion ||
-    !securityAnswer ||
-    !nombre ||
-    !apellido ||
-    !cedula ||
-    !direccion ||
-    !razonSocial ||
-    !rif
-  ) {
+  const { username, password, securityQuestion, securityAnswer, nombre, apellido, cedula, direccion, razonSocial, rif, role } = req.body;
+  if (!username || !password || !securityQuestion || !securityAnswer || !nombre || !apellido || !cedula || !direccion || !razonSocial || !rif) {
     return res.status(400).json({ error: 'Todos los campos son requeridos.' });
   }
 
@@ -93,18 +70,7 @@ app.post('/api/users', adminAuthMiddleware, async (req, res) => {
     });
 
     await newUser.save();
-    res
-      .status(201)
-      .json({
-        username: newUser.username,
-        role: newUser.role,
-        nombre: newUser.nombre,
-        apellido: newUser.apellido,
-        cedula: newUser.cedula,
-        direccion: newUser.direccion,
-        razonSocial: newUser.razonSocial,
-        rif: newUser.rif,
-      });
+    res.status(201).json({ username: newUser.username, role: newUser.role, nombre: newUser.nombre, apellido: newUser.apellido, cedula: newUser.cedula, direccion: newUser.direccion, razonSocial: newUser.razonSocial, rif: newUser.rif });
   } catch (error) {
     console.error('Error al crear el usuario:', error);
     res.status(500).json({ error: 'Error al crear el usuario.' });
@@ -116,9 +82,7 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     console.log('Login attempt: Missing username or password.');
-    return res
-      .status(400)
-      .json({ success: false, message: 'Usuario y contraseña son requeridos.' });
+    return res.status(400).json({ success: false, message: 'Usuario y contraseña son requeridos.' });
   }
   try {
     console.log(`Login attempt for user: ${username}`);
@@ -142,15 +106,13 @@ app.post('/api/login', async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, username: user.username, role: user.role },
       JWT_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: '1h' }
     );
     console.log(`Login successful for user: ${username}`);
     res.json({ success: true, user: { username: user.username, role: user.role }, token });
   } catch (error) {
     console.error(`Error during login for user ${username}:`, error);
-    res
-      .status(500)
-      .json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
   }
 });
 
@@ -195,7 +157,7 @@ app.post('/api/users/reset-password', async (req, res) => {
     const updatedUser = await db.users.findOneAndUpdate(
       { username },
       { password: hashedPassword },
-      { new: true },
+      { new: true }
     );
     if (updatedUser) {
       res.json({ success: true });
@@ -233,15 +195,15 @@ app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
 
     if (userToModify.role === 'admin') {
       if (masterCode !== '868686') {
-        return res
-          .status(403)
-          .json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
 
-    const updatedUser = await db.users
-      .findByIdAndUpdate(req.params.id, { status }, { new: true })
-      .select('-password -securityAnswer');
+    const updatedUser = await db.users.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).select('-password -securityAnswer');
 
     res.json(updatedUser);
   } catch (error) {
@@ -251,18 +213,7 @@ app.put('/api/users/:id/status', adminAuthMiddleware, async (req, res) => {
 });
 
 app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
-  const {
-    username,
-    nombre,
-    apellido,
-    cedula,
-    direccion,
-    razonSocial,
-    rif,
-    role,
-    status,
-    masterCode,
-  } = req.body;
+  const { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status, masterCode } = req.body;
   const userId = req.params.id;
 
   try {
@@ -273,19 +224,15 @@ app.put('/api/users/:id', adminAuthMiddleware, async (req, res) => {
 
     if (userToModify.role === 'admin') {
       if (masterCode !== '868686') {
-        return res
-          .status(403)
-          .json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
 
-    const updatedUser = await db.users
-      .findByIdAndUpdate(
-        userId,
-        { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status },
-        { new: true },
-      )
-      .select('-password -securityAnswer');
+    const updatedUser = await db.users.findByIdAndUpdate(
+      userId,
+      { username, nombre, apellido, cedula, direccion, razonSocial, rif, role, status },
+      { new: true }
+    ).select('-password -securityAnswer');
 
     res.json(updatedUser);
   } catch (error) {
@@ -331,9 +278,7 @@ app.post('/api/doctors', async (req, res) => {
 
 app.put('/api/doctors/:id', async (req, res) => {
   try {
-    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedDoctor) {
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
@@ -361,12 +306,13 @@ app.delete('/api/doctors/:id', async (req, res) => {
       session.endSession();
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
-
+    
     await session.commitTransaction();
     session.endSession();
 
     console.log(`Doctor with ID ${doctorId} and all their associated orders have been deleted.`);
     res.status(204).send();
+
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -380,10 +326,7 @@ app.get('/api/orders', async (req, res) => {
   console.log('Request received for /api/orders.');
   try {
     const orders = await db.orders.find({}).populate('doctorId');
-    console.log(
-      `Fetched ${orders.length} orders from DB. Sample:`,
-      orders.length > 0 ? orders[0] : 'None',
-    );
+    console.log(`Fetched ${orders.length} orders from DB. Sample:`, orders.length > 0 ? orders[0] : 'None');
     res.json(orders);
   } catch (error) {
     console.error('Error al obtener las órdenes:', error);
@@ -416,7 +359,7 @@ app.post('/api/orders', async (req, res) => {
     const counter = await Sequence.findOneAndUpdate(
       { _id: counterId },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true },
+      { new: true, upsert: true }
     );
 
     const sequencePadded = counter.seq.toString().padStart(4, '0');
@@ -431,29 +374,23 @@ app.post('/api/orders', async (req, res) => {
     res.status(201).json(newOrder);
   } catch (error: any) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      console.error('Error de clave duplicada al crear la orden:', error);
-      return res
-        .status(500)
-        .json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
+      console.error("Error de clave duplicada al crear la orden:", error);
+      return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
     }
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     res.status(400).json({ error: 'Error al crear la orden.' });
   }
 });
 
 app.put('/api/orders/:id', async (req, res) => {
   try {
-    const updatedOrder = await db.orders
-      .findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate('doctorId');
+    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('doctorId');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
     // Immediate notification on completion with balance
-    const currentBalance =
-      updatedOrder.cost -
-      (updatedOrder.payments?.reduce((sum: number, p: any) => sum + p.amount, 0) || 0);
+    const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: any) => sum + p.amount, 0) || 0);
     console.log(`Balance calculado para la orden ${updatedOrder.orderNumber}: ${currentBalance}`);
     if (req.body.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${updatedOrder.balance.toFixed(2)}.`;
@@ -513,7 +450,7 @@ app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const paymentIndex = order.payments.findIndex((p) => p._id?.toString() === paymentId);
+    const paymentIndex = order.payments.findIndex(p => p._id?.toString() === paymentId);
     if (paymentIndex === -1) {
       return res.status(404).json({ error: 'Pago no encontrado.' });
     }
@@ -575,14 +512,10 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
 
     // Order Info
     doc.fontSize(14).text(`Orden: ${order.orderNumber}`, { continued: true });
-    doc
-      .fontSize(12)
-      .text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
+    doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
     doc.moveDown();
     doc.text(`Paciente: ${order.patientName}`);
-    const doctorName = order.doctorId?.firstName
-      ? `${order.doctorId.firstName} ${order.doctorId.lastName}`
-      : 'N/A';
+    const doctorName = order.doctorId?.firstName ? `${order.doctorId.firstName} ${order.doctorId.lastName}` : 'N/A';
     doc.text(`Doctor: ${doctorName}`);
     doc.text(`Trabajo: ${order.jobType}`);
     doc.moveDown(2);
@@ -606,7 +539,7 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
     doc.moveDown();
     const headerY = doc.y;
     doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
-
+    
     // Table Rows for Payments
     let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
@@ -619,10 +552,10 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
         doc.moveDown();
       });
     } else {
-      doc.text('No hay pagos registrados.', itemX, doc.y);
-      doc.moveDown();
+        doc.text('No hay pagos registrados.', itemX, doc.y);
+        doc.moveDown();
     }
-
+    
     const tableBottomY = doc.y;
     doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
     doc.moveDown();
@@ -646,6 +579,7 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
     doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
 
     doc.end();
+
   } catch (error) {
     console.error('Error al generar el recibo PDF:', error);
     res.status(500).json({ error: 'Error al generar el recibo.' });
@@ -662,12 +596,12 @@ app.get('/api/reports/income-breakdown', async (req, res) => {
           totalIncome: { $sum: '$totalPrice' },
           totalPaid: { $sum: '$paidAmount' },
           totalBalance: { $sum: '$balance' },
-          count: { $sum: 1 },
-        },
+          count: { $sum: 1 }
+        }
       },
       {
-        $sort: { _id: 1 },
-      },
+        $sort: { _id: 1 }
+      }
     ]);
     res.json(incomeBreakdown);
   } catch (error) {
@@ -685,14 +619,14 @@ app.get('/api/reports/doctor-performance', async (req, res) => {
           from: 'doctors',
           localField: 'doctorId',
           foreignField: '_id',
-          as: 'doctorInfo',
-        },
+          as: 'doctorInfo'
+        }
       },
       {
         $unwind: {
           path: '$doctorInfo',
-          preserveNullAndEmptyArrays: true,
-        },
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $group: {
@@ -702,24 +636,21 @@ app.get('/api/reports/doctor-performance', async (req, res) => {
               $cond: {
                 if: { $and: ['$doctorInfo.firstName', '$doctorInfo.lastName'] },
                 then: { $concat: ['$doctorInfo.firstName', ' ', '$doctorInfo.lastName'] },
-                else: 'N/A',
-              },
-            },
+                else: 'N/A'
+              }
+            }
           },
           totalOrders: { $sum: 1 },
           totalIncome: { $sum: '$totalPrice' },
           totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' },
-        },
+          totalBalance: { $sum: '$balance' }
+        }
       },
       {
-        $sort: { '_id.doctorName': 1 },
-      },
+        $sort: { '_id.doctorName': 1 }
+      }
     ]);
-    console.log(
-      `Generated doctor performance report. Count: ${doctorPerformance.length}. Sample:`,
-      doctorPerformance.length > 0 ? doctorPerformance[0] : 'None',
-    );
+    console.log(`Generated doctor performance report. Count: ${doctorPerformance.length}. Sample:`, doctorPerformance.length > 0 ? doctorPerformance[0] : 'None');
     res.json(doctorPerformance);
   } catch (error) {
     console.error('Error al generar el reporte de rendimiento de doctores:', error);
@@ -736,12 +667,12 @@ app.get('/api/reports/order-status', async (req, res) => {
           count: { $sum: 1 },
           totalIncome: { $sum: '$totalPrice' },
           totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' },
-        },
+          totalBalance: { $sum: '$balance' }
+        }
       },
       {
-        $sort: { _id: 1 },
-      },
+        $sort: { _id: 1 }
+      }
     ]);
     res.json(orderStatus);
   } catch (error) {
@@ -759,12 +690,12 @@ app.get('/api/reports/daily-summary', async (req, res) => {
           totalOrders: { $sum: 1 },
           totalIncome: { $sum: '$totalPrice' },
           totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' },
-        },
+          totalBalance: { $sum: '$balance' }
+        }
       },
       {
-        $sort: { _id: 1 },
-      },
+        $sort: { _id: 1 }
+      }
     ]);
     res.json(dailySummary);
   } catch (error) {
@@ -788,10 +719,10 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
               totalIncome: { $sum: '$totalPrice' },
               totalPaid: { $sum: '$paidAmount' },
               totalBalance: { $sum: '$balance' },
-              count: { $sum: 1 },
-            },
+              count: { $sum: 1 }
+            }
           },
-          { $sort: { _id: 1 } },
+          { $sort: { _id: 1 } }
         ]);
         title = 'Reporte de Desglose de Ingresos';
         break;
@@ -802,28 +733,28 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
               from: 'doctors',
               localField: 'doctorId',
               foreignField: '_id',
-              as: 'doctorInfo',
-            },
+              as: 'doctorInfo'
+            }
           },
           {
             $unwind: {
               path: '$doctorInfo',
-              preserveNullAndEmptyArrays: true,
-            },
+              preserveNullAndEmptyArrays: true
+            }
           },
           {
             $group: {
               _id: {
                 doctorId: '$doctorId',
-                doctorName: { $ifNull: ['$doctorInfo.name', 'N/A'] },
+                doctorName: { $ifNull: ['$doctorInfo.name', 'N/A'] }
               },
               totalOrders: { $sum: 1 },
               totalIncome: { $sum: '$totalPrice' },
               totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' },
-            },
+              totalBalance: { $sum: '$balance' }
+            }
           },
-          { $sort: { '_id.doctorName': 1 } },
+          { $sort: { '_id.doctorName': 1 } }
         ]);
         title = 'Reporte de Rendimiento de Doctores';
         break;
@@ -835,10 +766,10 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
               count: { $sum: 1 },
               totalIncome: { $sum: '$totalPrice' },
               totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' },
-            },
+              totalBalance: { $sum: '$balance' }
+            }
           },
-          { $sort: { _id: 1 } },
+          { $sort: { _id: 1 } }
         ]);
         title = 'Reporte de Estado de Órdenes';
         break;
@@ -850,10 +781,10 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
               totalOrders: { $sum: 1 },
               totalIncome: { $sum: '$totalPrice' },
               totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' },
-            },
+              totalBalance: { $sum: '$balance' }
+            }
           },
-          { $sort: { _id: 1 } },
+          { $sort: { _id: 1 } }
         ]);
         title = 'Reporte de Resumen Diario';
         break;
@@ -880,6 +811,7 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
     });
 
     doc.end();
+
   } catch (error) {
     console.error(`Error al generar el PDF del reporte ${reportType}:`, error);
     res.status(500).json({ error: `Error al generar el PDF del reporte ${reportType}.` });
@@ -905,7 +837,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
     const updatedNotification = await db.notifications.findByIdAndUpdate(
       id,
       { read: true },
-      { new: true },
+      { new: true }
     );
     if (!updatedNotification) {
       return res.status(404).json({ error: 'Notificación no encontrada.' });
@@ -925,7 +857,7 @@ let isInitialized = false;
 
 const initializeCounters = async () => {
   console.log('Initializing order number counters...');
-
+  
   const prefixes = Object.values(jobTypePrefixMap);
   const year = new Date().getFullYear().toString().slice(-2);
 
@@ -936,7 +868,7 @@ const initializeCounters = async () => {
     const lastOrder = await db.orders.findOne(
       { orderNumber: { $regex: new RegExp(`^${searchPrefix}`) } },
       {},
-      { sort: { orderNumber: -1 } },
+      { sort: { orderNumber: -1 } }
     );
 
     let maxSeq = 0;
@@ -950,7 +882,7 @@ const initializeCounters = async () => {
     await Sequence.updateOne(
       { _id: counterId },
       { $setOnInsert: { seq: maxSeq } },
-      { upsert: true },
+      { upsert: true }
     );
     console.log(`Counter '${counterId}' initialized to sequence ${maxSeq}.`);
   }

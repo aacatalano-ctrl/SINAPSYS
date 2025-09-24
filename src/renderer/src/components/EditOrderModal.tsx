@@ -14,20 +14,14 @@ interface OrderFormData {
 }
 
 interface EditOrderModalProps {
-  order: Order;
-  doctors: Doctor[];
-  onClose: () => void;
-  jobTypePrefixMap: { [key: string]: string };
-  jobTypeCosts: { [key: string]: number };
+    order: Order;
+    doctors: Doctor[];
+    onClose: () => void;
+    jobTypePrefixMap: { [key: string]: string };
+    jobTypeCosts: { [key: string]: number };
 }
 
-const EditOrderModal: React.FC<EditOrderModalProps> = ({
-  order,
-  doctors,
-  onClose,
-  jobTypePrefixMap,
-  jobTypeCosts,
-}) => {
+const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose, jobTypePrefixMap, jobTypeCosts }) => {
   const [formData, setFormData] = useState<OrderFormData>({
     id: order._id,
     doctorId: order.doctorId,
@@ -36,36 +30,32 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
     cost: order.cost,
     priority: order.priority,
     caseDescription: order.caseDescription,
-    initialPaymentAmount: String(
-      order.payments && order.payments.length > 0 ? order.payments[0].amount : 0,
-    ),
+    initialPaymentAmount: String(order.payments && order.payments.length > 0 ? order.payments[0].amount : 0),
   });
   const { handleUpdateOrder: onSaveOrder, showNotification } = useOrders();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      if (name === 'jobType') {
-        return {
-          ...prev,
-          [name]: value,
-          cost: jobTypeCosts[value as string] !== undefined ? jobTypeCosts[value as string] : 0,
-        };
-      }
-      if (name === 'cost' || name === 'initialPaymentAmount') {
-        let newValue: string | number = value;
-        if (typeof newValue === 'string') {
-          if (newValue.length > 8) {
-            newValue = newValue.slice(0, 8);
-          }
-          newValue = parseFloat(newValue);
-          if (isNaN(newValue)) newValue = 0;
+    setFormData(prev => {
+        if (name === 'jobType') {
+            return {
+                ...prev,
+                [name]: value,
+                cost: jobTypeCosts[value as string] !== undefined ? jobTypeCosts[value as string] : 0
+            };
         }
-        return { ...prev, [name]: newValue };
-      }
-      return { ...prev, [name]: value };
+        if (name === 'cost' || name === 'initialPaymentAmount') {
+          let newValue: string | number = value;
+          if (typeof newValue === 'string') {
+            if (newValue.length > 8) {
+              newValue = newValue.slice(0, 8);
+            }
+            newValue = parseFloat(newValue);
+            if (isNaN(newValue)) newValue = 0;
+          }
+          return { ...prev, [name]: newValue };
+        }
+        return { ...prev, [name]: value };
     });
   };
 
@@ -95,9 +85,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
         <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order._id}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">
-              Doctor:
-            </label>
+            <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
             <select
               id="doctor"
               name="doctorId"
@@ -117,9 +105,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-4">
-            <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">
-              Nombre del Paciente:
-            </label>
+            <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre del Paciente:</label>
             <input
               type="text"
               id="patientName"
@@ -132,9 +118,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-4">
-            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">
-              Tipo de Trabajo:
-            </label>
+            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">Tipo de Trabajo:</label>
             <select
               id="jobType"
               name="jobType"
@@ -144,18 +128,14 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
               required
             >
               <option value="">Selecciona tipo de trabajo</option>
-              {Object.keys(jobTypePrefixMap).map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
+              {Object.keys(jobTypePrefixMap).map(type => (
+                <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
 
           <div className="mb-4">
-            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">
-              Costo ($):
-            </label>
+            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">Costo ($):</label>
             <input
               type="number"
               id="cost"
@@ -170,9 +150,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-4">
-            <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">
-              Prioridad:
-            </label>
+            <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">Prioridad:</label>
             <select
               id="priority"
               name="priority"
@@ -188,12 +166,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-4">
-            <label
-              htmlFor="initialPaymentAmount"
-              className="mb-2 block text-sm font-semibold text-gray-700"
-            >
-              Abono Inicial:
-            </label>
+            <label htmlFor="initialPaymentAmount" className="mb-2 block text-sm font-semibold text-gray-700">Abono Inicial:</label>
             <input
               type="number"
               id="initialPaymentAmount"
@@ -207,12 +180,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-6">
-            <label
-              htmlFor="caseDescription"
-              className="mb-2 block text-sm font-semibold text-gray-700"
-            >
-              Descripción del Caso:
-            </label>
+            <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
             <textarea
               id="caseDescription"
               name="caseDescription"
@@ -225,19 +193,8 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
-            >
-              Guardar Cambios
-            </button>
+            <button type="button" onClick={onClose} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
+            <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Guardar Cambios</button>
           </div>
         </form>
       </div>

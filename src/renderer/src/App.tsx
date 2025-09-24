@@ -11,11 +11,7 @@ function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_toast, setToast] = useState<{
-    show: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>({ show: false, message: '', type: 'info' });
+  const [_toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'info' }>({ show: false, message: '', type: 'info' });
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ show: true, message, type });
@@ -25,8 +21,7 @@ function App() {
   }, []);
 
   const closeAuthModal = useCallback(() => {
-    if (currentUser) {
-      // Only close auth modal if a user is logged in
+    if (currentUser) { // Only close auth modal if a user is logged in
       setAuthModalOpen(false);
     }
   }, [currentUser]);
@@ -50,24 +45,21 @@ function App() {
   }, [setCurrentUser, setIsAppContentLoaded, showToast]);
 
   // Función auxiliar para hacer fetch con token de autenticación
-  const authFetch = useCallback(
-    async (url: string, options?: RequestInit) => {
-      const token = localStorage.getItem('token');
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options?.headers,
-      };
-      const response = await fetch(url, { ...options, headers });
-      if (response.status === 401 || response.status === 403) {
-        // Token inválido o expirado, o acceso denegado
-        handleLogout(); // Cerrar sesión
-        showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
-      }
-      return response;
-    },
-    [showToast, handleLogout],
-  );
+  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options?.headers,
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+      // Token inválido o expirado, o acceso denegado
+      handleLogout(); // Cerrar sesión
+      showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
+    }
+    return response;
+  }, [showToast, handleLogout]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -78,16 +70,17 @@ function App() {
       const fetchedNotifications = await response.json();
       setNotifications(fetchedNotifications);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching notifications:", error);
     }
   }, [API_URL, authFetch]);
 
   const loadData = useCallback(async () => {
     try {
+      
       await fetchNotifications();
       setIsAppContentLoaded(true);
     } catch (error: unknown) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
       showToast('Error al cargar datos. Revisa la consola.', 'error');
     }
   }, [fetchNotifications, showToast]); // Removed fetchDoctors from dependencies
@@ -101,7 +94,7 @@ function App() {
         setCurrentUser({ username: decodedUser.username, role: decodedUser.role });
         setIsAppContentLoaded(false); // Forzar recarga de datos si el token es válido
       } catch (e) {
-        console.error('Error decodificando token:', e);
+        console.error("Error decodificando token:", e);
         localStorage.removeItem('token');
         setCurrentUser(null);
       }
@@ -135,7 +128,7 @@ function App() {
         showToast(result.message || 'Error de autenticación', 'error');
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error("Error during login:", error);
       setAuthError('Error al iniciar sesión. Inténtalo de nuevo.');
       showToast('Error al iniciar sesión. Inténtalo de nuevo.', 'error');
     }
@@ -208,7 +201,7 @@ function App() {
   };
 
   return (
-    <UIProvider currentUser={currentUser} authFetch={authFetch}>
+    <>
       {!currentUser ? (
         <AuthModal
           onLogin={handleLogin}
@@ -226,15 +219,17 @@ function App() {
           handleSetNewPassword={handleSetNewPassword}
         />
       ) : (
-        <MainAppWrapper
-          currentUser={currentUser}
-          notifications={notifications}
-          setNotifications={setNotifications}
-          handleLogout={handleLogout}
-          authFetch={authFetch}
-        />
+        <DoctorProvider> {/* Wrap MainAppWrapper with DoctorProvider */}
+          <MainAppWrapper
+            currentUser={currentUser}
+            notifications={notifications}
+            setNotifications={setNotifications}
+            handleLogout={handleLogout}
+            authFetch={authFetch}
+          />
+        </DoctorProvider>
       )}
-    </UIProvider>
+    </>
   );
 }
 

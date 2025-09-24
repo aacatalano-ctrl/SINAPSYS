@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Order } from '../../types';
 
 interface AddNoteModalProps {
-  order: Order;
-  onClose: () => void;
-  onSaveNote: (noteText: string) => Promise<void>;
+    order: Order;
+    onClose: () => void;
+    onSaveNote: (noteText: string) => Promise<void>;
 }
 
 const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote }) => {
@@ -20,10 +20,10 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
       await onSaveNote(noteText);
       onClose();
     } catch (error) {
-      console.error('Failed to save note:', error);
+      console.error("Failed to save note:", error);
       // You might want to show a notification here
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
@@ -31,9 +31,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
         <h2 className="mb-6 text-2xl font-bold text-gray-800">Añadir Nota a Orden: {order._id}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">
-              Nota:
-            </label>
+            <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">Nota:</label>
             <textarea
               id="noteText"
               className="h-32 w-full resize-none appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
