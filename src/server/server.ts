@@ -492,7 +492,8 @@ app.post('/api/orders/:orderId/notes', async (req, res) => {
 
 app.post('/api/orders/:orderId/receipt', async (req, res) => {
   try {
-    const { order, currentUser } = req.body;
+    const { currentUser } = req.body;
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
@@ -515,7 +516,11 @@ app.post('/api/orders/:orderId/receipt', async (req, res) => {
     doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
     doc.moveDown();
     doc.text(`Paciente: ${order.patientName}`);
-    const doctorName = order.doctorId?.firstName ? `${order.doctorId.firstName} ${order.doctorId.lastName}` : 'N/A';
+    
+    let doctorName = 'N/A';
+    if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
+      doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
+    }
     doc.text(`Doctor: ${doctorName}`);
     doc.text(`Trabajo: ${order.jobType}`);
     doc.moveDown(2);
@@ -611,7 +616,10 @@ app.post('/api/orders/:orderId/payment-history-pdf', async (req, res) => {
     doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
     doc.moveDown();
     doc.text(`Paciente: ${order.patientName}`);
-    const doctorName = order.doctorId?.firstName ? `${order.doctorId.firstName} ${order.doctorId.lastName}` : 'N/A';
+    let doctorName = 'N/A';
+    if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
+      doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
+    }
     doc.text(`Doctor: ${doctorName}`);
     doc.text(`Trabajo: ${order.jobType}`);
     doc.moveDown(2);
