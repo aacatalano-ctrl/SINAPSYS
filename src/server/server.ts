@@ -934,8 +934,8 @@ app.get('/api/reports/pdf/:reportType', async (req, res) => {
 app.get('/api/notifications', async (req, res) => {
   console.log('Request received for /api/notifications.');
   try {
-    const notifications = await db.notifications.find({ read: false }).sort({ createdAt: -1 });
-    console.log(`Found ${notifications.length} unread notifications.`);
+    const notifications = await db.notifications.find({}).sort({ createdAt: -1 });
+    console.log(`Found ${notifications.length} notifications.`);
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);

@@ -59,6 +59,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
         <button
           onClick={() => {
             setCurrentView('notifications');
+            if (unreadNotificationsCount > 0) {
+              markNotificationsAsRead();
+            }
           }}
           className={`flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${currentView === 'notifications' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`}
           title="Notificaciones"
