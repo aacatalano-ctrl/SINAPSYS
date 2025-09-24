@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { Order, Doctor } from '../../types';
+import DoctorCombobox from './DoctorCombobox';
 
 interface OrderFormData {
   id: string;
-  doctorId: string;
   patientName: string;
   jobType: string;
   cost: number;
@@ -22,9 +22,11 @@ interface EditOrderModalProps {
 }
 
 const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose, jobTypePrefixMap, jobTypeCosts }) => {
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(
+    () => doctors.find(d => d._id === order.doctorId) || null
+  );
   const [formData, setFormData] = useState<OrderFormData>({
     id: order._id,
-    doctorId: order.doctorId,
     patientName: order.patientName,
     jobType: order.jobType,
     cost: order.cost,
@@ -61,13 +63,14 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.doctorId || !formData.patientName || !formData.jobType || isNaN(formData.cost)) {
-      showNotification('Por favor, completa todos los campos obligatorios.', 'error');
+    if (!selectedDoctor || !formData.patientName || !formData.jobType || isNaN(formData.cost)) {
+      showNotification('Por favor, completa todos los campos obligatorios, incluyendo el doctor.', 'error');
       return;
     }
 
     const updatedOrderData: Partial<Order> = {
       ...formData,
+      doctorId: selectedDoctor._id, // Use the id from the selected doctor object
       payments: order.payments ? [...order.payments] : [],
     };
 
@@ -82,26 +85,15 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-8 shadow-xl">
-        <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order._id}</h3>
+        <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order.orderNumber}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
-            <select
-              id="doctor"
-              name="doctorId"
-              value={formData.doctorId}
-              onChange={handleChange}
-              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              disabled // Make doctor non-editable
-            >
-              <option value="">Selecciona un doctor</option>
-              {doctors.map((doc: Doctor) => (
-                <option key={doc._id} value={doc.id}>
-                  {doc.title} {doc.name}
-                </option>
-              ))}
-            </select>
+            <DoctorCombobox
+              doctors={doctors}
+              selectedDoctor={selectedDoctor}
+              onSelectDoctor={setSelectedDoctor}
+            />
           </div>
 
           <div className="mb-4">
