@@ -39,18 +39,18 @@ app.use((req, res, next) => {
 // --- API ENDPOINTS ---
 
 const createUserSchema = z.object({
-  username: z.string({ required_error: "El nombre de usuario es requerido." }).min(1, "El nombre de usuario no puede estar vacío."),
-  password: z.string({ required_error: "La contraseña es requerida." }).min(6, "La contraseña debe tener al menos 6 caracteres."),
-  securityQuestion: z.string({ required_error: "La pregunta de seguridad es requerida." }).min(1, "La pregunta de seguridad no puede estar vacía."),
-  securityAnswer: z.string({ required_error: "La respuesta de seguridad es requerida." }).min(1, "La respuesta de seguridad no puede estar vacía."),
-  nombre: z.string({ required_error: "El nombre es requerido." }).min(1, "El nombre no puede estar vacío."),
-  apellido: z.string({ required_error: "El apellido es requerido." }).min(1, "El apellido no puede estar vacío."),
-  cedula: z.string({ required_error: "La cédula es requerida." }).min(1, "La cédula no puede estar vacía."),
-  direccion: z.string({ required_error: "La dirección es requerida." }).min(1, "La dirección no puede estar vacía."),
-  razonSocial: z.string({ required_error: "La razón social es requerida." }).min(1, "La razón social no puede estar vacía."),
-  rif: z.string({ required_error: "El RIF es requerido." }).min(1, "El RIF no puede estar vacío."),
-  role: z.enum(['admin', 'user'], { invalid_type_error: "El rol debe ser 'admin' o 'user'." }).default('user').optional(),
-  status: z.enum(['active', 'blocked'], { invalid_type_error: "El estado debe ser 'active' o 'blocked'." }).default('active').optional(),
+  username: z.string().min(1, "El nombre de usuario es requerido."),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres."),
+  securityQuestion: z.string().min(1, "La pregunta de seguridad es requerida."),
+  securityAnswer: z.string().min(1, "La respuesta de seguridad es requerida."),
+  nombre: z.string().min(1, "El nombre es requerido."),
+  apellido: z.string().min(1, "El apellido es requerido."),
+  cedula: z.string().min(1, "La cédula es requerida."),
+  direccion: z.string().min(1, "La dirección es requerida."),
+  razonSocial: z.string().min(1, "La razón social es requerida."),
+  rif: z.string().min(1, "El RIF es requerido."),
+  role: z.enum(['admin', 'user'], { message: "El rol debe ser 'admin' o 'user'." }).default('user').optional(),
+  status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }).default('active').optional(),
 });
 
 // --- USER AUTHENTICATION ---
@@ -273,9 +273,9 @@ app.delete('/api/users/:id', adminAuthMiddleware, async (req, res) => {
 import { z } from 'zod';
 
 const createDoctorSchema = z.object({
-  title: z.string({ required_error: "El título es requerido." }).min(1, "El título no puede estar vacío."),
-  firstName: z.string({ required_error: "El nombre es requerido." }).min(1, "El nombre no puede estar vacío."),
-  lastName: z.string({ required_error: "El apellido es requerido." }).min(1, "El apellido no puede estar vacío."),
+  title: z.string().min(1, "El título es requerido."),
+  firstName: z.string().min(1, "El nombre es requerido."),
+  lastName: z.string().min(1, "El apellido es requerido."),
   email: z.string().email("El formato del email no es válido.").optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
