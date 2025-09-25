@@ -1173,6 +1173,30 @@ app.put('/api/notifications/mark-all-read', async (req, res) => {
   }
 });
 
+app.delete('/api/notifications/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.notifications.findByIdAndDelete(id);
+    if (!result) {
+      return res.status(404).json({ error: 'Notificación no encontrada.' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ error: 'Error al eliminar la notificación.' });
+  }
+});
+
+app.delete('/api/notifications', async (req, res) => {
+  try {
+    await db.notifications.deleteMany({});
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error clearing all notifications:', error);
+    res.status(500).json({ error: 'Error al eliminar todas las notificaciones.' });
+  }
+});
+
 // --- SERVER INITIALIZATION ---
 // --- SERVERLESS INITIALIZATION ---
 let cachedDb: unknown = null;

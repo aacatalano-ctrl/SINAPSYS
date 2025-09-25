@@ -49,7 +49,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
         <ul className="space-y-4">
           {notifications.map(notification => (
             <li 
-              key={notification.id}
+              key={notification._id} // Use _id for the key
               onClick={() => onNotificationClick(notification)}
               className={`flex cursor-pointer items-start space-x-4 rounded-lg p-4 shadow transition-all duration-300 ${notification.read ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'}`}>
               <div className={`mt-1 rounded-full p-2 ${notification.read ? 'bg-gray-300' : 'bg-blue-500'}`}>
@@ -65,7 +65,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent onNotificationClick from firing
-                  onDeleteNotification(notification.id);
+                  onDeleteNotification(notification._id); // Use _id to delete
                 }}
                 className="ml-4 text-red-500 hover:text-red-700"
                 title="Eliminar notificación"
