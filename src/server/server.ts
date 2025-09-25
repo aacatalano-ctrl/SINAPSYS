@@ -233,7 +233,7 @@ app.post('/api/users/reset-password', async (req, res) => {
     res.json({ success: true, message: 'Contraseña restablecida exitosamente' });
   } catch (error) {
     console.error('Error al restablecer la contraseña:', error);
-    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
 
