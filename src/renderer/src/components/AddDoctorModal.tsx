@@ -8,18 +8,18 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const fullName = formData.get('doctorName') as string;
+    const fullName = (formData.get('doctorName') as string).trim();
     const nameParts = fullName.split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || ' '; // Ensure lastName is not empty // Ensure lastName is not empty
+    const firstName = (nameParts[0] || '').trim();
+    const lastName = (nameParts.slice(1).join(' ') || '').trim();
 
     const newDoctorData: Omit<Doctor, 'id'> = {
       title: formData.get('doctorTitle') as string,
       firstName: firstName,
       lastName: lastName,
-      email: formData.get('doctorEmail') as string,
-      phone: formData.get('doctorPhone') as string,
-      address: formData.get('doctorAddress') as string,
+      email: (formData.get('doctorEmail') as string).trim(),
+      phone: (formData.get('doctorPhone') as string).trim(),
+      address: (formData.get('doctorAddress') as string).trim(),
     };
     console.log('New Doctor object being sent:', newDoctorData);
     try {
