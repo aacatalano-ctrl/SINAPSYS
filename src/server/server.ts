@@ -688,7 +688,7 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
     }
 
     // Mongoose subdocuments have a .remove() method.
-    note.remove();
+    (note as any).remove();
 
     await order.save();
     res.json(order);

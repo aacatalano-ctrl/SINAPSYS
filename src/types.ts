@@ -1,4 +1,4 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose from 'mongoose';
 
 // src/types.d.ts
 
@@ -12,7 +12,7 @@ export interface JobCategory {
   services: JobService[];
 }
 
-export interface User extends Document {
+export interface User {
   _id?: string;
   username: string;
   password?: string;
@@ -28,7 +28,7 @@ export interface User extends Document {
   status: 'active' | 'blocked';
 }
 
-export interface Doctor extends Document {
+export interface Doctor {
   _id?: string;
   title: string;
   firstName: string;
@@ -38,21 +38,21 @@ export interface Doctor extends Document {
   address?: string;
 }
 
-export interface Payment extends Document {
+export interface Payment {
   _id?: string;
   amount: number;
   date: string;
   description?: string;
 }
 
-export interface Note extends Document {
+export interface Note {
   _id?: string;
   text: string;
   timestamp: string;
   author: string;
 }
 
-export interface Order extends Document {
+export interface Order {
   _id?: string;
   orderNumber?: string;
   doctorId: Doctor | mongoose.Types.ObjectId | string;
@@ -70,7 +70,7 @@ export interface Order extends Document {
   notes: Note[];
 }
 
-export interface Notification extends Document {
+export interface Notification {
   _id?: string;
   orderId: mongoose.Types.ObjectId | string;
   message: string;
