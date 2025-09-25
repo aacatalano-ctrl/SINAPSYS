@@ -4,7 +4,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import mongoose, { DocumentArray } from 'mongoose';
+import mongoose from 'mongoose';
 import adminAuthMiddleware from './middleware/adminAuthMiddleware.js';
 import PDFDocument from 'pdfkit';
 import { connectDB, initializeDb, db } from './database/index.js';
@@ -657,7 +657,7 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-            const note = (order.notes as DocumentArray<any>).id(noteId);    if (!note) {
+            const note = (order.notes as mongoose.Types.DocumentArray<any>).id(noteId);    if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }
 
@@ -681,7 +681,7 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-            const note = (order.notes as DocumentArray<any>).id(noteId);
+            const note = (order.notes as mongoose.Types.DocumentArray<any>).id(noteId);
     if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }
