@@ -11,7 +11,7 @@ import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
 import { checkUnpaidOrders, createNotification } from './database/notifications.js';
 import { jobTypePrefixMap } from './database/constants.js';
-import type { Payment } from '../types.js';
+import type { Payment, Note } from '../types.js';
 import { z } from 'zod';
 
 // --- SEQUENCE COUNTER SCHEMA ---
@@ -657,7 +657,8 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-            const note = (order.notes as mongoose.Types.DocumentArray<any>).id(noteId);    if (!note) {
+            const note = (order.notes as mongoose.Types.DocumentArray<Note>).id(noteId);
+    if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }
 
@@ -681,7 +682,7 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-            const note = (order.notes as mongoose.Types.DocumentArray<any>).id(noteId);
+            const note = (order.notes as mongoose.Types.DocumentArray<Note>).id(noteId);
     if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }
