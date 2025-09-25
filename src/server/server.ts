@@ -572,7 +572,6 @@ app.post('/api/orders/:orderId/payments', async (req, res) => {
     }
 
     order.payments.push(paymentData);
-    order.balance -= paymentData.amount;
     await order.save();
 
     const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
@@ -605,8 +604,6 @@ app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
     }
 
     const [deletedPayment] = order.payments.splice(paymentIndex, 1);
-    order.balance += deletedPayment.amount;
-    order.paidAmount -= deletedPayment.amount;
 
     await order.save();
     res.status(200).json(order);
@@ -682,13 +679,8 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-            const note = (order.notes as mongoose.Types.DocumentArray<Note>).id(noteId);
-    if (!note) {
-      return res.status(404).json({ error: 'Nota no encontrada.' });
-    }
-
-    // Mongoose subdocuments have a .remove() method.
-    (note as any).remove();
+    // Use the Mongoose .pull() method to atomically remove the subdocument
+    order.notes.pull(noteId);
 
     await order.save();
     res.json(order);

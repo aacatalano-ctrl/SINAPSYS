@@ -33,8 +33,8 @@ const orderSchema = new mongoose.Schema<Order>({
   jobType: { type: String, required: true },
   cost: { type: Number, required: true },
   status: { type: String, required: true },
-  creationDate: { type: String, required: true }, // Consider using Date type
-  completionDate: { type: String }, // Consider using Date type
+  creationDate: { type: Date, required: true }, // Consider using Date type
+  completionDate: { type: Date }, // Consider using Date type
   priority: { type: String },
   caseDescription: { type: String },
   payments: [paymentSchema],
