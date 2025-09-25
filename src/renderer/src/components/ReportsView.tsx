@@ -103,22 +103,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
           <ClipboardList size={48} className="text-blue-500 opacity-70" />
         </div>
 
-        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-green-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'COMPLETED_ORDERS' }); setActiveView('reportResults'); }}>
-          <div>
-            <h3 className="text-xl font-semibold text-green-800">Órdenes Completadas</h3>
-            <p className="text-3xl font-bold text-green-900">{filteredOrders.filter(o => o.status === 'Completado').length}</p>
-          </div>
-          <CheckCircle size={48} className="text-green-500 opacity-70" />
-        </div>
-
-        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-yellow-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'PENDING_ORDERS' }); setActiveView('reportResults'); }}>
-          <div>
-            <h3 className="text-xl font-semibold text-yellow-800">Órdenes Pendientes</h3>
-            <p className="text-3xl font-bold text-yellow-900">{filteredOrders.filter(o => o.status === 'Pendiente' || o.status === 'Procesando').length}</p>
-          </div>
-          <Clock size={48} className="text-yellow-500 opacity-70" />
-        </div>
-
         <div className="flex cursor-pointer items-center justify-between rounded-lg bg-purple-100 p-6 shadow-md" onClick={() => setActiveView('incomeBreakdown')}>
           <div>
             <h3 className="text-xl font-semibold text-purple-800">Ingresos Totales (Monto Abonado)</h3>

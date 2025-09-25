@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Order } from '../../types';
 import { ArrowLeft } from 'lucide-react';
 
@@ -12,6 +12,26 @@ interface ReportResultsViewProps {
 }
 
 const ReportResultsView: React.FC<ReportResultsViewProps> = ({ title, orders, onBack, getDoctorFullNameById, formatDate, calculateBalance }) => {
+
+  const filteredOrders = useMemo(() => {
+    switch (title) {
+      case 'TOTAL_ORDERS':
+        return orders;
+      case 'PENDING_BALANCE':
+        return orders.filter(o => calculateBalance(o) > 0);
+      default:
+        return orders;
+    }
+  }, [orders, title, calculateBalance]);
+
+  const reportTitle = useMemo(() => {
+    switch (title) {
+      case 'TOTAL_ORDERS': return 'Total de Órdenes';
+      case 'PENDING_BALANCE': return 'Órdenes con Saldo Pendiente';
+      default: return title;
+    }
+  }, [title]);
+
   return (
     <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
       <button
@@ -20,9 +40,9 @@ const ReportResultsView: React.FC<ReportResultsViewProps> = ({ title, orders, on
       >
         <ArrowLeft className="mr-2" /> Volver a Reportes
       </button>
-      <h2 className="mb-6 text-3xl font-bold text-gray-800">{title}</h2>
+      <h2 className="mb-6 text-3xl font-bold text-gray-800">{reportTitle}</h2>
 
-      {orders.length === 0 ? (
+      {filteredOrders.length === 0 ? (
         <p className="py-10 text-center text-gray-600">No hay órdenes que coincidan con este reporte.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg shadow">
@@ -39,7 +59,7 @@ const ReportResultsView: React.FC<ReportResultsViewProps> = ({ title, orders, on
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {filteredOrders.map(order => (
                 <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-medium text-gray-800">{order.orderNumber}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">{order.patientName}</td>
