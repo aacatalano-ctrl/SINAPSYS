@@ -237,6 +237,24 @@ app.post('/api/users/reset-password', async (req, res) => {
   }
 });
 
+app.post('/api/users', async (req, res) => {
+  const validation = createUserSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const { password, ...userData } = validation.data;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new db.users({ ...userData, password: hashedPassword });
+    await newUser.save();
+    res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser });
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor al crear usuario.' });
+  }
+});
+
 // --- USER MANAGEMENT (Admin) ---
 app.get('/api/users', adminAuthMiddleware, async (req, res) => {
   try {
