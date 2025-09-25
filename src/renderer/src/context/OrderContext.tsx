@@ -72,14 +72,22 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(updatedFields),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await fetchOrders();
+      
+      const updatedOrder = await response.json();
+      
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === id ? updatedOrder : order
+        )
+      );
+
       showToast('Orden actualizada con éxito.');
     } catch (error) {
       console.error("Error updating order:", error);
       showToast('Error al actualizar la orden.', 'error');
       throw error;
     }
-  }, [fetchOrders, showToast, API_URL]);
+  }, [showToast, API_URL]);
 
   const handleOrderCreated = async (orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>): Promise<Order | undefined> => {
     try {
@@ -101,10 +109,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   };
 
   const addPaymentToOrder = async (orderId: string, amount: number, description: string): Promise<void> => {
-    const order = orders.find(o => o._id === orderId);
-    if (!order) return;
-    const newPayment: Payment = {
-      _id: new mongoose.Types.ObjectId().toString(),
+    const newPayment: Omit<Payment, '_id'> = {
       amount: parseFloat(String(amount)),
       date: new Date().toISOString(),
       description: description || 'Pago',
@@ -116,7 +121,15 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(newPayment),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await fetchOrders(); // Refresh orders after successful payment
+      
+      const updatedOrder = await response.json();
+
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === orderId ? updatedOrder : order
+        )
+      );
+
       showToast('Pago añadido con éxito.', 'success');
     } catch (error) {
       console.error("Failed to add payment:", error);
