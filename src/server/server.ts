@@ -679,8 +679,8 @@ app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    // Use the Mongoose .pull() method to atomically remove the subdocument
-    order.notes.pull(noteId);
+    // Use standard array filter to remove the subdocument in a type-safe way
+    order.notes = order.notes.filter(note => note._id?.toString() !== noteId);
 
     await order.save();
     res.json(order);

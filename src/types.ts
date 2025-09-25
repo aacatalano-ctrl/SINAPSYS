@@ -62,8 +62,8 @@ export interface Order {
   balance: number;
   paidAmount: number;
   status: 'Pendiente' | 'Procesando' | 'Completado';
-  creationDate: string;
-  completionDate?: string;
+  creationDate: Date;
+  completionDate?: Date;
   priority: 'Baja' | 'Normal' | 'Alta' | 'Urgente';
   caseDescription: string;
   payments: Payment[];
