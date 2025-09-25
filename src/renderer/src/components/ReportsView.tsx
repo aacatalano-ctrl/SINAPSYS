@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { Order } from '../../types';
 import { ClipboardList, CheckCircle, Clock, DollarSign, Bell } from 'lucide-react';
 
@@ -22,10 +22,7 @@ interface ReportsViewProps {
 
 const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, reportTimeframe, setReportTimeframe, setFullDoctorView, setFullJobTypeView, setReportFilter, setActiveView, orders, calculateBalance }) => {
 
-  console.log('ReportsView - orders:', orders);
-  console.log('ReportsView - doctors:', doctors);
-
-  const filterOrdersByTimeframe = (allOrders: Order[], timeframe: string): Order[] => {
+  const filterOrdersByTimeframe = useCallback((allOrders: Order[], timeframe: string): Order[] => {
     const now = new Date();
     return allOrders.filter((order: Order) => {
       const orderDate = new Date(order.creationDate);
@@ -48,10 +45,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
           return true;
       }
     });
-  };
+  }, []);
 
-  const filteredOrders = filterOrdersByTimeframe(orders, reportTimeframe);
-  console.log('ReportsView - filteredOrders:', filteredOrders);
+  const filteredOrders = useMemo(() => filterOrdersByTimeframe(orders, reportTimeframe), [orders, reportTimeframe, filterOrdersByTimeframe]);
+
+  useEffect(() => {
+    console.log('ReportsView - orders:', orders);
+    console.log('ReportsView - doctors:', doctors);
+    console.log('ReportsView - filteredOrders:', filteredOrders);
+  }, [orders, doctors, filteredOrders]);
 
   return (
     <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
