@@ -1,6 +1,7 @@
 import React from 'react';
-import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, BrainCircuit, Users } from 'lucide-react';
+import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, Users } from 'lucide-react';
 import { Notification, User } from '../../types'; // Assuming types are in this location
+import CecatLogo from './CecatLogo';
 
 interface SidebarProps {
   currentView: string;
@@ -24,9 +25,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
 
   return (
     <aside className="flex w-64 flex-col bg-gray-800 p-4 text-white shadow-lg">
-      <div className="mb-8 flex items-center justify-center font-orbitron text-2xl font-bold tracking-wider text-blue-400">
-        <BrainCircuit className="mr-3 size-8 text-white drop-shadow-rose-glow" />
-                <span><span className="text-4xl text-rose-400">S</span>INAPSIS</span>
+      <div className="mb-8 flex items-center justify-center">
+        <CecatLogo className="h-auto w-40 text-white" />
       </div>
 
       <nav className="flex-1 space-y-2">
