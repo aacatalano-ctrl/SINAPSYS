@@ -9,28 +9,28 @@ const CecatLogo: React.FC<LogoProps> = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 285 90"
+      viewBox="0 0 320 100" // Ajustado para la 'C' más grande
       className={className}
     >
       <text 
         fontFamily="serif" 
-        fontWeight="bold" // Grosor normal para 'ECAT'
+        fontWeight="bold"
         fill="currentColor"
       >
-        {/* 'C' con grosor "Heavy" (900) para que resalte */}
+        {/* 'C' en sans-serif y tamaño aumentado */}
         <tspan 
-          y="80" 
-          fontSize="100"
+          y="90" 
+          fontSize="110"
           fill="#42A5F5"
-          fontWeight="900"
+          fontFamily="sans-serif"
         >
           C
         </tspan>
         
-        {/* 'ECAT' con espaciado ajustado */}
+        {/* 'ECAT' alineado con la nueva 'C' */}
         <tspan 
-          dx="-25"
-          y="70"
+          dx="5"
+          y="78"
           fontSize="60"
         >
           ECAT
