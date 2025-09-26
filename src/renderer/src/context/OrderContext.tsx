@@ -98,7 +98,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const addedOrder = await response.json();
-      await fetchOrders();
+      setOrders(prevOrders => [addedOrder, ...prevOrders]);
       showToast('Orden creada con éxito.');
       return addedOrder;
     } catch (error) {
