@@ -504,6 +504,7 @@ app.post('/api/orders', async (req, res) => {
     });
 
     await newOrder.save();
+    await newOrder.populate('doctorId'); // Populate doctor info before sending
     res.status(201).json(newOrder);
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
@@ -522,21 +523,27 @@ app.put('/api/orders/:id', async (req, res) => {
   }
 
   try {
-    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId');
-    if (!updatedOrder) {
+    const order = await db.orders.findById(req.params.id);
+    if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
+    // Apply updates
+    Object.assign(order, validation.data);
+    const savedOrder = await order.save();
+
+    // Populate doctor info before sending back
+    const populatedOrder = await savedOrder.populate('doctorId');
+
     // Immediate notification on completion with balance
-    const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
-    console.log(`Balance calculado para la orden ${updatedOrder.orderNumber}: ${currentBalance}`);
-    if (validation.data.status === 'Completado' && currentBalance > 0) { // Use validated data for status check
-      const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
-      // Fire and forget notification creation
-      createNotification(updatedOrder._id.toString(), message).catch(console.error);
+    const currentBalance = populatedOrder.cost - (populatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
+    console.log(`Balance calculado para la orden ${populatedOrder.orderNumber}: ${currentBalance}`);
+    if (validation.data.status === 'Completado' && currentBalance > 0) {
+      const message = `La orden ${populatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
+      createNotification(populatedOrder._id.toString(), message).catch(console.error);
     }
 
-    res.json(updatedOrder);
+    res.json(populatedOrder);
   } catch (error) {
     console.error('Error al actualizar la orden:', error);
     res.status(500).json({ error: 'Error interno del servidor al actualizar la orden.' });
