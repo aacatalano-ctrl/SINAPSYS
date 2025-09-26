@@ -68,26 +68,36 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
       return;
     }
 
-    // Construct the payload manually to avoid sending extraneous fields.
+    // Construct the payload from the form data and add the selected doctor.
     const updatedOrderData: Partial<Omit<Order, '_id'>> = {
-      patientName: formData.patientName,
-      jobType: formData.jobType,
-      cost: formData.cost,
-      priority: formData.priority,
-      caseDescription: formData.caseDescription,
+      ...formData,
       doctorId: selectedDoctor._id,
     };
 
-    // Handle payment update logic separately.
+    // Handle payment update logic robustly.
     const payments = order.payments ? [...order.payments] : [];
-    const initialPaymentAmount = parseFloat(formData.initialPaymentAmount);
+    const newPaymentAmount = parseFloat(formData.initialPaymentAmount);
 
-    if (!isNaN(initialPaymentAmount)) {
+    if (!isNaN(newPaymentAmount) && newPaymentAmount >= 0) {
       if (payments.length > 0) {
-        payments[0].amount = initialPaymentAmount;
+        // Update the amount of the first payment
+        payments[0].amount = newPaymentAmount;
+      } else if (newPaymentAmount > 0) {
+        // If no payments existed but a new amount is entered, create one
+        payments.push({
+          amount: newPaymentAmount,
+          date: new Date(),
+          method: 'No especificado',
+          reference: ''
+        });
       }
     }
     updatedOrderData.payments = payments;
+
+    // Clean up temporary field from the payload before sending
+    if ('initialPaymentAmount' in updatedOrderData) {
+      delete (updatedOrderData as Partial<OrderFormData>).initialPaymentAmount;
+    }
 
     // onSaveOrder is handleUpdateOrder from the context, which is async.
     // We chain .then() to ensure the modal only closes on successful update.

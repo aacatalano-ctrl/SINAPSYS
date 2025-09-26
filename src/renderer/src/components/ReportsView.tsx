@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback, useEffect } from 'react';
 import { Order } from '../../types';
-import { ClipboardList, CheckCircle, Clock, DollarSign, Bell } from 'lucide-react';
+import { ClipboardList, DollarSign, Bell } from 'lucide-react';
 
 interface ReportsViewProps {
   doctors: Doctor[];
