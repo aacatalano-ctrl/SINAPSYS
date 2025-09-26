@@ -21,11 +21,17 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
   const [abonoAmount, setAbonoAmount] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
-  const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification, handleUpdateNote, handleDeleteNote } = useOrders();
+  const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification, handleUpdateNote, handleDeleteNote, handleDeleteOrder } = useOrders();
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteText, setEditingNoteText] = useState('');
 
   if (!order) return null;
+
+  const handleDeleteClick = () => {
+    handleDeleteOrder(order._id).then(() => {
+      onBack(); // Navigate back after successful deletion
+    });
+  };
 
   const handleAbonoSubmit = () => {
     const normalizedAmount = String(abonoAmount).replace(',', '.');
@@ -64,12 +70,20 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
         >
           <ArrowLeft className="mr-2" /> Volver a la Lista
         </button>
-        <button
-          onClick={() => onEditOrder(order)}
-          className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-green-700"
-        >
-          <Edit className="mr-2" size={20} /> Editar Orden
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => onEditOrder(order)}
+            className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-green-700"
+          >
+            <Edit className="mr-2" size={20} /> Editar Orden
+          </button>
+          <button
+            onClick={handleDeleteClick}
+            className="flex items-center rounded-lg bg-red-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-red-700"
+          >
+            <Trash2 className="mr-2" size={20} /> Eliminar Orden
+          </button>
+        </div>
       </div>
       <h2 className="mb-6 flex items-center text-3xl font-bold text-gray-800">
         <ClipboardList className="mr-3 text-blue-600" size={30} /> Detalles de la Orden: {order.orderNumber}
