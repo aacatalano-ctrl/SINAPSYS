@@ -58,8 +58,8 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
             <input type="text" name="doctorName" id="doctorName" placeholder="Juan Pérez" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">Email:</label>
-            <input type="email" name="doctorEmail" id="doctorEmail" placeholder="juan.perez@example.com" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label htmlFor="doctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">Email (Opcional):</label>
+            <input type="email" name="doctorEmail" id="doctorEmail" placeholder="juan.perez@example.com" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div className="mb-4">
             <label htmlFor="doctorPhone" className="mb-2 block text-sm font-semibold text-gray-700">Teléfono:</label>
@@ -71,6 +71,7 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
               className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Formato de teléfono válido: solo números, +, espacios o guiones. Mínimo 7 dígitos."
               pattern="[0-9+\- ]{7,}"
+              required
             />
           </div>
           <div className="mb-6">

@@ -351,7 +351,7 @@ const createDoctorSchema = z.object({
   firstName: z.string().min(1, "El nombre es requerido."),
   lastName: z.string().optional(),
   email: z.string().email("El formato del email no es válido.").optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
+  phone: z.string().min(7, "El teléfono debe tener al menos 7 dígitos."),
   address: z.string().optional().or(z.literal('')),
 });
 
