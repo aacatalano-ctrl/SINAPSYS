@@ -353,16 +353,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
             order={selectedOrder}
             onBack={goBack}
             onEditOrder={handleEditOrder}
-            onAddPayment={(order) => {
+            onConfirmPayment={(order) => { // Add this prop and handler
               setSelectedOrderForPayment(order);
               openAddPaymentModal();
             }}
-            onAddNote={openAddNoteModal}
+            onAddNote={() => openAddNoteModal()} // Simplified this call
             getDoctorFullNameById={getDoctorFullNameById}
-            calculateBalance={calculateBalance}
-            onUpdateStatus={handleUpdateOrderStatus}
-            formatDate={formatDate}
-            formatDateTime={formatDateTime}
             currentUser={currentUser}
             generatePaymentHistoryPDF={generatePaymentHistoryPDF}
           />

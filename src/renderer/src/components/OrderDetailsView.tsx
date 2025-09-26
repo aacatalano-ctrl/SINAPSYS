@@ -14,11 +14,10 @@ interface OrderDetailsViewProps {
     currentUser: UserType | null;
     onAddNote: () => void;
     generatePaymentHistoryPDF: (order: Order, currentUser: UserType) => void;
+    onConfirmPayment: (order: Order) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF }) => {
-  const [isAbonando, setIsAbonando] = useState(false);
-  const [abonoAmount, setAbonoAmount] = useState('');
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF, onConfirmPayment }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const { calculateBalance, handleUpdateOrderStatus, addPaymentToOrder, generateReceiptPDF, showNotification, handleUpdateNote, handleDeleteNote, handleDeleteOrder } = useOrders();
@@ -31,26 +30,6 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
     handleDeleteOrder(order._id).then(() => {
       onBack(); // Navigate back after successful deletion
     });
-  };
-
-  const handleAbonoSubmit = () => {
-    const normalizedAmount = String(abonoAmount).replace(',', '.');
-    const amount = parseFloat(normalizedAmount);
-
-    if (isNaN(amount) || amount <= 0) {
-      showNotification('Por favor, ingresa un monto válido y mayor a cero.', 'error');
-      return;
-    }
-
-    const pendingBalance = calculateBalance(order);
-    if (amount > pendingBalance) {
-      showNotification(`El monto no puede ser mayor al saldo pendiente de ${pendingBalance.toFixed(2)}.`, 'error');
-      return;
-    }
-
-    addPaymentToOrder(order._id, amount, 'Abono manual desde detalles');
-    setAbonoAmount('');
-    setIsAbonando(false);
   };
 
   const pendingBalance = calculateBalance(order);
@@ -148,36 +127,12 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
               <p className="text-sm">Fecha de pago: {getLastPaymentDate()}</p>
             </div>
           ) : (
-            <>
-              {!isAbonando && (
-                <button
-                  onClick={() => setIsAbonando(true)}
-                  className="rounded-lg bg-blue-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
-                >
-                  Abonar
-                </button>
-              )}
-
-              {isAbonando && (
-                <div className="mt-4">
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">Monto a Abonar:</label>
-                  <div className="flex items-center space-x-2">
-                    <input 
-                      type="number"
-                      value={abonoAmount}
-                      onChange={(e) => setAbonoAmount(e.target.value)}
-                      step="1"
-                      max={pendingBalance.toFixed(2)}
-                      className="w-full rounded-lg border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder={`Máx: ${pendingBalance.toFixed(2)}`}
-                      autoFocus
-                    />
-                    <button onClick={handleAbonoSubmit} className="rounded-lg bg-green-500 px-4 py-2 font-bold text-white shadow-md hover:bg-green-600">Guardar Abono</button>
-                    <button onClick={() => setIsAbonando(false)} className="rounded-lg bg-gray-300 px-4 py-2 font-bold text-gray-800 hover:bg-gray-400">Cancelar</button>
-                  </div>
-                </div>
-              )}
-            </>
+            <button
+              onClick={() => onConfirmPayment(order)} // Use the new prop to open the modal
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
+            >
+              Abonar
+            </button>
           )}
 
           <button
