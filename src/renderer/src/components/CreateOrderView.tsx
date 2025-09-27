@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useOrders } from '../context/OrderContext';
 import { Plus } from 'lucide-react';
 import DoctorCombobox from './DoctorCombobox';
 import { Doctor, Order, JobCategory } from '../../types';
@@ -8,10 +9,9 @@ interface CreateOrderViewProps {
     jobCategories: JobCategory[];
     jobTypeCosts: { [key: string]: number };
     onAddDoctor: () => Promise<string | null>;
-    onOrderCreated: (order: Order) => Promise<Order | undefined>;
 }
 
-function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor, onOrderCreated }: CreateOrderViewProps) {
+function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: CreateOrderViewProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [cost, setCost] = useState<number>(0);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
