@@ -11,7 +11,7 @@ interface ReportsViewProps {
   setFullDoctorView: (doctor: Doctor) => void;
   setFullJobTypeView: (jobType: string) => void;
   setReportFilter: React.Dispatch<React.SetStateAction<object | null>>;
-  setActiveView: React.Dispatch<React.SetStateAction<string>>;
+  setCurrentView: React.Dispatch<React.SetStateAction<string>>;
   generateReport: () => void;
   fetchReports: () => void;
   onViewReportDetails: () => void;
@@ -20,7 +20,7 @@ interface ReportsViewProps {
   calculateBalance: (order: Order) => number;
 }
 
-const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, reportTimeframe, setReportTimeframe, setFullDoctorView, setFullJobTypeView, setReportFilter, setActiveView, orders, calculateBalance }) => {
+const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, reportTimeframe, setReportTimeframe, setFullDoctorView, setFullJobTypeView, setReportFilter, setCurrentView, orders, calculateBalance }) => {
 
   const filterOrdersByTimeframe = useCallback((allOrders: Order[], timeframe: string): Order[] => {
     const now = new Date();
@@ -95,7 +95,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-blue-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'TOTAL_ORDERS' }); setActiveView('reportResults'); }}>
+        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-blue-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'TOTAL_ORDERS' }); setCurrentView('reportResults'); }}>
           <div>
             <h3 className="text-xl font-semibold text-blue-800">Total de Órdenes</h3>
             <p className="text-3xl font-bold text-blue-900">{filteredOrders.length}</p>
@@ -103,7 +103,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
           <ClipboardList size={48} className="text-blue-500 opacity-70" />
         </div>
 
-        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-purple-100 p-6 shadow-md" onClick={() => setActiveView('incomeBreakdown')}>
+        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-purple-100 p-6 shadow-md" onClick={() => setCurrentView('incomeBreakdown')}>
           <div>
             <h3 className="text-xl font-semibold text-purple-800">Ingresos Totales (Monto Abonado)</h3>
             <p className="text-3xl font-bold text-purple-900">${filteredOrders.reduce((sum, order) => sum + order.payments.reduce((pSum, p) => pSum + p.amount, 0), 0).toFixed(2)}</p>
@@ -111,7 +111,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
           <DollarSign size={48} className="text-purple-500 opacity-70" />
         </div>
 
-        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-red-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'PENDING_BALANCE' }); setActiveView('reportResults'); }}>
+        <div className="flex cursor-pointer items-center justify-between rounded-lg bg-red-100 p-6 shadow-md" onClick={() => { setReportFilter({ type: 'PENDING_BALANCE' }); setCurrentView('reportResults'); }}>
           <div>
             <h3 className="text-xl font-semibold text-red-800">Saldo Pendiente Total</h3>
             <p className="text-3xl font-bold text-red-900">${filteredOrders.reduce((sum, order) => sum + calculateBalance(order), 0).toFixed(2)}</p>

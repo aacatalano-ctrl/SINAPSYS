@@ -40,7 +40,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const [activeView, _setActiveView] = useState<string>('createOrder');
   const [, setViewHistory] = useState<string[]>(['existingOrders']); // Renamed viewHistory to _viewHistory
 
-  const handleSetActiveView = useCallback((view: string) => {
+  const setCurrentView = useCallback((view: string) => {
     _setActiveView(view);
     setViewHistory(prevHistory => {
       if (prevHistory[prevHistory.length - 1] !== view) {
@@ -222,12 +222,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
 
   const setFullDoctorView = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
-    handleSetActiveView('doctorDetails');
+    setCurrentView('doctorDetails');
   };
 
   const setFullJobTypeView = (jobType: string) => {
     setSelectedJobType(jobType);
-    handleSetActiveView('jobTypeDetails');
+    setCurrentView('jobTypeDetails');
   };
 
   const getDoctorFullNameById = (doctorId: string | Doctor) => { // Changed type from any
@@ -244,12 +244,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const handleViewOrderDetails = (order: Order) => {
     console.log("Viewing details for order ID:", order.orderNumber);
     setSelectedOrder(order);
-    handleSetActiveView('orderDetails');
+    setCurrentView('orderDetails');
   };
 
   const handleViewDoctorDetails = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
-    handleSetActiveView('doctorDetails');
+    setCurrentView('doctorDetails');
   };
 
   const handleEditOrder = (order: Order) => {
@@ -346,7 +346,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
             jobTypeCosts={jobTypeCosts}
             onOrderCreated={(newOrder) => {
               addOrder(newOrder);
-              handleSetActiveView('existingOrders');
+              setCurrentView('existingOrders');
             }}
             onAddDoctor={openAddDoctorModal}
           />
@@ -364,7 +364,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
             setFullDoctorView={setFullDoctorView}
             setFullJobTypeView={setFullJobTypeView}
             setReportFilter={setReportFilter}
-            setActiveView={handleSetActiveView} // Use the new handler
+            setCurrentView={setCurrentView}
             generateReport={generateReport}
             fetchReports={fetchReports}
           />
@@ -438,7 +438,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     <div className="flex h-screen bg-gray-100">
       <Sidebar 
         currentView={activeView} 
-        setCurrentView={handleSetActiveView} 
+        setCurrentView={setCurrentView} 
         notifications={notifications} 
         markNotificationsAsRead={handleMarkNotificationsAsRead} 
         handleLogout={handleLogout} 
