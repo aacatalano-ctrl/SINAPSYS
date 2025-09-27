@@ -18,6 +18,8 @@ interface ToastState {
 interface UIContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
+  handleLogout: () => void;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -67,6 +69,38 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
 
+  const hideToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, show: false }));
+  }, []);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      hideToast();
+    }, 3000);
+  }, [hideToast]);
+
+  const handleLogout = useCallback(() => {
+    setCurrentUser(null);
+    localStorage.removeItem('token');
+    showToast('Sesión cerrada.');
+  }, [setCurrentUser, showToast]);
+
+  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options?.headers,
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+      handleLogout();
+      showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
+    }
+    return response;
+  }, [showToast, handleLogout]);
+
 
 
   const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
@@ -97,20 +131,11 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const openDeleteReportModal = useCallback(() => setDeleteReportModalOpen(true), []);
   const closeDeleteReportModal = useCallback(() => setDeleteReportModalOpen(false), []);
 
-  const hideToast = useCallback(() => {
-    setToast((prev) => ({ ...prev, show: false }));
-  }, []);
-
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      hideToast();
-    }, 3000);
-  }, [hideToast]);
-
   const value = {
     currentUser,
     setCurrentUser,
+    handleLogout,
+    authFetch,
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,

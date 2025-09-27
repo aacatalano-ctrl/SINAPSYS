@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
+import { useUI } from './context/UIContext';
 
 import { User, Notification } from '../types';
 
 
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { currentUser, setCurrentUser, handleLogout, authFetch } = useUI();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,29 +38,7 @@ function App() {
 
   const API_URL = '/api';
 
-  const handleLogout = useCallback(() => {
-    setCurrentUser(null);
-    localStorage.removeItem('token'); // Eliminar el token
-    setIsAppContentLoaded(false);
-    showToast('Sesión cerrada.');
-  }, [setCurrentUser, setIsAppContentLoaded, showToast]);
 
-  // Función auxiliar para hacer fetch con token de autenticación
-  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options?.headers,
-    };
-    const response = await fetch(url, { ...options, headers });
-    if (response.status === 401 || response.status === 403) {
-      // Token inválido o expirado, o acceso denegado
-      handleLogout(); // Cerrar sesión
-      showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
-    }
-    return response;
-  }, [showToast, handleLogout]);
 
   const fetchNotifications = useCallback(async () => {
     try {
