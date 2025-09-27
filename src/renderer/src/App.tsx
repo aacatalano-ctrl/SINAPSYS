@@ -4,7 +4,7 @@ import MainAppWrapper from './components/MainAppWrapper.tsx';
 
 import { User, Notification } from '../types';
 
-import { DoctorProvider } from './context/DoctorContext.tsx'; // Import DoctorProvider
+
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -219,15 +219,13 @@ function App() {
           handleSetNewPassword={handleSetNewPassword}
         />
       ) : (
-        <DoctorProvider> {/* Wrap MainAppWrapper with DoctorProvider */}
-          <MainAppWrapper
-            currentUser={currentUser}
-            notifications={notifications}
-            setNotifications={setNotifications}
-            handleLogout={handleLogout}
-            authFetch={authFetch}
-          />
-        </DoctorProvider>
+        <MainAppWrapper
+          currentUser={currentUser}
+          notifications={notifications}
+          setNotifications={setNotifications}
+          handleLogout={handleLogout}
+          authFetch={authFetch}
+        />
       )}
     </>
   );

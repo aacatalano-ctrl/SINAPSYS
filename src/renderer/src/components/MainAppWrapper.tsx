@@ -22,7 +22,7 @@ import ConfirmCompletionModal from './ConfirmCompletionModal';
 import EditOrderModal from './EditOrderModal';
 import Toast from './Toast';
 import { Doctor, Order, Notification, User } from '../../types';
-import { formatDate, formatDateTime, jobTypePrefixMap, jobTypeCosts } from '../utils/helpers';
+import { formatDate, formatDateTime } from '../utils/helpers';
 
 const API_URL = '/api';
 
@@ -72,7 +72,26 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const [orderToComplete, setOrderToComplete] = useState<Order | null>(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [reportTimeframe, setReportTimeframe] = useState<string>('all');
+  const [jobCategories, setJobCategories] = useState([]);
+  const [jobTypeCosts, setJobTypeCosts] = useState({});
+  const [jobTypePrefixMap, setJobTypePrefixMap] = useState({});
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
+
+  const fetchJobCategories = useCallback(async () => {
+    try {
+      const response = await authFetch(`${API_URL}/job-categories`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch job categories');
+      }
+      const data = await response.json();
+      setJobCategories(data.jobCategories || []);
+      setJobTypeCosts(data.jobTypeCosts || {});
+      setJobTypePrefixMap(data.jobTypePrefixMap || {});
+    } catch (error) {
+      console.error(error);
+      showToast('Error al cargar las categorías de trabajo.', 'error');
+    }
+  }, [authFetch, showToast]);
 
   const openAddDoctorModal = useCallback(() => {
     return new Promise<string | null>(resolve => {
@@ -139,7 +158,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     fetchDoctors();
     fetchNotifications();
     fetchOrders(); // Add this line to fetch orders on initial load
-  }, [fetchDoctors, fetchNotifications, fetchOrders]);
+    fetchJobCategories();
+  }, [fetchDoctors, fetchNotifications, fetchOrders, fetchJobCategories]);
 
   // Refresh notifications when orders change to catch new ones
   useEffect(() => {
@@ -322,6 +342,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
         return (
           <CreateOrderView
             doctors={doctors}
+            jobCategories={jobCategories}
+            jobTypeCosts={jobTypeCosts}
             onOrderCreated={(newOrder) => {
               addOrder(newOrder);
               handleSetActiveView('existingOrders');

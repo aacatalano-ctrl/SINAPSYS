@@ -18,7 +18,6 @@ interface ToastState {
 interface UIContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>; // Añadir authFetch
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -54,7 +53,6 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 // Create a provider component
 interface UIProviderProps {
   children: ReactNode;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
@@ -69,24 +67,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
 
-  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options?.headers,
-    };
-    const response = await fetch(url, { ...options, headers });
-    if (response.status === 401 || response.status === 403) {
-      // Token inválido o expirado, o acceso denegado
-      // This part needs to be handled by the component that uses authFetch, not here directly
-      // For now, we'll just log and let the caller handle it.
-      console.error('Authentication failed or token expired. Please log in again.');
-      // showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
-      // handleLogout(); // This would cause a circular dependency if called directly
-    }
-    return response;
-  }, []); // Dependencies for authFetch
+
 
   const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
   const closeAddDoctorModal = useCallback(() => setAddDoctorModalOpen(false), []);
@@ -130,7 +111,6 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const value = {
     currentUser,
     setCurrentUser,
-    authFetch, // Añadir authFetch al valor del contexto
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,
