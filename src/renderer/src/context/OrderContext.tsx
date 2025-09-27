@@ -34,7 +34,7 @@ interface OrderProviderProps {
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentUser }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { showToast } = useUI();
+  const { showToast, fetchNotifications } = useUI();
   const { isDoctorsLoaded } = useDoctors();
 
   const API_URL = '/api';
@@ -131,6 +131,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       );
 
       showToast('Pago añadido con éxito.', 'success');
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to add payment:", error);
       showToast('Error al añadir pago.', 'error');
@@ -203,6 +204,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       updateFields.completionDate = completionDate || new Date().toISOString();
     }
     await handleUpdateOrder(orderId, updateFields);
+    fetchNotifications();
   };
 
   const handleDeleteOrder = async (id: string): Promise<void> => {

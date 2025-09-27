@@ -28,6 +28,11 @@ interface UIContextType {
   isEditOrderModalOpen: boolean;
   isEmailDraftModalOpen: boolean;
   isDeleteReportModalOpen: boolean;
+  notifications: Notification[];
+  fetchNotifications: () => Promise<void>;
+  handleMarkNotificationsAsRead: () => Promise<void>;
+  handleClearAllNotifications: () => Promise<void>;
+  handleDeleteNotification: (id: string) => Promise<void>;
   toast: ToastState;
   openAddDoctorModal: () => void;
   closeAddDoctorModal: () => void;
@@ -68,6 +73,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isEmailDraftModalOpen, setEmailDraftModalOpen] = useState(false);
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const hideToast = useCallback(() => {
     setToast((prev) => ({ ...prev, show: false }));
@@ -101,7 +107,41 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     return response;
   }, [showToast, handleLogout]);
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const fetchedNotifications = await authFetch(`/api/notifications`).then(res => res.json());
+      setNotifications(fetchedNotifications);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  }, [authFetch]);
 
+  const handleMarkNotificationsAsRead = useCallback(async () => {
+    try {
+      await authFetch(`/api/notifications/mark-all-read`, { method: 'PUT' });
+      fetchNotifications(); // Refresh notifications list
+    } catch (error) {
+      console.error("Failed to mark notifications as read:", error);
+    }
+  }, [fetchNotifications, authFetch]);
+
+  const handleClearAllNotifications = useCallback(async () => {
+    try {
+      await authFetch(`/api/notifications`, { method: 'DELETE' });
+      fetchNotifications(); // Refresh to show empty list
+    } catch (error) {
+      console.error("Failed to clear notifications:", error);
+    }
+  }, [fetchNotifications, authFetch]);
+
+  const handleDeleteNotification = useCallback(async (id: string) => {
+    try {
+      await authFetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      fetchNotifications(); // Refresh notifications list
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
+    }
+  }, [fetchNotifications, authFetch]);
 
   const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
   const closeAddDoctorModal = useCallback(() => setAddDoctorModalOpen(false), []);
@@ -145,6 +185,11 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     isEmailDraftModalOpen,
     isDeleteReportModalOpen,
     toast,
+    notifications,
+    fetchNotifications,
+    handleMarkNotificationsAsRead,
+    handleClearAllNotifications,
+    handleDeleteNotification,
     openAddDoctorModal,
     closeAddDoctorModal,
     openAddNoteModal,

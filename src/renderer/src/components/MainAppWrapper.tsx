@@ -34,7 +34,7 @@ interface MainAppWrapperProps {
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
   const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus, generatePaymentHistoryPDF } = useOrders();
-  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast } = useUI();
+  const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
   const [activeView, _setActiveView] = useState<string>('createOrder');
@@ -107,45 +107,6 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
       resolveAddDoctorPromise.current = null;
     }
   }, [_closeAddDoctorModal]);
-  
-  // --- Notifications State and Handlers ---
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-    const fetchNotifications = useCallback(async () => {
-    try {
-      const fetchedNotifications = await authFetch(`${API_URL}/notifications`).then(res => res.json());
-      setNotifications(fetchedNotifications);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    }
-  }, [authFetch]); // Removed API_URL from dependencies as it's a constant
-
-  const handleMarkNotificationsAsRead = useCallback(async () => {
-    try {
-      await authFetch(`${API_URL}/notifications/mark-all-read`, { method: 'PUT' });
-      fetchNotifications(); // Refresh notifications list
-    } catch (error) {
-      console.error("Failed to mark notifications as read:", error);
-    }
-  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
-
-  const handleClearAllNotifications = useCallback(async () => {
-    try {
-      await authFetch(`${API_URL}/notifications`, { method: 'DELETE' });
-      fetchNotifications(); // Refresh to show empty list
-    } catch (error) {
-      console.error("Failed to clear notifications:", error);
-    }
-  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
-
-  const handleDeleteNotification = useCallback(async (id: string) => {
-    try {
-      await authFetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
-      fetchNotifications(); // Refresh notifications list
-    } catch (error) {
-      console.error("Failed to delete notification:", error);
-    }
-  }, [fetchNotifications, authFetch]); // Removed API_URL from dependencies as it's a constant
 
   const handleNotificationClick = (notification: Notification) => {
     const order = orders.find(o => o._id === notification.orderId);
@@ -161,10 +122,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     fetchJobCategories();
   }, [fetchDoctors, fetchNotifications, fetchOrders, fetchJobCategories]);
 
-  // Refresh notifications when orders change to catch new ones
-  useEffect(() => {
-    fetchNotifications();
-  }, [orders, fetchNotifications]);
+
 
   // Other useEffects...
   useEffect(() => {
