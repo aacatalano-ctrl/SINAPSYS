@@ -11,10 +11,6 @@ import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
 import { checkUnpaidOrders, createNotification } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
-
-app.get('/api/job-categories', (req, res) => {
-  res.json({ jobCategories, jobTypeCosts, jobTypePrefixMap });
-});
 import type { Payment, Note } from '../types.js';
 import { z } from 'zod';
 
@@ -39,6 +35,10 @@ app.use(express.json());
 app.use((req, res, next) => {
   console.log('Incoming request URL:', req.url, 'Path:', req.path);
   next();
+});
+
+app.get('/api/job-categories', (req, res) => {
+  res.json({ jobCategories, jobTypeCosts, jobTypePrefixMap });
 });
 
 // --- API ENDPOINTS ---
