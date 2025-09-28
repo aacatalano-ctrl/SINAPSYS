@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import authMiddleware from './authMiddleware.js';
 
 interface AuthenticatedRequest extends Request {
-  user?: { userId: string; username: string; role: 'admin' | 'user' };
+  user?: { userId: string; username: string; role: 'admin' | 'user' | 'operador' };
 }
 
 const adminAuthMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

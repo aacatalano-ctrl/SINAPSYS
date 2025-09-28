@@ -55,7 +55,7 @@ const createUserSchema = z.object({
   direccion: z.string().min(1, "La dirección es requerida."),
   razonSocial: z.string().min(1, "La razón social es requerida."),
   rif: z.string().min(1, "El RIF es requerido."),
-  role: z.enum(['admin', 'user'], { message: "El rol debe ser 'admin' o 'user'." }).default('user').optional(),
+  role: z.enum(['admin', 'user', 'operador'], { message: "El rol debe ser 'admin', 'user' o 'operador'." }).default('user').optional(),
   status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }).default('active').optional(),
 });
 
@@ -69,7 +69,7 @@ const updateUserSchema = z.object({
   direccion: z.string().min(1, "La dirección no puede estar vacía.").optional(),
   razonSocial: z.string().min(1, "La razón social no puede estar vacía.").optional(),
   rif: z.string().min(1, "El RIF no puede estar vacío.").optional(),
-  role: z.enum(['admin', 'user'], { message: "El rol debe ser 'admin' o 'user'." }).optional(),
+  role: z.enum(['admin', 'user', 'operador'], { message: "El rol debe ser 'admin', 'user' o 'operador'." }).optional(),
   status: z.enum(['active', 'blocked'], { message: "El estado debe ser 'active' o 'blocked'." }).optional(),
   masterCode: z.string().optional(),
 });
@@ -423,7 +423,7 @@ app.put('/api/doctors/:id', async (req, res) => {
 });
 
 app.delete('/api/doctors/:id', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar doctores.' });
   }
   const session = await mongoose.startSession();
@@ -552,7 +552,7 @@ app.put('/api/orders/:id', async (req, res) => {
 });
 
 app.delete('/api/orders/:id', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar órdenes.' });
   }
   try {
@@ -632,7 +632,7 @@ app.put('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
 });
 
 app.delete('/api/orders/:orderId/payments/:paymentId', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar abonos.' });
   }
   try {
@@ -716,7 +716,7 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
 });
 
 app.delete('/api/orders/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notas.' });
   }
   try {
@@ -1214,7 +1214,7 @@ app.put('/api/notifications/mark-all-read', async (req, res) => {
 });
 
 app.delete('/api/notifications/:id', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
   }
   try {
@@ -1231,7 +1231,7 @@ app.delete('/api/notifications/:id', authMiddleware, async (req, res) => {
 });
 
 app.delete('/api/notifications', authMiddleware, async (req, res) => {
-  if (req.user.role === 'operador') {
+  if (req.user && req.user.role === 'operador') {
     return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
   }
   try {
