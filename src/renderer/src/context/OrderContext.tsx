@@ -13,6 +13,8 @@ interface OrderContextType {
   handleOrderCreated: (newOrder: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>) => Promise<Order | undefined>;
   calculateBalance: (order: Order) => number;
   addPaymentToOrder: (orderId: string, amount: number, description: string) => Promise<void>;
+  updatePaymentInOrder: (orderId: string, paymentId: string, paymentData: Partial<Payment>) => Promise<void>;
+  deletePaymentFromOrder: (orderId: string, paymentId: string) => Promise<void>;
   handleSaveNote: (orderId: string, noteText: string) => Promise<void>;
   handleUpdateNote: (orderId: string, noteId: string, newText: string) => Promise<void>;
   handleDeleteNote: (orderId: string, noteId: string) => Promise<void>;
@@ -136,6 +138,52 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       console.error("Failed to add payment:", error);
       showToast('Error al añadir pago.', 'error');
       throw error;
+    }
+  };
+
+  const updatePaymentInOrder = async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const updatedOrder = await response.json();
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === orderId ? updatedOrder : order
+        )
+      );
+      showToast('Abono actualizado con éxito.', 'success');
+    } catch (error) {
+      console.error("Failed to update payment:", error);
+      showToast('Error al actualizar el abono.', 'error');
+      throw error;
+    }
+  };
+
+  const deletePaymentFromOrder = async (orderId: string, paymentId: string): Promise<void> => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este abono?')) {
+      try {
+        const response = await fetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const updatedOrder = await response.json();
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === orderId ? updatedOrder : order
+          )
+        );
+        showToast('Abono eliminado con éxito.', 'success');
+      } catch (error) {
+        console.error("Failed to delete payment:", error);
+        showToast('Error al eliminar el abono.', 'error');
+        throw error;
+      }
     }
   };
 
@@ -298,6 +346,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       handleOrderCreated,
       calculateBalance,
       addPaymentToOrder,
+      updatePaymentInOrder,
+      deletePaymentFromOrder,
       handleSaveNote,
       handleUpdateNote,
       handleDeleteNote,

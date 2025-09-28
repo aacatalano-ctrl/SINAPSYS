@@ -593,6 +593,37 @@ app.post('/api/orders/:orderId/payments', async (req, res) => {
   }
 });
 
+app.put('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
+  const validation = paymentSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
+  }
+  const { amount, date, description } = validation.data;
+
+  try {
+    const { orderId, paymentId } = req.params;
+    const order = await db.orders.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    const payment = (order.payments as mongoose.Types.DocumentArray<Payment>).id(paymentId);
+    if (!payment) {
+      return res.status(404).json({ error: 'Pago no encontrado.' });
+    }
+
+    payment.amount = amount;
+    payment.date = date;
+    payment.description = description;
+
+    await order.save();
+    res.json(order);
+  } catch (error) {
+    console.error('Error al actualizar el pago:', error);
+    res.status(500).json({ error: 'Error interno del servidor al actualizar el pago.' });
+  }
+});
+
 app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
   try {
     const { orderId, paymentId } = req.params;
