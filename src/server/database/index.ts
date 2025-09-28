@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema<User>({
   direccion: { type: String, required: true },
   razonSocial: { type: String, required: true },
   rif: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  role: { type: String, enum: ['admin', 'cliente', 'operador'], default: 'cliente' },
   status: { type: String, enum: ['active', 'blocked'], default: 'active' },
 });
 
