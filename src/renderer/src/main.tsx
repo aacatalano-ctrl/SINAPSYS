@@ -6,20 +6,29 @@ import './index.css';
 import App from './App.tsx';
 import { OrderProvider } from './context/OrderContext.tsx';
 import { DoctorProvider } from './context/DoctorContext.tsx';
-import { UIProvider } from './context/UIContext.tsx';
+import { UIProvider, useUI } from './context/UIContext.tsx';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
+
+// This wrapper component is necessary to access the currentUser from UIContext
+// and pass it to OrderProvider, as OrderProvider is a sibling in the tree.
+const AppWrapper = () => {
+  const { currentUser } = useUI();
+  return (
+    <DoctorProvider>
+      <OrderProvider currentUser={currentUser}>
+        <App />
+      </OrderProvider>
+    </DoctorProvider>
+  );
+}
 
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <UIProvider>
-        <DoctorProvider>
-          <OrderProvider>
-            <App />
-          </OrderProvider>
-        </DoctorProvider>
+        <AppWrapper />
       </UIProvider>
     </BrowserRouter>
   </StrictMode>,
