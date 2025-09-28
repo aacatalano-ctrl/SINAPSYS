@@ -1,65 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { Order, Doctor } from '../../types';
+import { Order, Doctor, JobCategory } from '../../types';
 import DoctorCombobox from './DoctorCombobox';
-
-interface OrderFormData {
-  id: string;
-  patientName: string;
-  jobType: string;
-  cost: number;
-  priority: 'Baja' | 'Normal' | 'Alta' | 'Urgente';
-  caseDescription: string;
-  initialPaymentAmount: string; // Changed to string for input binding
-}
 
 interface EditOrderModalProps {
     order: Order;
     doctors: Doctor[];
-    onClose: () => void;
-    jobTypePrefixMap: { [key: string]: string };
+    jobCategories: JobCategory[];
     jobTypeCosts: { [key: string]: number };
+    onClose: () => void;
+    onUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
 }
 
-const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose, jobTypePrefixMap, jobTypeCosts }) => {
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(
-    () => doctors.find(d => d._id === order.doctorId) || null
-  );
-  const [formData, setFormData] = useState<OrderFormData>({
-    id: order._id,
-    patientName: order.patientName,
-    jobType: order.jobType,
-    cost: order.cost,
-    priority: order.priority,
-    caseDescription: order.caseDescription,
-    initialPaymentAmount: String(order.payments && order.payments.length > 0 ? order.payments[0].amount : 0),
-  });
-  const { handleUpdateOrder: onSaveOrder, showNotification } = useOrders();
+const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCategories, jobTypeCosts, onClose, onUpdateOrder }) => {
+  const { showNotification } = useOrders();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => {
-        if (name === 'jobType') {
-            return {
-                ...prev,
-                [name]: value,
-                cost: jobTypeCosts[value as string] !== undefined ? jobTypeCosts[value as string] : 0
-            };
-        }
-        if (name === 'cost' || name === 'initialPaymentAmount') {
-          let newValue: string | number = value;
-          if (typeof newValue === 'string') {
-            if (newValue.length > 8) {
-              newValue = newValue.slice(0, 8);
-            }
-            newValue = parseFloat(newValue);
-            if (isNaN(newValue)) newValue = 0;
-          }
-          return { ...prev, [name]: newValue };
-        }
-        return { ...prev, [name]: value };
-    });
-  };
+  // State for form fields
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [patientName, setPatientName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedJobType, setSelectedJobType] = useState('');
+  const [cost, setCost] = useState(0);
+  const [priority, setPriority] = useState<'Baja' | 'Normal' | 'Alta' | 'Urgente'>('Normal');
+  const [caseDescription, setCaseDescription] = useState('');
+
+  // Effect to initialize form state when the order prop is available
+  useEffect(() => {
+    if (order) {
+      const doctor = doctors.find(d => d._id === order.doctorId) || null;
+      setSelectedDoctor(doctor);
+      setPatientName(order.patientName);
+      setCost(order.cost);
+      setPriority(order.priority);
+      setCaseDescription(order.caseDescription);
+
+      // Initialize category and job type
+      const [category, job] = order.jobType.split(' - ');
+      if (category && jobCategories.some(c => c.category === category)) {
+        setSelectedCategory(category);
+        setSelectedJobType(order.jobType);
+      }
+    }
+  }, [order, doctors, jobCategories]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,46 +50,23 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
       return;
     }
 
-    // Construct the payload from the form data and add the selected doctor.
     const updatedOrderData: Partial<Omit<Order, '_id'>> = {
-      ...formData,
       doctorId: selectedDoctor._id,
+      patientName,
+      jobType: selectedJobType,
+      cost,
+      priority,
+      caseDescription,
     };
 
-    // Handle payment update logic robustly.
-    const payments = order.payments ? [...order.payments] : [];
-    const newPaymentAmount = parseFloat(formData.initialPaymentAmount);
-
-    if (!isNaN(newPaymentAmount) && newPaymentAmount >= 0) {
-      if (payments.length > 0) {
-        // Update the amount of the first payment
-        payments[0].amount = newPaymentAmount;
-      } else if (newPaymentAmount > 0) {
-        // If no payments existed but a new amount is entered, create one
-        payments.push({
-          amount: newPaymentAmount,
-          date: new Date(),
-          method: 'No especificado',
-          reference: ''
-        });
-      }
-    }
-    updatedOrderData.payments = payments;
-
-    // Clean up temporary field from the payload before sending
-    if ('initialPaymentAmount' in updatedOrderData) {
-      delete (updatedOrderData as Partial<OrderFormData>).initialPaymentAmount;
-    }
-
-    // onSaveOrder is handleUpdateOrder from the context, which is async.
-    // We chain .then() to ensure the modal only closes on successful update.
-    onSaveOrder(order._id, updatedOrderData)
+    onUpdateOrder(order._id, updatedOrderData)
       .then(() => {
+        showNotification('Orden actualizada con éxito', 'success');
         onClose();
       })
       .catch((error) => {
-        // The context's handleUpdateOrder already shows a toast on error.
         console.error("Failed to update order:", error);
+        // Notification is already shown in the context
       });
   };
 
@@ -131,11 +90,34 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
               type="text"
               id="patientName"
               name="patientName"
-              value={formData.patientName}
-              onChange={handleChange}
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
               className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">Categoría de Trabajo:</label>
+            <select
+              id="jobCategory"
+              name="jobCategory"
+              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setSelectedJobType('');
+                setCost(0);
+              }}
+              required
+            >
+              <option value="">Selecciona una categoría</option>
+              {jobCategories.map(cat => (
+                <option key={cat.category} value={cat.category}>
+                  {cat.category}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-4">
@@ -143,15 +125,26 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
             <select
               id="jobType"
               name="jobType"
-              value={formData.jobType}
-              onChange={handleChange}
               className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={!selectedCategory}
+              value={selectedJobType}
+              onChange={(e) => {
+                const newJobType = e.target.value;
+                setSelectedJobType(newJobType);
+                setCost(jobTypeCosts[newJobType] !== undefined ? jobTypeCosts[newJobType] : 0);
+              }}
             >
               <option value="">Selecciona tipo de trabajo</option>
-              {Object.keys(jobTypePrefixMap).map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
+              {selectedCategory &&
+                jobCategories.find(cat => cat.category === selectedCategory)?.services.map(service => {
+                  const fullJobName = `${selectedCategory} - ${service.name}`;
+                  return (
+                    <option key={fullJobName} value={fullJobName}>
+                      {service.name}
+                    </option>
+                  );
+                })}
             </select>
           </div>
 
@@ -161,8 +154,8 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
               type="number"
               id="cost"
               name="cost"
-              value={String(formData.cost)} // Convert number to string for input value
-              onChange={handleChange}
+              value={cost}
+              onChange={(e) => setCost(parseFloat(e.target.value) || 0)}
               className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               step="10"
               min="0"
@@ -175,8 +168,8 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
             <select
               id="priority"
               name="priority"
-              value={formData.priority}
-              onChange={handleChange}
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as 'Baja' | 'Normal' | 'Alta' | 'Urgente')}
               className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Baja">Baja</option>
@@ -186,28 +179,14 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, onClose
             </select>
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="initialPaymentAmount" className="mb-2 block text-sm font-semibold text-gray-700">Abono Inicial:</label>
-            <input
-              type="number"
-              id="initialPaymentAmount"
-              name="initialPaymentAmount"
-              value={String(formData.initialPaymentAmount)} // Convert number to string for input value
-              onChange={handleChange}
-              className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              step="10"
-              min="0"
-            />
-          </div>
-
           <div className="mb-6">
             <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
             <textarea
               id="caseDescription"
               name="caseDescription"
               rows="4"
-              value={formData.caseDescription}
-              onChange={handleChange}
+              value={caseDescription}
+              onChange={(e) => setCaseDescription(e.target.value)}
               className="w-full resize-y appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Detalles sobre el caso dental, como material, color, etc."
             ></textarea>

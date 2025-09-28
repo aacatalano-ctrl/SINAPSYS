@@ -196,6 +196,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
           order={selectedOrder}
           onUpdateOrder={updateOrder}
           doctors={doctors}
+          jobCategories={jobCategories}
           jobTypePrefixMap={jobTypePrefixMap}
           jobTypeCosts={jobTypeCosts}
         />
