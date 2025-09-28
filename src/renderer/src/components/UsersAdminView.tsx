@@ -163,7 +163,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
                   {user.username}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                  {user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                  {user.role === 'admin' ? 'Administrador' : user.role === 'operador' ? 'Operador' : 'Cliente'}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                   <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${

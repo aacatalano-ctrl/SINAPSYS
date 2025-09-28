@@ -18,7 +18,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
   const [direccion, setDireccion] = useState(user.direccion);
   const [razonSocial, setRazonSocial] = useState(user.razonSocial);
   const [rif, setRif] = useState(user.rif);
-  const [role, setRole] = useState<'admin' | 'user'>(user.role);
+  const [role, setRole] = useState<'admin' | 'cliente' | 'operador'>(user.role);
   const [status, setStatus] = useState<'active' | 'blocked'>(user.status);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useUI();
@@ -32,7 +32,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
       setDireccion(user.direccion);
       setRazonSocial(user.razonSocial);
       setRif(user.rif);
-      setRole(user.role);
+      setRole(user.role as 'admin' | 'cliente' | 'operador');
       setStatus(user.status);
     }
   }, [user]);
@@ -171,9 +171,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
               id="role"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={role}
-              onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
+              onChange={(e) => setRole(e.target.value as 'admin' | 'cliente' | 'operador')}
             >
-              <option value="user">Usuario</option>
+              <option value="cliente">Cliente</option>
+              <option value="operador">Operador</option>
               <option value="admin">Administrador</option>
             </select>
           </div>

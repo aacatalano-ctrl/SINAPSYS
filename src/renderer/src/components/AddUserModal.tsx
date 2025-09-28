@@ -20,7 +20,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
   const [newDireccion, setNewDireccion] = useState('');
   const [newRazonSocial, setNewRazonSocial] = useState('');
   const [newRif, setNewRif] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'cliente' | 'operador'>('cliente');
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const { showToast } = useUI();
@@ -65,7 +65,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
       setNewDireccion('');
       setNewRazonSocial('');
       setNewRif('');
-      setNewUserRole('user');
+      setNewUserRole('cliente');
       onUserAdded(); // Refresh user list in parent
       onClose();
     } catch (err: unknown) {
@@ -215,9 +215,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
               id="newUserRole"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={newUserRole}
-              onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'user')}
+              onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'cliente' | 'operador')}
             >
-              <option value="user">Usuario</option>
+              <option value="cliente">Cliente</option>
+              <option value="operador">Operador</option>
               <option value="admin">Administrador</option>
             </select>
           </div>
