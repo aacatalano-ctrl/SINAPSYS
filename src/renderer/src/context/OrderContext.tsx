@@ -31,9 +31,10 @@ const OrderContext = createContext<OrderContextType | null>(null);
 interface OrderProviderProps {
   children: React.ReactNode;
   currentUser: User | null;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentUser }) => {
+export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentUser, authFetch }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast, fetchNotifications } = useUI();
@@ -43,7 +44,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/orders`);
+      const response = await authFetch(`${API_URL}/orders`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const loadedOrders = await response.json();
       setOrders(loadedOrders.filter(Boolean));
@@ -68,7 +69,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const handleUpdateOrder = useCallback(async (id: string, updatedFields: Partial<Order>) => {
     try {
-      const response = await fetch(`${API_URL}/orders/${id}`, {
+      const response = await authFetch(`${API_URL}/orders/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedFields),
@@ -93,7 +94,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const handleOrderCreated = async (orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>): Promise<Order | undefined> => {
     try {
-      const response = await fetch(`${API_URL}/orders`, {
+      const response = await authFetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
@@ -117,7 +118,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       description: description || 'Pago',
     };
     try {
-      const response = await fetch(`${API_URL}/orders/${orderId}/payments`, {
+      const response = await authFetch(`${API_URL}/orders/${orderId}/payments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPayment),
@@ -143,8 +144,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const updatePaymentInOrder = async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
-        method: 'PUT',
+      const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(paymentData),
       });
@@ -167,7 +167,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const deletePaymentFromOrder = async (orderId: string, paymentId: string): Promise<void> => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este abono?')) {
       try {
-        const response = await fetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+        const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -197,7 +197,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       author: currentUser?.username || 'Usuario',
     };
     try {
-      const response = await fetch(`${API_URL}/orders/${orderId}/notes`, {
+      const response = await authFetch(`${API_URL}/orders/${orderId}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newNote),
@@ -214,7 +214,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const handleUpdateNote = async (orderId: string, noteId: string, newText: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
+      const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: newText }),
@@ -232,7 +232,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const handleDeleteNote = async (orderId: string, noteId: string): Promise<void> => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
       try {
-        const response = await fetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
+        const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -258,7 +258,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const handleDeleteOrder = async (id: string): Promise<void> => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.')) {
       try {
-        const response = await fetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
+        const response = await authFetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await fetchOrders();
         showToast('Orden eliminada con éxito.');
@@ -271,7 +271,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const generateReceiptPDF = async (order: Order, currentUser: User): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/orders/${order._id}/receipt`, {
+      const response = await authFetch(`${API_URL}/orders/${order._id}/receipt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order, currentUser }),
@@ -295,7 +295,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const generatePaymentHistoryPDF = async (order: Order, currentUser: User): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
+      const response = await authFetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentUser }),

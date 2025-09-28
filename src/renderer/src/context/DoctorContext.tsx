@@ -19,9 +19,10 @@ const DoctorContext = createContext<DoctorContextType | undefined>(undefined);
 
 interface DoctorProviderProps {
   children: ReactNode;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
+export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFetch }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
@@ -29,7 +30,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   const fetchDoctors = useCallback(async () => {
     setIsDoctorsLoaded(false);
     try {
-      const response = await fetch(`${API_URL}/doctors`);
+      const response = await authFetch(`${API_URL}/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -44,7 +45,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
     try {
-      const response = await fetch(`${API_URL}/doctors`, {
+      const response = await authFetch(`${API_URL}/doctors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +67,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
-      const response = await fetch(`${API_URL}/doctors/${id}`, {
+      const response = await authFetch(`${API_URL}/doctors/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
   const deleteDoctor = useCallback(async (id: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {
       try {
-        const response = await fetch(`${API_URL}/doctors/${id}`, {
+        const response = await authFetch(`${API_URL}/doctors/${id}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -100,7 +101,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children }) => {
 
   const exportDoctors = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/export/doctors`);
+      const response = await authFetch(`${API_URL}/export/doctors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

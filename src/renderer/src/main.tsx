@@ -14,10 +14,10 @@ if (!rootElement) throw new Error('Failed to find the root element');
 // This wrapper component is necessary to access the currentUser from UIContext
 // and pass it to OrderProvider, as OrderProvider is a sibling in the tree.
 const AppWrapper = () => {
-  const { currentUser } = useUI();
+  const { currentUser, authFetch } = useUI();
   return (
-    <DoctorProvider>
-      <OrderProvider currentUser={currentUser}>
+    <DoctorProvider authFetch={authFetch}>
+      <OrderProvider currentUser={currentUser} authFetch={authFetch}>
         <App />
       </OrderProvider>
     </DoctorProvider>
