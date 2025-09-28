@@ -47,17 +47,6 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [prefixFilter, setPrefixFilter] = useState<string>('all');
   const [sortDoctorsColumn, setSortDoctorsColumn] = useState<string>('');
   const [sortDoctorsDirection, setSortDoctorsDirection] = useState<'asc' | 'desc'>('asc');
-  const [sortOrdersColumn, setSortOrdersColumn] = useState<string>('creationDate');
-  const [sortOrdersDirection, setSortOrdersDirection] = useState<'asc' | 'desc'>('desc');
-
-  const handleSortOrders = (column: string) => {
-    if (sortOrdersColumn === column) {
-      setSortOrdersDirection(sortOrdersDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortOrdersColumn(column);
-      setSortOrdersDirection('asc');
-    }
-  };
 
   const [orderToComplete, setOrderToComplete] = useState<Order | null>(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
