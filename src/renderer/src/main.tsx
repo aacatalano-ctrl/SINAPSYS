@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
 import { OrderProvider } from './context/OrderContext.tsx';
@@ -12,12 +13,14 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <UIProvider>
-      <DoctorProvider>
-        <OrderProvider>
-          <App />
-        </OrderProvider>
-      </DoctorProvider>
-    </UIProvider>
+    <BrowserRouter>
+      <UIProvider>
+        <DoctorProvider>
+          <OrderProvider>
+            <App />
+          </OrderProvider>
+        </DoctorProvider>
+      </UIProvider>
+    </BrowserRouter>
   </StrictMode>,
 );

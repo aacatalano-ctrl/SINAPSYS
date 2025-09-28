@@ -27,9 +27,6 @@ function App() {
     }
   }, [currentUser]);
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isAppContentLoaded, setIsAppContentLoaded] = useState(false);
-
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
   const [forgotPasswordUsername, setForgotPasswordUsername] = useState('');
@@ -40,29 +37,7 @@ function App() {
 
 
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const response = await authFetch(`${API_URL}/notifications`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const fetchedNotifications = await response.json();
-      setNotifications(fetchedNotifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  }, [API_URL, authFetch]);
 
-  const loadData = useCallback(async () => {
-    try {
-      
-      await fetchNotifications();
-      setIsAppContentLoaded(true);
-    } catch (error: unknown) {
-      console.error("Error loading data:", error);
-      showToast('Error al cargar datos. Revisa la consola.', 'error');
-    }
-  }, [fetchNotifications, showToast]); // Removed fetchDoctors from dependencies
 
   useEffect(() => {
     // Intentar cargar el usuario desde el token al iniciar la app
@@ -82,11 +57,7 @@ function App() {
     }
   }, [setCurrentUser]);
 
-  useEffect(() => {
-    if (currentUser && !isAppContentLoaded) {
-      loadData();
-    }
-  }, [currentUser, isAppContentLoaded, loadData]);
+
 
   const handleLogin = async (username: string, password: string) => {
     setAuthError('');
@@ -200,9 +171,6 @@ function App() {
       ) : (
         <MainAppWrapper
           currentUser={currentUser}
-          notifications={notifications}
-          setNotifications={setNotifications}
-          handleLogout={handleLogout}
           authFetch={authFetch}
         />
       )}

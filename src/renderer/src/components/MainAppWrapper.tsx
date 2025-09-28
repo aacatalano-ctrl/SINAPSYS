@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext';
 import { useUI } from '../context/UIContext';
 import { useDoctors } from '../context/DoctorContext';
@@ -13,8 +14,8 @@ import JobTypeDetailsView from './JobTypeDetailsView';
 import ReportResultsView from './ReportResultsView';
 import IncomeBreakdownView from './IncomeBreakdownView';
 import ReportsView from './ReportsView';
-import NotificationsView from './NotificationsView'; // Import new view
-import UsersAdminView from './UsersAdminView'; // Import admin view
+import NotificationsView from './NotificationsView';
+import UsersAdminView from './UsersAdminView';
 import AddDoctorModal from './AddDoctorModal';
 import AddNoteModal from './AddNoteModal';
 import AddPaymentModal from './AddPaymentModal';
@@ -27,39 +28,16 @@ import { formatDate, formatDateTime } from '../utils/helpers';
 const API_URL = '/api';
 
 interface MainAppWrapperProps {
-  handleLogout: () => void;
-  currentUser: User; // Changed from any to User
+  currentUser: User;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUser, authFetch }) => {
-  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus, generatePaymentHistoryPDF } = useOrders();
+const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch }) => {
+  const navigate = useNavigate();
+  const { orders, addOrder, updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, calculateBalance, handleDeleteOrder, handleUpdateOrderStatus } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
-  const [activeView, _setActiveView] = useState<string>('createOrder');
-  const [, setViewHistory] = useState<string[]>(['existingOrders']); // Renamed viewHistory to _viewHistory
-
-  const setCurrentView = useCallback((view: string) => {
-    _setActiveView(view);
-    setViewHistory(prevHistory => {
-      if (prevHistory[prevHistory.length - 1] !== view) {
-        return [...prevHistory, view];
-      }
-      return prevHistory;
-    });
-  }, []);
-
-  const goBack = useCallback(() => {
-    setViewHistory(prevHistory => {
-      if (prevHistory.length > 1) {
-        const newHistory = prevHistory.slice(0, prevHistory.length - 1);
-        _setActiveView(newHistory[newHistory.length - 1]);
-        return newHistory;
-      }
-      return prevHistory; // Stay on the current view if no history
-    });
-  }, []);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [selectedJobType, setSelectedJobType] = useState<string | null>(null);
@@ -111,20 +89,18 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
   const handleNotificationClick = (notification: Notification) => {
     const order = orders.find(o => o._id === notification.orderId);
     if (order) {
-      handleViewOrderDetails(order);
+      setSelectedOrder(order);
+      navigate('/orders/details');
     }
   };
 
   useEffect(() => {
     fetchDoctors();
     fetchNotifications();
-    fetchOrders(); // Add this line to fetch orders on initial load
+    fetchOrders();
     fetchJobCategories();
   }, [fetchDoctors, fetchNotifications, fetchOrders, fetchJobCategories]);
 
-
-
-  // Other useEffects...
   useEffect(() => {
     if (selectedOrder) {
       const updatedOrder = orders.find(o => o._id === selectedOrder._id);
@@ -133,41 +109,6 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
       }
     }
   }, [orders, selectedOrder]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        // Check for open modals first
-        if (isAddDoctorModalOpen) {
-          closeAddDoctorModal();
-        } else if (isEditOrderModalOpen) {
-          closeEditOrderModal();
-        } else if (isAddNoteModalOpen) {
-          closeAddNoteModal();
-        } else if (isAddPaymentModalOpen) {
-          closeAddPaymentModal();
-        } else if (isConfirmCompletionModalOpen) {
-          closeConfirmCompletionModal();
-        } else {
-          // If no modals are open, go back in view history
-          goBack();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [
-    isAddDoctorModalOpen, closeAddDoctorModal,
-    isEditOrderModalOpen, closeEditOrderModal,
-    isAddNoteModalOpen, closeAddNoteModal,
-    isAddPaymentModalOpen, closeAddPaymentModal,
-    isConfirmCompletionModalOpen, closeConfirmCompletionModal,
-    goBack // Include goBack in dependencies
-  ]);
 
   const handleSortDoctors = (column: string) => {
     if (sortDoctorsColumn === column) {
@@ -178,36 +119,14 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     }
   };
 
-  const setFullDoctorView = (doctor: Doctor) => {
-    setSelectedDoctor(doctor);
-    setCurrentView('doctorDetails');
-  };
-
-  const setFullJobTypeView = (jobType: string) => {
-    setSelectedJobType(jobType);
-    setCurrentView('jobTypeDetails');
-  };
-
-  const getDoctorFullNameById = (doctorId: string | Doctor) => { // Changed type from any
+  const getDoctorFullNameById = (doctorId: string | Doctor) => {
     if (doctorId && typeof doctorId === 'object' && doctorId.firstName && doctorId.lastName) {
       return `${doctorId.firstName} ${doctorId.lastName}`;
     } else if (typeof doctorId === 'string') {
-      // Fallback for cases where doctorId might still be just an ID string (less likely now)
       const doctor = doctors.find((d) => d._id === doctorId);
       return doctor ? `${doctor.firstName} ${doctor.lastName}` : 'N/A';
     }
     return 'N/A';
-  };
-
-  const handleViewOrderDetails = (order: Order) => {
-    console.log("Viewing details for order ID:", order.orderNumber);
-    setSelectedOrder(order);
-    setCurrentView('orderDetails');
-  };
-
-  const handleViewDoctorDetails = (doctor: Doctor) => {
-    setSelectedDoctor(doctor);
-    setCurrentView('doctorDetails');
   };
 
   const handleEditOrder = (order: Order) => {
@@ -215,196 +134,27 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
     openEditOrderModal();
   };
 
-  const mainContent = () => {
-    switch (activeView) {
-      case 'usersAdmin':
-        return currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div className="py-4 text-center text-red-500">Acceso denegado.</div>;
-      case 'notifications':
-        return (
-          <NotificationsView 
-            notifications={notifications}
-            onNotificationClick={handleNotificationClick}
-            onClearNotifications={handleClearAllNotifications}
-            onDeleteNotification={handleDeleteNotification}
-          />
-        );
-      case 'doctors':
-        return (
-          <DoctorsView
-            doctors={doctors}
-            editingDoctor={editingDoctor}
-            setEditingDoctor={setEditingDoctor}
-            handleEditDoctor={updateDoctor}
-            handleDeleteDoctor={deleteDoctor}
-            searchDoctorTerm={searchDoctorTerm}
-            setSearchDoctorTerm={setSearchDoctorTerm}
-            prefixFilter={prefixFilter}
-            setPrefixFilter={setPrefixFilter}
-            sortDoctorsColumn={sortDoctorsColumn}
-            sortDoctorsDirection={sortDoctorsDirection}
-            handleSortDoctors={handleSortDoctors}
-            setFullDoctorView={handleViewDoctorDetails}
-            onExportDoctors={exportDoctors}
-          />
-        );
-      case 'existingOrders':
-        return (
-          <ExistingOrdersView
-            orders={orders.filter(o => o.status !== 'Completado')}
-            onViewDetails={handleViewOrderDetails}
-            onEditOrder={handleEditOrder}
-            onConfirmCompletion={(order) => {
-              console.log("Setting order to complete with ID:", order._id);
-              setOrderToComplete(order);
-              openConfirmCompletionModal();
-            }}
-            onConfirmPayment={(order) => {
-              setSelectedOrderForPayment(order);
-              openAddPaymentModal();
-            }}
-            onAddNote={(orderId) => {
-              const order = orders.find(o => o._id === orderId);
-              if (order) {
-                setSelectedOrder(order);
-                openAddNoteModal();
-              }
-            }}
-            getDoctorFullNameById={getDoctorFullNameById}
-            fetchOrdersByDoctor={fetchOrdersByDoctor}
-            fetchOrdersByPatient={fetchOrdersByPatient}
-            fetchOrdersByDateRange={fetchOrdersByDateRange}
-            fetchOrdersByStatus={fetchOrdersByStatus}
-            fetchOrdersByJobType={fetchOrdersByJobType}
-            fetchOrdersBySearchTerm={fetchOrdersBySearchTerm}
-            exportOrdersToExcel={exportOrdersToExcel}
-            onDeleteOrder={handleDeleteOrder}
-          />
-        );
-      case 'historyOrders':
-        return (
-          <HistoryOrdersView
-            orders={orders.filter(o => o.status === 'Completado')}
-            searchHistoryTerm={searchHistoryTerm}
-            setSearchHistoryTerm={setSearchHistoryTerm}
-            setFullClientView={handleViewOrderDetails} // Corrected prop name
-            getDoctorFullNameById={getDoctorFullNameById}
-            formatDate={formatDate}
-            sortOrdersColumn={sortOrdersColumn}
-            sortOrdersDirection={sortOrdersDirection}
-            handleSortOrders={handleSortOrders}
-            calculateBalance={calculateBalance}
-            handleDeleteOrder={handleDeleteOrder}
-          />
-        );
-      case 'createOrder':
-        return (
-          <CreateOrderView
-            doctors={doctors}
-            jobCategories={jobCategories}
-            jobTypeCosts={jobTypeCosts}
-            onOrderCreated={(newOrder) => {
-              addOrder(newOrder);
-              setCurrentView('existingOrders');
-            }}
-            onAddDoctor={openAddDoctorModal}
-          />
-        );
-      case 'reports':
-        return (
-          <ReportsView
-            orders={orders}
-            calculateBalance={calculateBalance}
-            doctors={doctors}
-            jobTypePrefixMap={jobTypePrefixMap}
-            jobTypeCosts={jobTypeCosts}
-            reportTimeframe={reportTimeframe}
-            setReportTimeframe={setReportTimeframe}
-            setFullDoctorView={setFullDoctorView}
-            setFullJobTypeView={setFullJobTypeView}
-            setReportFilter={setReportFilter}
-            setCurrentView={setCurrentView}
-            generateReport={generateReport}
-            fetchReports={fetchReports}
-          />
-        );
-      case 'orderDetails':
-        return selectedOrder ? (
-          <OrderDetailsView
-            order={selectedOrder}
-            onBack={goBack}
-            onEditOrder={handleEditOrder}
-            onConfirmPayment={(order) => {
-              setSelectedOrderForPayment(order);
-              openAddPaymentModal();
-            }}
-            onAddNote={() => openAddNoteModal()}
-            getDoctorFullNameById={getDoctorFullNameById}
-            formatDate={formatDate}
-            formatDateTime={formatDateTime}
-            currentUser={currentUser}
-            generatePaymentHistoryPDF={generatePaymentHistoryPDF}
-          />
-        ) : null;
-      case 'doctorDetails':
-        return selectedDoctor ? (
-          <DoctorDetailsView
-            doctor={selectedDoctor}
-            orders={orders.filter(o => o.doctorId === selectedDoctor.id)}
-            onBack={goBack}
-            onViewOrderDetails={handleViewOrderDetails}
-          />
-        ) : null;
-      case 'jobTypeDetails':
-        return selectedJobType ? (
-          <JobTypeDetailsView
-            jobType={selectedJobType}
-            orders={orders.filter(o => o.jobType === selectedJobType)}
-            onBack={goBack}
-            onViewOrderDetails={handleViewOrderDetails}
-            getDoctorFullNameById={getDoctorFullNameById}
-            calculateBalance={calculateBalance}
-            formatDate={formatDate}
-          />
-        ) : null;
-      case 'reportResults':
-        return reportFilter ? (
-          <ReportResultsView
-            title={reportFilter.type} // Assuming reportFilter.type holds the title
-            orders={orders} // Pass all orders, filtering will happen inside ReportResultsView
-            onBack={goBack}
-            getDoctorFullNameById={getDoctorFullNameById}
-            formatDate={formatDate}
-            calculateBalance={calculateBalance}
-          />
-        ) : null;
-      case 'incomeBreakdown':
-        return (
-          <IncomeBreakdownView
-            orders={orders}
-            timeframe={reportTimeframe}
-            setTimeframe={setReportTimeframe}
-            onBack={goBack}
-          />
-        );
-        // Other cases...
-      default:
-        return <div />; // Fallback
-    }
-  };
-
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar 
-        currentView={activeView} 
-        setCurrentView={setCurrentView} 
-        notifications={notifications} 
-        markNotificationsAsRead={handleMarkNotificationsAsRead} 
-        handleLogout={handleLogout} 
         currentUser={currentUser}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
-          {mainContent()}
+          <Routes>
+            <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { const order = await addOrder(newOrder); if(order) navigate('/orders'); }} onAddDoctor={openAddDoctorModal} />} />
+            <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={(orderId) => { const order = orders.find(o => o._id === orderId); if (order) { setSelectedOrder(order); openAddNoteModal(); } }} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={handleDeleteOrder} />} />
+            <Route path="/history" element={<HistoryOrdersView orders={orders.filter(o => o.status === 'Completado')} searchHistoryTerm={searchHistoryTerm} setSearchHistoryTerm={setSearchHistoryTerm} setFullClientView={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} sortOrdersColumn={sortOrdersColumn} sortOrdersDirection={sortOrdersDirection} handleSortOrders={handleSortOrders} calculateBalance={calculateBalance} handleDeleteOrder={handleDeleteOrder} />} />
+            <Route path="/doctors" element={<DoctorsView doctors={doctors} editingDoctor={editingDoctor} setEditingDoctor={setEditingDoctor} handleEditDoctor={updateDoctor} handleDeleteDoctor={deleteDoctor} searchDoctorTerm={searchDoctorTerm} setSearchDoctorTerm={setSearchDoctorTerm} prefixFilter={prefixFilter} setPrefixFilter={setPrefixFilter} sortDoctorsColumn={sortDoctorsColumn} sortDoctorsDirection={sortDoctorsDirection} handleSortDoctors={handleSortDoctors} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} onExportDoctors={exportDoctors} />} />
+            <Route path="/reports" element={<ReportsView orders={orders} calculateBalance={calculateBalance} doctors={doctors} jobTypePrefixMap={jobTypePrefixMap} jobTypeCosts={jobTypeCosts} reportTimeframe={reportTimeframe} setReportTimeframe={setReportTimeframe} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} setFullJobTypeView={(jobType) => { setSelectedJobType(jobType); navigate('/reports/job-type'); }} setReportFilter={setReportFilter} />} />
+            <Route path="/notifications" element={<NotificationsView notifications={notifications} onNotificationClick={handleNotificationClick} onClearNotifications={handleClearAllNotifications} onDeleteNotification={handleDeleteNotification} />} />
+            <Route path="/admin/users" element={currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div>Acceso denegado.</div>} />
+            <Route path="/orders/details" element={selectedOrder ? <OrderDetailsView order={selectedOrder} onBack={() => navigate(-1)} onEditOrder={handleEditOrder} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={() => openAddNoteModal()} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} formatDateTime={formatDateTime} currentUser={currentUser} /> : <div>Selecciona una orden para ver los detalles.</div>} />
+            <Route path="/doctors/details" element={selectedDoctor ? <DoctorDetailsView doctor={selectedDoctor} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} /> : <div>Selecciona un doctor para ver los detalles.</div>} />
+            <Route path="/reports/job-type" element={selectedJobType ? <JobTypeDetailsView jobType={selectedJobType} orders={orders} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} calculateBalance={calculateBalance} formatDate={formatDate} /> : <div>Selecciona un tipo de trabajo para ver los detalles.</div>} />
+            <Route path="/reports/results" element={reportFilter ? <ReportResultsView title={reportFilter.type} orders={orders} onBack={() => navigate(-1)} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} calculateBalance={calculateBalance} /> : <div>Selecciona un reporte para ver los resultados.</div>} />
+            <Route path="/income-breakdown" element={<IncomeBreakdownView orders={orders} timeframe={reportTimeframe} setTimeframe={setReportTimeframe} onBack={() => navigate(-1)} />} />
+          </Routes>
         </main>
       </div>
 
@@ -414,7 +164,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ handleLogout, currentUs
           onClose={closeAddDoctorModal}
           onAddDoctor={addDoctor}
           onEditDoctor={updateDoctor}
-          doctorToEdit={selectedDoctor}
+          doctorToEdit={editingDoctor}
           showToast={showToast}
           onDoctorAdded={(doctor) => {
             if (resolveAddDoctorPromise.current) {
