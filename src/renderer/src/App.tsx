@@ -46,7 +46,6 @@ function App() {
       try {
         const decodedUser = JSON.parse(atob(token.split('.')[1]));
         setCurrentUser({ username: decodedUser.username, role: decodedUser.role });
-        setIsAppContentLoaded(false); // Forzar recarga de datos si el token es válido
       } catch (e) {
         console.error("Error decodificando token:", e);
         localStorage.removeItem('token');
