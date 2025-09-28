@@ -1,5 +1,5 @@
 import React from 'react';
-import { Notification } from '../../types';
+import { Notification, User } from '../../types';
 import { Bell, Clock, Trash2 } from 'lucide-react';
 
 interface NotificationsViewProps {
@@ -7,9 +7,10 @@ interface NotificationsViewProps {
   onNotificationClick: (notification: Notification) => void;
   onClearNotifications: () => void;
   onDeleteNotification: (id: string) => void; // Add this
+  currentUser: User | null;
 }
 
-const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, onNotificationClick, onClearNotifications, onDeleteNotification }) => {
+const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, onNotificationClick, onClearNotifications, onDeleteNotification, currentUser }) => {
 
   const timeSince = (date: string) => {
     const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -30,7 +31,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
     <div className="container mx-auto rounded-lg bg-white p-6 shadow-lg">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Notificaciones</h1>
-        {notifications.length > 0 && (
+        {notifications.length > 0 && currentUser?.role !== 'operador' && (
           <button 
             onClick={onClearNotifications}
             className="rounded-lg bg-red-500 px-4 py-2 font-bold text-white transition-colors duration-200 hover:bg-red-600"
@@ -62,16 +63,18 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
                   <span>Hace {timeSince(notification.createdAt)}</span>
                 </div>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent onNotificationClick from firing
-                  onDeleteNotification(notification._id); // Use _id to delete
-                }}
-                className="ml-4 text-red-500 hover:text-red-700"
-                title="Eliminar notificación"
-              >
-                <Trash2 size={20} />
-              </button>
+              {currentUser?.role !== 'operador' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent onNotificationClick from firing
+                    onDeleteNotification(notification._id); // Use _id to delete
+                  }}
+                  className="ml-4 text-red-500 hover:text-red-700"
+                  title="Eliminar notificación"
+                >
+                  <Trash2 size={20} />
+                </button>
+              )}
             </li>
           ))}
         </ul>

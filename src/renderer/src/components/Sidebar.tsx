@@ -20,7 +20,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
     { path: '/history', icon: History, label: 'Historial de Órdenes' },
     { path: '/doctors', icon: Stethoscope, label: 'Doctores' },
     { path: '/reports', icon: FileText, label: 'Reportes' },
-  ];
+  ].filter(item => {
+    if (item.path === '/reports' && currentUser?.role === 'operador') {
+      return false;
+    }
+    return true;
+  });
 
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`;

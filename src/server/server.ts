@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import adminAuthMiddleware from './middleware/adminAuthMiddleware.js';
+import authMiddleware from './middleware/authMiddleware.js';
 import PDFDocument from 'pdfkit';
 import { connectDB, initializeDb, db } from './database/index.js';
 import { purgeOldOrders } from './database/maintenance.js';
@@ -421,7 +422,10 @@ app.put('/api/doctors/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/doctors/:id', async (req, res) => {
+app.delete('/api/doctors/:id', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar doctores.' });
+  }
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -547,7 +551,10 @@ app.put('/api/orders/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:id', async (req, res) => {
+app.delete('/api/orders/:id', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar órdenes.' });
+  }
   try {
     const deletedOrder = await db.orders.findByIdAndDelete(req.params.id);
     if (!deletedOrder) {
@@ -624,7 +631,10 @@ app.put('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:orderId/payments/:paymentId', async (req, res) => {
+app.delete('/api/orders/:orderId/payments/:paymentId', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar abonos.' });
+  }
   try {
     const { orderId, paymentId } = req.params;
 
@@ -705,7 +715,10 @@ app.put('/api/orders/:orderId/notes/:noteId', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:orderId/notes/:noteId', async (req, res) => {
+app.delete('/api/orders/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notas.' });
+  }
   try {
     const { orderId, noteId } = req.params;
 
@@ -1200,7 +1213,10 @@ app.put('/api/notifications/mark-all-read', async (req, res) => {
   }
 });
 
-app.delete('/api/notifications/:id', async (req, res) => {
+app.delete('/api/notifications/:id', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
+  }
   try {
     const { id } = req.params;
     const result = await db.notifications.findByIdAndDelete(id);
@@ -1214,7 +1230,10 @@ app.delete('/api/notifications/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/notifications', async (req, res) => {
+app.delete('/api/notifications', authMiddleware, async (req, res) => {
+  if (req.user.role === 'operador') {
+    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
+  }
   try {
     await db.notifications.deleteMany({});
     res.status(204).send();

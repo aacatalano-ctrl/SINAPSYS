@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface AuthenticatedRequest extends Request {
-  user?: { userId: string; username: string; role: 'admin' | 'user' };
+  user?: { userId: string; username: string; role: 'admin' | 'user' | 'operador' };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
@@ -17,7 +17,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'admin' | 'user' };
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'admin' | 'user' | 'operador' };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
     next();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

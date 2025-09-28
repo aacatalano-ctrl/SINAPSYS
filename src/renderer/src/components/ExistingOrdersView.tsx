@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useUI } from '../context/UIContext';
 
 import { Edit, CheckCircle, DollarSign, MessageSquare, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import OrderSearchCombobox from './OrderSearchCombobox';
@@ -19,6 +20,7 @@ interface ExistingOrdersViewProps {
 const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
   orders, onViewDetails, onEditOrder, onConfirmCompletion, onConfirmPayment, onAddNote, getDoctorFullNameById, onDeleteOrder
 }) => {
+  const { currentUser } = useUI();
   const [selectedOrderFromSearch, setSelectedOrderFromSearch] = useState<Order | null>(null);
   const [sortColumn, setSortColumn] = useState<string>('creationDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -158,16 +160,18 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
                   <button onClick={(e) => { e.stopPropagation(); onAddNote(order._id); }} className="text-orange-600 hover:text-orange-800" title="Añadir Nota">
                     <MessageSquare size={20} />
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent row's onClick from firing
-                      onDeleteOrder(order._id);
-                    }}
-                    className="text-red-600 hover:text-red-800"
-                    title="Eliminar Orden"
-                  >
-                    <Trash2 size={20} />
-                  </button>
+                  {currentUser?.role !== 'operador' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row's onClick from firing
+                        onDeleteOrder(order._id);
+                      }}
+                      className="text-red-600 hover:text-red-800"
+                      title="Eliminar Orden"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

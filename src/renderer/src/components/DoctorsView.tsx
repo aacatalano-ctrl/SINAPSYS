@@ -25,7 +25,7 @@ interface DoctorsViewProps {
                prefixFilter, setPrefixFilter, sortDoctorsColumn, sortDoctorsDirection, handleSortDoctors, setFullDoctorView,
           onExportDoctors
              }) => {
-  const { openAddDoctorModal } = useUI();
+  const { openAddDoctorModal, currentUser } = useUI();
      
   const filteredDoctors = doctors
     .filter((doctor: Doctor) => {
@@ -152,9 +152,11 @@ interface DoctorsViewProps {
                         <button onClick={(e) => {e.stopPropagation(); setEditingDoctor(doctor);}} className="text-blue-600 hover:text-blue-800" title="Editar Doctor">
                           <Pencil size={20} />
                         </button>
-                        <button onClick={(e) => {e.stopPropagation(); handleDeleteDoctor(doctor._id);}} className="text-red-600 hover:text-red-800" title="Eliminar Doctor">
-                          <Trash2 size={20} />
-                        </button>
+                                                {currentUser?.role !== 'operador' && (
+                          <button onClick={(e) => {e.stopPropagation(); handleDeleteDoctor(doctor._id);}} className="text-red-600 hover:text-red-800" title="Eliminar Doctor">
+                            <Trash2 size={20} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

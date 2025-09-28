@@ -78,12 +78,14 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
             >
               <Edit className="mr-2" size={20} /> Editar Orden
             </button>
-            <button
-              onClick={handleDeleteClick}
-              className="flex items-center rounded-lg bg-red-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-red-700"
-            >
-              <Trash2 className="mr-2" size={20} /> Eliminar Orden
-            </button>
+            {currentUser?.role !== 'operador' && (
+              <button
+                onClick={handleDeleteClick}
+                className="flex items-center rounded-lg bg-red-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-red-700"
+              >
+                <Trash2 className="mr-2" size={20} /> Eliminar Orden
+              </button>
+            )}
           </div>
         </div>
         <h2 className="mb-6 flex items-center text-3xl font-bold text-gray-800">
@@ -208,13 +210,15 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
                             >
                                 <Edit size={16} />
                             </button>
-                            <button
-                                onClick={() => deletePaymentFromOrder(order._id, payment._id)}
-                                className="text-red-600 hover:text-red-800"
-                                title="Eliminar Abono"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {currentUser?.role !== 'operador' && (
+                                <button
+                                    onClick={() => deletePaymentFromOrder(order._id, payment._id)}
+                                    className="text-red-600 hover:text-red-800"
+                                    title="Eliminar Abono"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </div>
                       </td>
                     </tr>
