@@ -58,7 +58,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
     try {
       if (isEditMode && paymentToEdit?._id) {
         // In edit mode, we only send the fields that can be changed
-        await onUpdatePayment(order._id, paymentToEdit._id, { amount: parsedAmount, description });
+        await onUpdatePayment(order._id, paymentToEdit._id, { amount: parsedAmount, description, date: paymentToEdit.date });
         showNotification('Abono actualizado con éxito.', 'success');
       } else {
         await onAddPayment(parsedAmount, description);
