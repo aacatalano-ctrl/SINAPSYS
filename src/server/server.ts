@@ -15,12 +15,7 @@ import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/consta
 import type { Payment, Note } from '../types.js';
 import { z } from 'zod';
 
-// --- SEQUENCE COUNTER SCHEMA ---
-const SequenceSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  seq: { type: Number, default: 0 }
-});
-const Sequence = mongoose.model('Sequence', SequenceSchema);
+
 
 const app = express();
 

@@ -6,6 +6,9 @@ import { loginSchema } from '../schemas/auth.schemas.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL ERROR: JWT_SECRET is not defined. Please set this environment variable.');
+}
 
 // POST /login
 router.post('/login', async (req, res) => {

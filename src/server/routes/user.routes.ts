@@ -7,6 +7,10 @@ import adminAuthMiddleware from '../middleware/adminAuthMiddleware.js';
 
 const router = Router();
 
+if (!process.env.MASTER_CODE) {
+  console.warn('WARNING: MASTER_CODE is not defined. Admin user modification will be restricted.');
+}
+
 // Password Recovery Routes
 router.post('/security-question', async (req, res) => {
   const validation = securityQuestionSchema.safeParse(req.body);
