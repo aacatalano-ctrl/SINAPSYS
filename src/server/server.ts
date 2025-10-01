@@ -6,6 +6,12 @@ import cors from 'cors';
 
 
 
+import { connectDB, initializeDb, db } from './database/index.js';
+import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
+import { checkUnpaidOrders } from './database/notifications.js';
+import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
+
+
 const app = express();
 
 const JWT_SECRET = process.env.JWT_SECRET;
