@@ -22,7 +22,7 @@ async function purgeOldOrders(): Promise<void> {
   }
 }
 
-export const initializeCounters = async () => {
+const initializeCounters = async () => {
   console.log('Initializing order number counters...');
   
   const prefixes = Object.values(jobTypePrefixMap);
