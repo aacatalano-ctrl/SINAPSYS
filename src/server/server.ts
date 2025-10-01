@@ -2,18 +2,7 @@ import express from 'express';
 console.log('Serverless function src/server/server.ts started.');
 import { IncomingMessage, ServerResponse } from 'http';
 import cors from 'cors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
-import adminAuthMiddleware from './middleware/adminAuthMiddleware.js';
-import authMiddleware from './middleware/authMiddleware.js';
-import PDFDocument from 'pdfkit';
-import { connectDB, initializeDb, db } from './database/index.js';
-import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
-import { checkUnpaidOrders, createNotification } from './database/notifications.js';
-import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
-import type { Payment, Note } from '../types.js';
-import { z } from 'zod';
+
 
 
 
@@ -39,13 +28,7 @@ app.get('/api/job-categories', (req, res) => {
 
 // --- API ENDPOINTS ---
 
-import { createUserSchema, updateUserSchema, updateUserStatusSchema } from './schemas/user.schemas.js';
 
-import { createDoctorSchema, updateDoctorSchema } from './schemas/doctor.schemas.js';
-
-import { paymentSchema, noteSchema, updateOrderSchema, updateNoteSchema, createOrderSchema } from './schemas/order.schemas.js';
-
-import { loginSchema, securityQuestionSchema, verifyAnswerSchema, resetPasswordSchema } from './schemas/auth.schemas.js';
 
 import authRouter from './routes/auth.routes.js';
 

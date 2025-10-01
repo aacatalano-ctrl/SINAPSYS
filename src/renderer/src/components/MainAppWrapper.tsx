@@ -34,7 +34,7 @@ interface MainAppWrapperProps {
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch }) => {
   const navigate = useNavigate();
-  const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, exportOrdersToExcel, generateReport, fetchReports, fetchOrdersByDoctor, fetchOrdersByPatient, fetchOrdersByDateRange, fetchOrdersByStatus, fetchOrdersByJobType, fetchOrdersBySearchTerm, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, handleUpdateOrderStatus, generatePaymentHistoryPDF } = useOrders();
+  const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification, handleLogout } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
 
@@ -167,7 +167,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
-                    <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><div className="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-blue-600"></div></div>}>
+                    <Suspense fallback={<div className="flex size-full items-center justify-center"><div className="size-32 animate-spin rounded-full border-y-2 border-blue-600"></div></div>}>
             <Routes>
               <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { const order = await addOrder(newOrder); if(order) navigate('/orders'); }} onAddDoctor={openAddDoctorModal} />} />
               <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={(orderId) => { const order = orders.find(o => o._id === orderId); if (order) { setSelectedOrder(order); openAddNoteModal(); } }} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={handleDeleteOrder} />} />

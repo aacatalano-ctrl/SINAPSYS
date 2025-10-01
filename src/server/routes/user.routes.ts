@@ -104,7 +104,7 @@ router.get('/', adminAuthMiddleware, async (req, res) => {
   try {
     const users = await db.users.find({}, '-password -securityAnswer');
     res.json(users);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al obtener los usuarios.' });
   }
 });
@@ -188,7 +188,7 @@ router.delete('/:id', adminAuthMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
     res.status(204).send();
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al eliminar el usuario.' });
   }
 });

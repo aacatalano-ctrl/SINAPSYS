@@ -35,7 +35,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
       setCaseDescription(order.caseDescription);
 
       // Initialize category and job type
-      const [category, job] = order.jobType.split(' - ');
+      const [category] = order.jobType.split(' - ');
       if (category && jobCategories.some(c => c.category === category)) {
         setSelectedCategory(category);
         setSelectedJobType(order.jobType);

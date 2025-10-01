@@ -30,7 +30,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
     res.json(order);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al obtener la orden.' });
   }
 });
@@ -109,7 +109,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
     res.status(204).send();
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al eliminar la orden.' });
   }
 });

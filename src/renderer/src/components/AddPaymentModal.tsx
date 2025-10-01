@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { Plus, Minus } from 'lucide-react';
 import { Order, Payment } from '../../types';
 
 interface AddPaymentModalProps {

@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
   try {
     const doctors = await db.doctors.find({});
     res.json(doctors);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al obtener doctores' });
   }
 });

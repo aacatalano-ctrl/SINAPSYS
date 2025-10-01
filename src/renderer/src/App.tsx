@@ -3,12 +3,10 @@ import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
 import { useUI } from './context/UIContext';
 
-import { User, Notification } from '../types';
-
-
+import { User } from '../types';
 
 function App() {
-  const { currentUser, setCurrentUser, handleLogout, authFetch } = useUI();
+  const { currentUser, setCurrentUser, authFetch } = useUI();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

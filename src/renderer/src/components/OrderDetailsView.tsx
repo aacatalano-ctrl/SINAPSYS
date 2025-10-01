@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, MessageSquare, Plus, Edit, Trash2, Save } from 'lucide-react';
+import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, Edit, Trash2 } from 'lucide-react';
 import { Order, User as UserType, Payment } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 import AddPaymentModal from './AddPaymentModal'; // Import the modal
@@ -13,11 +13,10 @@ interface OrderDetailsViewProps {
     formatDate: (dateString: string) => string;
     formatDateTime: (dateString: string) => string;
     currentUser: UserType | null;
-    onAddNote: () => void;
     onConfirmPayment: (order: Order) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, onConfirmPayment }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onConfirmPayment }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const {
@@ -25,16 +24,13 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
     handleUpdateOrderStatus,
     generateReceiptPDF,
     generatePaymentHistoryPDF, // Add this function
-    handleUpdateNote,
-    handleDeleteNote,
     handleDeleteOrder,
     addPaymentToOrder, // Keep for the modal
     updatePaymentInOrder, // New function
     deletePaymentFromOrder, // New function
   } = useOrders();
 
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editingNoteText, setEditingNoteText] = useState('');
+
 
   // State for the payment modal
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
