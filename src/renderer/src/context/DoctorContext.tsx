@@ -41,7 +41,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       console.error('Failed to fetch doctors from web server:', error);
       setIsDoctorsLoaded(false);
     }
-  }, []);
+  }, [authFetch]);
 
   const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
     try {
@@ -63,7 +63,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       console.error('Failed to add doctor:', error);
       throw error; // Re-throw to allow error handling in components
     }
-  }, [fetchDoctors]);
+  }, [fetchDoctors, authFetch]);
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
@@ -81,7 +81,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
     } catch (error) {
       console.error('Failed to update doctor:', error);
     }
-  }, [fetchDoctors]);
+  }, [fetchDoctors, authFetch]);
 
   const deleteDoctor = useCallback(async (id: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {
@@ -97,7 +97,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
         console.error('Failed to delete doctor:', error);
       }
     }
-  }, [fetchDoctors]);
+  }, [fetchDoctors, authFetch]);
 
   const exportDoctors = useCallback(async () => {
     try {
@@ -117,7 +117,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
     } catch (error) {
       console.error('Failed to export doctors:', error);
     }
-  }, []);
+  }, [authFetch]);
 
   const value = {
     doctors,

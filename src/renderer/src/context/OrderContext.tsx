@@ -53,7 +53,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       console.error("Error loading orders from web server:", error);
       showToast('Error al cargar órdenes.', 'error');
     }
-  }, [showToast, API_URL]);
+  }, [showToast, authFetch]);
 
   useEffect(() => {
     if (isDoctorsLoaded) {
@@ -90,7 +90,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       showToast('Error al actualizar la orden.', 'error');
       throw error;
     }
-  }, [showToast, API_URL]);
+  }, [showToast, authFetch]);
 
   const handleOrderCreated = async (orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>): Promise<Order | undefined> => {
     try {
