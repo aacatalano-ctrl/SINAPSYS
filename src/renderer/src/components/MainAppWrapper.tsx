@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext';
 import { useUI } from '../context/UIContext';
 import { useDoctors } from '../context/DoctorContext';
 import Sidebar from './Sidebar';
-import DoctorsView from './DoctorsView';
-import ExistingOrdersView from './ExistingOrdersView';
-import HistoryOrdersView from './HistoryOrdersView';
-import CreateOrderView from './CreateOrderView';
-import OrderDetailsView from './OrderDetailsView';
-import DoctorDetailsView from './DoctorDetailsView';
-import JobTypeDetailsView from './JobTypeDetailsView';
-import ReportResultsView from './ReportResultsView';
-import IncomeBreakdownView from './IncomeBreakdownView';
-import ReportsView from './ReportsView';
-import NotificationsView from './NotificationsView';
-import UsersAdminView from './UsersAdminView';
+const DoctorsView = lazy(() => import('./DoctorsView'));
+const ExistingOrdersView = lazy(() => import('./ExistingOrdersView'));
+const HistoryOrdersView = lazy(() => import('./HistoryOrdersView'));
+const CreateOrderView = lazy(() => import('./CreateOrderView'));
+const OrderDetailsView = lazy(() => import('./OrderDetailsView'));
+const DoctorDetailsView = lazy(() => import('./DoctorDetailsView'));
+const JobTypeDetailsView = lazy(() => import('./JobTypeDetailsView'));
+const ReportResultsView = lazy(() => import('./ReportResultsView'));
+const IncomeBreakdownView = lazy(() => import('./IncomeBreakdownView'));
+const ReportsView = lazy(() => import('./ReportsView'));
+const NotificationsView = lazy(() => import('./NotificationsView'));
+const UsersAdminView = lazy(() => import('./UsersAdminView'));
 import AddDoctorModal from './AddDoctorModal';
 import AddNoteModal from './AddNoteModal';
 import AddPaymentModal from './AddPaymentModal';
@@ -145,20 +145,22 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
-          <Routes>
-            <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { const order = await addOrder(newOrder); if(order) navigate('/orders'); }} onAddDoctor={openAddDoctorModal} />} />
-            <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={(orderId) => { const order = orders.find(o => o._id === orderId); if (order) { setSelectedOrder(order); openAddNoteModal(); } }} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={handleDeleteOrder} />} />
-            <Route path="/history" element={<HistoryOrdersView orders={orders.filter(o => o.status === 'Completado')} searchHistoryTerm={searchHistoryTerm} setSearchHistoryTerm={setSearchHistoryTerm} setFullClientView={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} sortOrdersColumn={sortOrdersColumn} sortOrdersDirection={sortOrdersDirection} handleSortOrders={handleSortOrders} calculateBalance={calculateBalance} handleDeleteOrder={handleDeleteOrder} />} />
-            <Route path="/doctors" element={<DoctorsView doctors={doctors} editingDoctor={editingDoctor} setEditingDoctor={setEditingDoctor} handleEditDoctor={updateDoctor} handleDeleteDoctor={deleteDoctor} searchDoctorTerm={searchDoctorTerm} setSearchDoctorTerm={setSearchDoctorTerm} prefixFilter={prefixFilter} setPrefixFilter={setPrefixFilter} sortDoctorsColumn={sortDoctorsColumn} sortDoctorsDirection={sortDoctorsDirection} handleSortDoctors={handleSortDoctors} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} onExportDoctors={exportDoctors} />} />
-            <Route path="/reports" element={<ReportsView orders={orders} calculateBalance={calculateBalance} doctors={doctors} jobTypePrefixMap={jobTypePrefixMap} jobTypeCosts={jobTypeCosts} reportTimeframe={reportTimeframe} setReportTimeframe={setReportTimeframe} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} setFullJobTypeView={(jobType) => { setSelectedJobType(jobType); navigate('/reports/job-type'); }} setReportFilter={setReportFilter} setCurrentView={(view) => navigate(view === 'incomeBreakdown' ? '/income-breakdown' : '/reports/results')} />} />
-            <Route path="/notifications" element={<NotificationsView notifications={notifications} onNotificationClick={handleNotificationClick} onClearNotifications={handleClearAllNotifications} onDeleteNotification={handleDeleteNotification} currentUser={currentUser} />} />
-            <Route path="/admin/users" element={currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div>Acceso denegado.</div>} />
-            <Route path="/orders/details" element={selectedOrder ? <OrderDetailsView order={selectedOrder} onBack={() => navigate(-1)} onEditOrder={handleEditOrder} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={() => openAddNoteModal()} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} formatDateTime={formatDateTime} currentUser={currentUser} /> : <div>Selecciona una orden para ver los detalles.</div>} />
-            <Route path="/doctors/details" element={selectedDoctor ? <DoctorDetailsView doctor={selectedDoctor} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} /> : <div>Selecciona un doctor para ver los detalles.</div>} />
-            <Route path="/reports/job-type" element={selectedJobType ? <JobTypeDetailsView jobType={selectedJobType} orders={orders} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} calculateBalance={calculateBalance} formatDate={formatDate} /> : <div>Selecciona un tipo de trabajo para ver los detalles.</div>} />
-            <Route path="/reports/results" element={reportFilter ? <ReportResultsView title={reportFilter.type} orders={orders} onBack={() => navigate(-1)} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} calculateBalance={calculateBalance} /> : <div>Selecciona un reporte para ver los resultados.</div>} />
-            <Route path="/income-breakdown" element={<IncomeBreakdownView orders={orders} timeframe={reportTimeframe} setTimeframe={setReportTimeframe} onBack={() => navigate(-1)} />} />
-          </Routes>
+                    <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><div className="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-blue-600"></div></div>}>
+            <Routes>
+              <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { const order = await addOrder(newOrder); if(order) navigate('/orders'); }} onAddDoctor={openAddDoctorModal} />} />
+              <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={(orderId) => { const order = orders.find(o => o._id === orderId); if (order) { setSelectedOrder(order); openAddNoteModal(); } }} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={handleDeleteOrder} />} />
+              <Route path="/history" element={<HistoryOrdersView orders={orders.filter(o => o.status === 'Completado')} searchHistoryTerm={searchHistoryTerm} setSearchHistoryTerm={setSearchHistoryTerm} setFullClientView={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} sortOrdersColumn={sortOrdersColumn} sortOrdersDirection={sortOrdersDirection} handleSortOrders={handleSortOrders} calculateBalance={calculateBalance} handleDeleteOrder={handleDeleteOrder} />} />
+                          <Route path="/doctors" element={<DoctorsView doctors={doctors} editingDoctor={editingDoctor} setEditingDoctor={setEditingDoctor} handleEditDoctor={updateDoctor} handleDeleteDoctor={deleteDoctor} searchDoctorTerm={searchDoctorTerm} setSearchDoctorTerm={setSearchDoctorTerm} prefixFilter={prefixFilter} setPrefixFilter={setPrefixFilter} sortDoctorsColumn={sortDoctorsColumn} sortDoctorsDirection={sortDoctorsDirection} handleSortDoctors={handleSortDoctors} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} onExportDoctors={exportDoctors} />} />
+              <Route path="/reports" element={<ReportsView orders={orders} calculateBalance={calculateBalance} doctors={doctors} jobTypePrefixMap={jobTypePrefixMap} jobTypeCosts={jobTypeCosts} reportTimeframe={reportTimeframe} setReportTimeframe={setReportTimeframe} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} setFullJobTypeView={(jobType) => { setSelectedJobType(jobType); navigate('/reports/job-type'); }} setReportFilter={setReportFilter} setCurrentView={(view) => navigate(view === 'incomeBreakdown' ? '/income-breakdown' : '/reports/results')} />} />
+              <Route path="/notifications" element={<NotificationsView notifications={notifications} onNotificationClick={handleNotificationClick} onClearNotifications={handleClearAllNotifications} onDeleteNotification={handleDeleteNotification} currentUser={currentUser} />} />
+              <Route path="/admin/users" element={currentUser.role === 'admin' ? <UsersAdminView authFetch={authFetch} /> : <div>Acceso denegado.</div>} />
+              <Route path="/orders/details" element={selectedOrder ? <OrderDetailsView order={selectedOrder} onBack={() => navigate(-1)} onEditOrder={handleEditOrder} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={() => openAddNoteModal()} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} formatDateTime={formatDateTime} currentUser={currentUser} /> : <div>Selecciona una orden para ver los detalles.</div>} />
+              <Route path="/doctors/details" element={selectedDoctor ? <DoctorDetailsView doctor={selectedDoctor} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} /> : <div>Selecciona un doctor para ver los detalles.</div>} />
+              <Route path="/reports/job-type" element={selectedJobType ? <JobTypeDetailsView jobType={selectedJobType} orders={orders} onBack={() => navigate(-1)} onViewOrderDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} calculateBalance={calculateBalance} formatDate={formatDate} /> : <div>Selecciona un tipo de trabajo para ver los detalles.</div>} />
+              <Route path="/reports/results" element={reportFilter ? <ReportResultsView title={reportFilter.type} orders={orders} onBack={() => navigate(-1)} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} calculateBalance={calculateBalance} /> : <div>Selecciona un reporte para ver los resultados.</div>} />
+              <Route path="/income-breakdown" element={<IncomeBreakdownView orders={orders} timeframe={reportTimeframe} setTimeframe={setReportTimeframe} onBack={() => navigate(-1)} />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
 
