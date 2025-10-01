@@ -111,6 +111,28 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     }
   }, [orders, selectedOrder]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        navigate('/');
+      } else if (event.key === 'Backspace') {
+        event.preventDefault();
+        navigate(-1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigate]);
+
   const handleSortDoctors = (column: string) => {
     if (sortDoctorsColumn === column) {
       setSortDoctorsDirection(sortDoctorsDirection === 'asc' ? 'desc' : 'asc');

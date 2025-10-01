@@ -96,7 +96,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
                 onChange={handleAmountChange}
                 min="0"
                 max={balance.toFixed(2)}
-                step="1"
+                step="10"
                 required
                 autoFocus
               />
