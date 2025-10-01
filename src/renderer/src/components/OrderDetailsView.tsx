@@ -14,17 +14,17 @@ interface OrderDetailsViewProps {
     formatDateTime: (dateString: string) => string;
     currentUser: UserType | null;
     onAddNote: () => void;
-    generatePaymentHistoryPDF: (order: Order, currentUser: UserType) => void;
     onConfirmPayment: (order: Order) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, generatePaymentHistoryPDF, onConfirmPayment }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onAddNote, onConfirmPayment }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const {
     calculateBalance,
     handleUpdateOrderStatus,
     generateReceiptPDF,
+    generatePaymentHistoryPDF, // Add this function
     handleUpdateNote,
     handleDeleteNote,
     handleDeleteOrder,
