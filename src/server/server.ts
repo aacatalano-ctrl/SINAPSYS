@@ -9,7 +9,7 @@ import adminAuthMiddleware from './middleware/adminAuthMiddleware.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import PDFDocument from 'pdfkit';
 import { connectDB, initializeDb, db } from './database/index.js';
-import { purgeOldOrders } from './database/maintenance.js';
+import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
 import { checkUnpaidOrders, createNotification } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 import type { Payment, Note } from '../types.js';
@@ -83,39 +83,7 @@ app.use('/api/notifications', notificationRouter);
 let cachedDb: unknown = null;
 let isInitialized = false;
 
-const initializeCounters = async () => {
-  console.log('Initializing order number counters...');
-  
-  const prefixes = Object.values(jobTypePrefixMap);
-  const year = new Date().getFullYear().toString().slice(-2);
 
-  for (const prefix of prefixes) {
-    const counterId = `${prefix}-${year}`;
-    const searchPrefix = `${counterId}-`;
-
-    const lastOrder = await db.orders.findOne(
-      { orderNumber: { $regex: new RegExp(`^${searchPrefix}`) } },
-      {},
-      { sort: { orderNumber: -1 } }
-    );
-
-    let maxSeq = 0;
-    if (lastOrder && lastOrder.orderNumber) {
-      const lastSeqStr = lastOrder.orderNumber.split('-')[2];
-      if (lastSeqStr) {
-        maxSeq = parseInt(lastSeqStr, 10);
-      }
-    }
-
-    await Sequence.updateOne(
-      { _id: counterId },
-      { $setOnInsert: { seq: maxSeq } },
-      { upsert: true }
-    );
-    console.log(`Counter '${counterId}' initialized to sequence ${maxSeq}.`);
-  }
-  console.log('Counter initialization complete.');
-};
 
 async function connectToDatabase() {
   if (cachedDb) {

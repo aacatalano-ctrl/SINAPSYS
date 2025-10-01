@@ -62,11 +62,17 @@ const notificationSchema = new mongoose.Schema<Notification>({
   read: { type: Boolean, default: false },
 }, { timestamps: true });
 
+const SequenceSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 }
+});
+
 // 2. Create Mongoose Models
 const DoctorModel = mongoose.model<Doctor>('Doctor', doctorSchema);
 const OrderModel = mongoose.model<Order>('Order', orderSchema);
 const UserModel = mongoose.model<User>('User', userSchema);
 const NotificationModel = mongoose.model<Notification>('Notification', notificationSchema);
+const SequenceModel = mongoose.model('Sequence', SequenceSchema);
 
 // Define the structure of the db object with Mongoose Models
 interface AppDatabase {
@@ -74,6 +80,7 @@ interface AppDatabase {
   orders: typeof OrderModel;
   users: typeof UserModel;
   notifications: typeof NotificationModel;
+  sequences: typeof SequenceModel;
 }
 
 const db: AppDatabase = {
@@ -81,6 +88,7 @@ const db: AppDatabase = {
   orders: OrderModel,
   users: UserModel,
   notifications: NotificationModel,
+  sequences: SequenceModel,
 };
 
 // 3. Connect to MongoDB

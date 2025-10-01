@@ -8,12 +8,7 @@ import { createOrderSchema, updateOrderSchema, paymentSchema, noteSchema, update
 import authMiddleware from '../middleware/authMiddleware.js';
 import type { Payment, Note } from '../../types.js';
 
-// The Sequence model is only used for orders, so it can live here.
-const SequenceSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  seq: { type: Number, default: 0 }
-});
-const Sequence = mongoose.model('Sequence', SequenceSchema);
+
 
 const router = Router();
 
@@ -53,7 +48,7 @@ router.post('/', async (req, res) => {
     const year = new Date().getFullYear().toString().slice(-2);
     const counterId = `${prefix}-${year}`;
 
-    const counter = await Sequence.findOneAndUpdate(
+    const counter = await db.sequences.findOneAndUpdate(
       { _id: counterId },
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
