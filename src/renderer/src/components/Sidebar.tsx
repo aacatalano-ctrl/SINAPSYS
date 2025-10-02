@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
           </NavLink>
         ))}
 
-        {currentUser && currentUser.role === 'admin' && (
+        {currentUser && (currentUser.role === 'admin' || currentUser.role === 'master') && (
           <NavLink
             to="/admin/users"
             className={getNavLinkClass}

@@ -100,9 +100,9 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
       ...options?.headers,
     };
     const response = await fetch(url, { ...options, headers });
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) { // Unauthorized (e.g., bad token)
       handleLogout();
-      showToast('Sesión expirada o acceso denegado. Por favor, inicia sesión de nuevo.', 'error');
+      showToast('Sesión expirada. Por favor, inicia sesión de nuevo.', 'error');
     }
     return response;
   }, [showToast, handleLogout]);

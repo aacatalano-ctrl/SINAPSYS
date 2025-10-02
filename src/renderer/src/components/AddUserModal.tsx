@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react'; // Import eye icons
-import { useUI } from '../context/UIContext';
+import { User } from '../../types';
 
 interface AddUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   onUserAdded: () => void; // Callback to refresh user list
+  currentUser: User | null;
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch, onUserAdded }) => {
+const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch, onUserAdded, currentUser }) => {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newSecurityQuestion, setNewSecurityQuestion] = useState('');
@@ -80,6 +80,15 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
   };
 
   if (!isOpen) return null;
+
+  const availableRoles = [
+    { value: 'cliente', label: 'Cliente' },
+    { value: 'operador', label: 'Operador' },
+  ];
+
+  if (currentUser?.role === 'master') {
+    availableRoles.push({ value: 'admin', label: 'Administrador' });
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
@@ -217,9 +226,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
               value={newUserRole}
               onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'cliente' | 'operador')}
             >
-              <option value="cliente">Cliente</option>
-              <option value="operador">Operador</option>
-              <option value="admin">Administrador</option>
+              {availableRoles.map(role => (
+                <option key={role.value} value={role.value}>{role.label}</option>
+              ))}
             </select>
           </div>
 

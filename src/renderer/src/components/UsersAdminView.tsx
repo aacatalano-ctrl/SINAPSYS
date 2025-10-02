@@ -238,6 +238,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
           onClose={() => setIsAddModalOpen(false)}
           authFetch={authFetch}
           onUserAdded={fetchUsers}
+          currentUser={currentUser}
         />
       )}
     </>
