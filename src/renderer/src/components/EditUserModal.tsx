@@ -8,9 +8,10 @@ interface EditUserModalProps {
   user: User;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   onUserUpdated: () => void; // Callback to refresh user list
+  masterCode: string | null; // Add masterCode prop
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, authFetch, onUserUpdated }) => {
+const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, authFetch, onUserUpdated, masterCode }) => {
   const [username, setUsername] = useState(user.username);
   const [nombre, setNombre] = useState(user.nombre);
   const [apellido, setApellido] = useState(user.apellido);
@@ -42,21 +43,28 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const updatePayload: Partial<User> & { masterCode?: string } = {
+      username,
+      nombre,
+      apellido,
+      cedula,
+      direccion,
+      razonSocial,
+      rif,
+      role,
+      status,
+    };
+
+    if (masterCode) {
+      updatePayload.masterCode = masterCode;
+    }
+
     try {
       const response = await authFetch(`${API_URL}/users/${user._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          nombre,
-          apellido,
-          cedula,
-          direccion,
-          razonSocial,
-          rif,
-          role,
-          status,
-        }),
+        body: JSON.stringify(updatePayload),
       });
 
       if (!response.ok) {
@@ -77,7 +85,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, au
       showToast(message, 'error');
     }
   };
-
   if (!isOpen) return null;
 
   return (

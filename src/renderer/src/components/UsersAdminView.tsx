@@ -44,22 +44,30 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleUpdateUserStatus = async (userToUpdate: User) => { // Changed parameter to User object
+  const handleUpdateUserStatus = async (userToUpdate: User) => {
+    let masterCode: string | null = null;
+
     if (userToUpdate.role === 'admin') {
-      const masterCode = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
-      if (masterCode !== '868686') {
-        showToast('Código maestro incorrecto o acción cancelada.', 'error');
+      masterCode = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
+      if (masterCode === null) { // User clicked 'Cancel' or closed the prompt
+        showToast('Acción cancelada.', 'info');
         return;
       }
     }
 
     setError(null);
     const newStatus = userToUpdate.status === 'active' ? 'blocked' : 'active';
+    
+    const requestBody: { status: string; masterCode?: string } = { status: newStatus };
+    if (masterCode !== null) {
+      requestBody.masterCode = masterCode;
+    }
+
     try {
       const response = await authFetch(`${API_URL}/users/${userToUpdate._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -102,13 +110,18 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
     }
   };
 
-  const handleEditUser = (userToEdit: User) => { // Changed parameter to User object
+  const [masterCodeForEdit, setMasterCodeForEdit] = useState<string | null>(null);
+
+  const handleEditUser = (userToEdit: User) => {
     if (userToEdit.role === 'admin') {
-      const masterCode = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
-      if (masterCode !== '868686') {
-        showToast('Código maestro incorrecto o acción cancelada.', 'error');
+      const code = window.prompt('Este es un usuario administrador. Por favor, introduce el código maestro para continuar:');
+      if (code === null) {
+        showToast('Acción cancelada.', 'info');
         return;
       }
+      setMasterCodeForEdit(code);
+    } else {
+      setMasterCodeForEdit(null); // Ensure master code is not carried over from a previous edit
     }
     setEditingUser(userToEdit);
     setIsEditModalOpen(true);
@@ -206,6 +219,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
           user={editingUser}
           authFetch={authFetch}
           onUserUpdated={fetchUsers}
+          masterCode={masterCodeForEdit}
         />
       )}
 
