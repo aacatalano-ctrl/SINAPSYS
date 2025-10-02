@@ -81,17 +81,29 @@ router.post('/reset-password', async (req, res) => {
 
 // User Management Routes
 
-router.post('/', async (req, res) => {
+router.post('/', adminAuthMiddleware, async (req, res) => {
   const validation = createUserSchema.safeParse(req.body);
   if (!validation.success) {
     return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
   }
-  const { password, securityAnswer, ...userData } = validation.data;
+  
+  const { password, securityAnswer, role: roleToCreate, ...userData } = validation.data;
+  const currentUser = req.user;
+
+  // Rule: Only master can create admin users
+  if (roleToCreate === 'admin' && currentUser.role !== 'master') {
+    return res.status(403).json({ error: 'Solo el usuario maestro puede crear nuevos administradores.' });
+  }
+
+  // Rule: No one can create a master user via the API
+  if (roleToCreate === 'master') {
+    return res.status(403).json({ error: 'El rol maestro no se puede asignar a través de la API.' });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedSecurityAnswer = await bcrypt.hash(securityAnswer, 10);
-    const newUser = new db.users({ ...userData, password: hashedPassword, securityAnswer: hashedSecurityAnswer });
+    const newUser = new db.users({ ...userData, role: roleToCreate, password: hashedPassword, securityAnswer: hashedSecurityAnswer });
     await newUser.save();
     res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser });
   } catch (error) {
@@ -102,7 +114,7 @@ router.post('/', async (req, res) => {
 
 router.get('/', adminAuthMiddleware, async (req, res) => {
   try {
-    const users = await db.users.find({}, '-password -securityAnswer');
+    const users = await db.users.find({ role: { $ne: 'master' } }, '-password -securityAnswer');
     res.json(users);
   } catch {
     res.status(500).json({ error: 'Error al obtener los usuarios.' });
@@ -183,13 +195,39 @@ router.put('/:id', adminAuthMiddleware, async (req, res) => {
 
 router.delete('/:id', adminAuthMiddleware, async (req, res) => {
   try {
-    const deletedUser = await db.users.findByIdAndDelete(req.params.id);
-    if (!deletedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    const currentUser = req.user;
+    const userToDelete = await db.users.findById(req.params.id);
+
+    if (!userToDelete) {
+      return res.status(404).json({ error: 'Usuario a eliminar no encontrado.' });
     }
-    res.status(204).send();
-  } catch {
-    res.status(500).json({ error: 'Error al eliminar el usuario.' });
+
+    // Rule: Prevent users from deleting themselves
+    if (currentUser.userId === userToDelete._id.toString()) {
+      return res.status(403).json({ error: 'No puedes eliminar tu propio usuario.' });
+    }
+
+    // Rule: Master can delete anyone
+    if (currentUser.role === 'master') {
+      await db.users.findByIdAndDelete(req.params.id);
+      return res.status(204).send();
+    }
+
+    // Rule: Admin can delete 'cliente' and 'operador'
+    if (currentUser.role === 'admin') {
+      if (userToDelete.role === 'admin' || userToDelete.role === 'master') {
+        return res.status(403).json({ error: 'Un administrador no puede eliminar a otro administrador o al usuario maestro.' });
+      }
+      await db.users.findByIdAndDelete(req.params.id);
+      return res.status(204).send();
+    }
+
+    // Default deny for other roles (e.g., 'cliente', 'operador')
+    return res.status(403).json({ error: 'No tienes permiso para eliminar este usuario.' });
+
+  } catch (error) {
+    console.error('Error al eliminar el usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor al eliminar el usuario.' });
   }
 });
 
