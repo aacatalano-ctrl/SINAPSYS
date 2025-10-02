@@ -230,6 +230,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch, currentUser,
           authFetch={authFetch}
           onUserUpdated={fetchUsers}
           masterCode={masterCodeForEdit}
+          showToast={showToast}
         />
       )}
 
@@ -240,6 +241,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch, currentUser,
           authFetch={authFetch}
           onUserAdded={fetchUsers}
           currentUser={currentUser}
+          showToast={showToast}
         />
       )}
     </>

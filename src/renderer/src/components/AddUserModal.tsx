@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { User } from '../../types';
+
+import { Eye, EyeOff } from 'lucide-react'; // Import eye icons
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -7,23 +9,10 @@ interface AddUserModalProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   onUserAdded: () => void; // Callback to refresh user list
   currentUser: User | null;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch, onUserAdded, currentUser }) => {
-  const [newUsername, setNewUsername] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newSecurityQuestion, setNewSecurityQuestion] = useState('');
-  const [newSecurityAnswer, setNewSecurityAnswer] = useState('');
-  const [newNombre, setNewNombre] = useState('');
-  const [newApellido, setNewApellido] = useState('');
-  const [newCedula, setNewCedula] = useState('');
-  const [newDireccion, setNewDireccion] = useState('');
-  const [newRazonSocial, setNewRazonSocial] = useState('');
-  const [newRif, setNewRif] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'admin' | 'cliente' | 'operador'>('cliente');
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
-  const { showToast } = useUI();
+const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch, onUserAdded, currentUser, showToast }) => {
 
   const API_URL = '/api';
 
