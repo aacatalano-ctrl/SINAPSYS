@@ -91,9 +91,9 @@ router.post('/', adminAuthMiddleware, async (req, res) => {
   const currentUser = req.user;
 
   // Rule: Only master can create admin users
-  // if (roleToCreate === 'admin' && currentUser.role !== 'master') {
-  //   return res.status(403).json({ error: 'Solo el usuario maestro puede crear nuevos administradores.' });
-  // }
+  if (roleToCreate === 'admin' && currentUser.role !== 'master') {
+    return res.status(403).json({ error: 'Solo el usuario maestro puede crear nuevos administradores.' });
+  }
 
   // Rule: No one can create a master user via the API
   if (roleToCreate === 'master') {

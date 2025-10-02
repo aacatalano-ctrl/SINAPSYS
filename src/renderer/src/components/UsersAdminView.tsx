@@ -12,7 +12,7 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useUI(); // Use UIContext for toasts
+  const { showToast, currentUser } = useUI(); // Use UIContext for toasts
 
   // State for editing user
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -170,43 +170,52 @@ const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                  {user.username}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                  {user.role === 'admin' ? 'Administrador' : user.role === 'operador' ? 'Operador' : 'Cliente'}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                  <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                    user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {user.status === 'active' ? 'Activo' : 'Bloqueado'}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEditUser(user)}
-                    className="mr-3 rounded bg-blue-100 p-1 text-blue-600 hover:text-blue-900"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleUpdateUserStatus(user)}
-                    className={`mr-3 text-indigo-600 hover:text-indigo-900 ${user.status === 'active' ? 'bg-red-100' : 'bg-green-100'} rounded p-1`}
-                  >
-                    {user.status === 'active' ? 'Bloquear' : 'Activar'}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(user._id!)}
-                    className="rounded bg-red-100 p-1 text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {users.map((user) => {
+              const isTargetAdmin = user.role === 'admin';
+              const showButtons = currentUser?.role === 'master' || !isTargetAdmin;
+
+              return (
+                <tr key={user._id}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                    {user.username}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                    {user.role === 'admin' ? 'Administrador' : user.role === 'operador' ? 'Operador' : 'Cliente'}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                      user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {user.status === 'active' ? 'Activo' : 'Bloqueado'}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                    {showButtons && (
+                      <>
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="mr-3 rounded bg-blue-100 p-1 text-blue-600 hover:text-blue-900"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleUpdateUserStatus(user)}
+                          className={`mr-3 text-indigo-600 hover:text-indigo-900 ${user.status === 'active' ? 'bg-red-100' : 'bg-green-100'} rounded p-1`}
+                        >
+                          {user.status === 'active' ? 'Bloquear' : 'Activar'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user._id!)}
+                          className="rounded bg-red-100 p-1 text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
