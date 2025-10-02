@@ -1,11 +1,7 @@
 
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 
-// Define User type
-interface User {
-  username: string;
-  role: 'admin' | 'user';
-}
+import { User } from '../../types';
 
 // Define the shape of the toast state
 interface ToastState {
