@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import authMiddleware from './authMiddleware.js';
 
 interface AuthenticatedRequest extends Request {
-  user?: { userId: string; username: string; role: 'admin' | 'cliente' | 'operador' };
+  user?: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
 }
 
 const adminAuthMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -12,9 +12,9 @@ const adminAuthMiddleware = (req: AuthenticatedRequest, res: Response, next: Nex
       return res.status(401).json({ message: 'No autorizado: Usuario no autenticado.' });
     }
 
-    // Luego, verificar si el usuario tiene el rol de administrador
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Acceso denegado: Se requiere rol de administrador.' });
+    // Luego, verificar si el usuario tiene el rol de administrador o maestro
+    if (req.user.role !== 'admin' && req.user.role !== 'master') {
+      return res.status(403).json({ message: 'Acceso denegado: Se requiere rol de administrador o maestro.' });
     }
 
     next();
