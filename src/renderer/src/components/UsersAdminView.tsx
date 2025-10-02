@@ -9,6 +9,7 @@ interface UsersAdminViewProps {
 }
 
 const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
+  console.log('Rendering UsersAdminView: Force Update v2');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
