@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from '../../types';
 
 import { Eye, EyeOff } from 'lucide-react'; // Import eye icons
