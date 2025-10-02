@@ -3,11 +3,10 @@
 declare global {
   namespace Express {
     interface Request {
-      // La propiedad user es opcional porque solo existe después del authMiddleware.
-      user?: {
+      user: {
         userId: string;
         username: string;
-        role: 'admin' | 'cliente' | 'operador';
+        role: 'master' | 'admin' | 'cliente' | 'operador';
       };
     }
   }

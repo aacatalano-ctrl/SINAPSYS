@@ -24,7 +24,7 @@ export interface User {
   direccion: string;
   razonSocial: string;
   rif: string;
-  role: 'admin' | 'cliente' | 'operador';
+  role: 'master' | 'admin' | 'cliente' | 'operador';
   status: 'active' | 'blocked';
 }
 
