@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface AuthenticatedRequest extends Request {
-  user?: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
+  user: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
