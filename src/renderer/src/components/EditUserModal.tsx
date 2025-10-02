@@ -12,6 +12,16 @@ interface EditUserModalProps {
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, authFetch, onUserUpdated, masterCode, showToast }) => {
+  const [username, setUsername] = useState(user.username);
+  const [nombre, setNombre] = useState(user.nombre);
+  const [apellido, setApellido] = useState(user.apellido);
+  const [cedula, setCedula] = useState(user.cedula);
+  const [direccion, setDireccion] = useState(user.direccion);
+  const [razonSocial, setRazonSocial] = useState(user.razonSocial);
+  const [rif, setRif] = useState(user.rif);
+  const [role, setRole] = useState<'admin' | 'cliente' | 'operador'>(user.role);
+  const [status, setStatus] = useState<'active' | 'blocked'>(user.status);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {

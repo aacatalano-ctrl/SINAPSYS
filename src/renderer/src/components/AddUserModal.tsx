@@ -13,6 +13,19 @@ interface AddUserModalProps {
 }
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch, onUserAdded, currentUser, showToast }) => {
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newSecurityQuestion, setNewSecurityQuestion] = useState('');
+  const [newSecurityAnswer, setNewSecurityAnswer] = useState('');
+  const [newNombre, setNewNombre] = useState('');
+  const [newApellido, setNewApellido] = useState('');
+  const [newCedula, setNewCedula] = useState('');
+  const [newDireccion, setNewDireccion] = useState('');
+  const [newRazonSocial, setNewRazonSocial] = useState('');
+  const [newRif, setNewRif] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'cliente' | 'operador'>('cliente');
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   const API_URL = '/api';
 
