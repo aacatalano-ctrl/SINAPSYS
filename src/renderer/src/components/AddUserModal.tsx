@@ -53,7 +53,12 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, authFetch,
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        // Format Zod errors for display
+        let errorMessage = errorData.error || `HTTP error! status: ${response.status}`;
+        if (errorData.errors) {
+          errorMessage = Object.entries(errorData.errors).map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`).join('; ');
+        }
+        throw new Error(errorMessage);
       }
 
       showToast('Usuario creado con éxito.', 'success');
