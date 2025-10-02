@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types'; // Assuming types are defined here
-import { useUI } from '../context/UIContext'; // For showing toasts
 import EditUserModal from './EditUserModal'; // Import EditUserModal
 import AddUserModal from './AddUserModal'; // Import AddUserModal
 
 interface UsersAdminViewProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  currentUser: User | null;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch }) => {
+const UsersAdminView: React.FC<UsersAdminViewProps> = ({ authFetch, currentUser, showToast }) => {
   console.log('Rendering UsersAdminView: Force Update v2');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { showToast, currentUser } = useUI(); // Use UIContext for toasts
 
   // State for editing user
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
