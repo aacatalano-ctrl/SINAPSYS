@@ -24,10 +24,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
     }
 
-    if (user.isOnline) {
-      return res.status(403).json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
-    }
-
     if (user.status === 'blocked') {
       return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
     }
@@ -37,9 +33,18 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
 
-    // Set user to online immediately on successful login
-    user.isOnline = true;
-    await user.save();
+    // --- ATOMIC UPDATE TO PREVENT RACE CONDITION ---
+    const updatedUser = await db.users.findOneAndUpdate(
+      { _id: user._id, isOnline: { $ne: true } }, // Condition: Find user only if they are not already online
+      { $set: { isOnline: true } }, // Action: Set them to online
+      { new: true } // Options: Return the document *after* the update
+    );
+
+    if (!updatedUser) {
+      // If updatedUser is null, it means the condition failed - the user was already online.
+      return res.status(403).json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
+    }
+    // --- END OF ATOMIC UPDATE ---
 
     const token = jwt.sign(
       { userId: user._id, username: user.username, role: user.role },
