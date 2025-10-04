@@ -55,6 +55,8 @@ const userSchema = new mongoose.Schema<User>({
   rif: { type: String, required: true },
   role: { type: String, enum: ['master', 'admin', 'cliente', 'operador'], default: 'cliente' },
   status: { type: String, enum: ['active', 'blocked'], default: 'active' },
+  isOnline: { type: Boolean, default: false },
+  socketId: { type: String },
 });
 
 const notificationSchema = new mongoose.Schema<Notification>({

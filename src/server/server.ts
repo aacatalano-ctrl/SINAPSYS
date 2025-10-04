@@ -4,10 +4,12 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { db } from './database/index.js';
 import { connectDB, initializeDb } from './database/index.js';
 import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
+import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 
 // Cargar variables de entorno desde .env
 dotenv.config();

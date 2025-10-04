@@ -24,6 +24,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Usuario no encontrado.' });
     }
 
+    if (user.isOnline) {
+      return res.status(403).json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
+    }
+
     if (user.status === 'blocked') {
       return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
     }

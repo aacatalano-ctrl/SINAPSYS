@@ -15,6 +15,7 @@ export interface JobCategory {
 export interface User {
   _id?: string;
   username: string;
+  email?: string;
   password?: string;
   securityQuestion?: string;
   securityAnswer?: string;
@@ -26,6 +27,8 @@ export interface User {
   rif: string;
   role: 'master' | 'admin' | 'cliente' | 'operador';
   status: 'active' | 'blocked';
+  isOnline?: boolean;
+  socketId?: string;
 }
 
 export interface Doctor {
