@@ -43,6 +43,7 @@ const orderSchema = new mongoose.Schema<Order>({
 
 const userSchema = new mongoose.Schema<User>({
   username: { type: String, required: true, unique: true },
+  email: { type: String, unique: true, sparse: true, required: false },
   password: { type: String, required: true },
   securityQuestion: { type: String, required: true },
   securityAnswer: { type: String, required: true },
