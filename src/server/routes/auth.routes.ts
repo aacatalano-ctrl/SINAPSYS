@@ -32,10 +32,14 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password!);
+    const isMatch = await bcrypt.compare(password, user.password!)
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
+
+    // Set user to online immediately on successful login
+    user.isOnline = true;
+    await user.save();
 
     const token = jwt.sign(
       { userId: user._id, username: user.username, role: user.role },
