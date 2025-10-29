@@ -5,6 +5,9 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev:server": "nodemon --exec ts-node --compiler-options '{\"module\": \"esnext\"}' src/server/server.ts",
     "dev:frontend": "vite",
@@ -30,7 +33,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "@socket.io/redis-adapter": "^8.2.1",
-    "redis": "^4.6.13",
+    "@upstash/redis": "^1.31.0",
     "tailwind-merge": "^2.3.0",
     "zod": "^4.1.11"
   },
