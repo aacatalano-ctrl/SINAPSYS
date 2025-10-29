@@ -20,6 +20,8 @@ const io = new Server(httpServer, {
   cors: {
     origin: '*', // En producción, deberías restringir esto a la URL de tu frontend
   },
+  pingInterval: 5000,
+  pingTimeout: 10000,
 });
 
 const JWT_SECRET = process.env.JWT_SECRET;
