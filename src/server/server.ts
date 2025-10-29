@@ -18,8 +18,13 @@ dotenv.config();
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'; // Default for local development
 
-const pubClient = new Redis({ url: REDIS_URL });
-const subClient = new Redis({ url: REDIS_URL }); // Create a separate instance for subClient
+// Parse the REDIS_URL to extract host, port, and password (token)
+const url = new URL(REDIS_URL);
+const token = url.password; // For Upstash, the password is the token
+url.password = ''; // Remove password from URL for the 'url' option if it's passed separately
+
+const pubClient = new Redis({ url: url.toString(), token: token });
+const subClient = new Redis({ url: url.toString(), token: token }); // Create a separate instance for subClient
 
 // @upstash/redis handles errors internally, no need for explicit .on('error') here
 // pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
