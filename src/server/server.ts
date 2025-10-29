@@ -1,6 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { createClient } from 'redis';
+import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -14,6 +16,14 @@ import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/consta
 // Cargar variables de entorno desde .env
 dotenv.config();
 
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'; // Default for local development
+
+const pubClient = createClient({ url: REDIS_URL });
+const subClient = pubClient.duplicate();
+
+pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
+subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -23,6 +33,17 @@ const io = new Server(httpServer, {
   pingInterval: 1000,
   pingTimeout: 3000,
 });
+
+// Connect Redis clients and apply adapter
+Promise.all([pubClient.connect(), subClient.connect()])
+  .then(() => {
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log('Socket.io Redis adapter connected successfully.');
+  })
+  .catch(err => {
+    console.error('Failed to connect Redis clients or apply adapter:', err);
+    process.exit(1); // Exit if Redis connection fails
+  });
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
