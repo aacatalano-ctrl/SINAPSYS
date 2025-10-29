@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { createClient } from 'redis';
+import { Redis } from '@upstash/redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
@@ -18,11 +18,12 @@ dotenv.config();
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'; // Default for local development
 
-const pubClient = createClient({ url: REDIS_URL });
-const subClient = pubClient.duplicate();
+const pubClient = new Redis({ url: REDIS_URL });
+const subClient = new Redis({ url: REDIS_URL }); // Create a separate instance for subClient
 
-pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
-subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
+// @upstash/redis handles errors internally, no need for explicit .on('error') here
+// pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
+// subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
 
 const app = express();
 const httpServer = createServer(app);
@@ -34,16 +35,15 @@ const io = new Server(httpServer, {
   pingTimeout: 3000,
 });
 
-// Connect Redis clients and apply adapter
-Promise.all([pubClient.connect(), subClient.connect()])
-  .then(() => {
-    io.adapter(createAdapter(pubClient, subClient));
-    console.log('Socket.io Redis adapter connected successfully.');
-  })
-  .catch(err => {
-    console.error('Failed to connect Redis clients or apply adapter:', err);
-    process.exit(1); // Exit if Redis connection fails
-  });
+// Apply Redis adapter
+io.adapter(createAdapter(pubClient, subClient));
+console.log('Socket.io Redis adapter applied successfully.');
+
+// @upstash/redis connects on demand, so explicit connect() calls are not needed.
+// We can add a simple check for connection status if desired, but adapter handles it.
+// For example, you might want to ping Redis to ensure it's reachable.
+// pubClient.ping().then(() => console.log('Upstash Redis pubClient connected.')).catch(err => console.error('Upstash Redis pubClient connection error:', err));
+// subClient.ping().then(() => console.log('Upstash Redis subClient connected.')).catch(err => console.error('Upstash Redis subClient connection error:', err));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
