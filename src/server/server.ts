@@ -16,15 +16,16 @@ import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/consta
 // Cargar variables de entorno desde .env
 dotenv.config();
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'; // Default for local development
+const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-// Parse the REDIS_URL to extract host, port, and password (token)
-const url = new URL(REDIS_URL);
-const token = url.password; // For Upstash, the password is the token
-url.password = ''; // Remove password from URL for the 'url' option if it's passed separately
+if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
+  console.error('FATAL ERROR: UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN is not defined.');
+  process.exit(1);
+}
 
-const pubClient = new Redis({ url: url.toString(), token: token });
-const subClient = new Redis({ url: url.toString(), token: token }); // Create a separate instance for subClient
+const pubClient = new Redis({ url: UPSTASH_REDIS_REST_URL, token: UPSTASH_REDIS_REST_TOKEN });
+const subClient = new Redis({ url: UPSTASH_REDIS_REST_URL, token: UPSTASH_REDIS_REST_TOKEN }); // Create a separate instance for subClient
 
 // @upstash/redis handles errors internally, no need for explicit .on('error') here
 // pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
