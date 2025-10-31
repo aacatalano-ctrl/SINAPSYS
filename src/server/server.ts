@@ -13,13 +13,6 @@ import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 
-// --- TEMPORARY DEBUGGING CODE ---
-console.log('--- Vercel Environment Variables ---');
-console.log('All available vars:', Object.keys(process.env));
-console.log('UPSTASH_REDIS_REST_URL_EXISTS:', !!process.env.UPSTASH_REDIS_REST_URL);
-console.log('UPSTASH_REDIS_REST_TOKEN_EXISTS:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
-console.log('--- End Vercel Environment Variables ---');
-
 // Cargar variables de entorno desde .env
 dotenv.config();
 
