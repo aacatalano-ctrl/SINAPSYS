@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { Redis } from '@upstash/redis';
+import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
@@ -16,20 +16,18 @@ import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/consta
 // Cargar variables de entorno desde .env
 dotenv.config();
 
-const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const REDIS_URL = process.env.UPSTASH_REDIS_URL;
 
-if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
-  console.error('FATAL ERROR: UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN is not defined.');
+if (!REDIS_URL) {
+  console.error('FATAL ERROR: UPSTASH_REDIS_URL is not defined.');
   process.exit(1);
 }
 
-const pubClient = new Redis({ url: UPSTASH_REDIS_REST_URL, token: UPSTASH_REDIS_REST_TOKEN });
-const subClient = new Redis({ url: UPSTASH_REDIS_REST_URL, token: UPSTASH_REDIS_REST_TOKEN }); // Create a separate instance for subClient
+const pubClient = new Redis(REDIS_URL);
+const subClient = pubClient.duplicate();
 
-// @upstash/redis handles errors internally, no need for explicit .on('error') here
-// pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
-// subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
+pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
+subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
 
 const app = express();
 const httpServer = createServer(app);
