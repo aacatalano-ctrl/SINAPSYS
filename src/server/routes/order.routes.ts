@@ -15,7 +15,7 @@ const router = Router();
 // --- ORDERS ---
 router.get('/', async (req, res) => {
   try {
-    const orders = await db.orders.find({});
+    const orders = await db.orders.find({}).populate('doctorId');
     res.json(orders);
   } catch (error) {
     console.error('Error al obtener las órdenes:', error);
