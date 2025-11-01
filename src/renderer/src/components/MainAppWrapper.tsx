@@ -144,13 +144,17 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     }
   };
 
-  const getDoctorFullNameById = (doctorId: string | Doctor) => {
-    if (doctorId && typeof doctorId === 'object' && doctorId.firstName && doctorId.lastName) {
-      return `${doctorId.firstName} ${doctorId.lastName}`;
-    } else if (typeof doctorId === 'string') {
+  const getDoctorFullNameById = (doctorId: string | Doctor | null | undefined) => {
+    // If it's a populated object with an _id, use it directly.
+    if (doctorId && typeof doctorId === 'object' && '_id' in doctorId) {
+      return `${doctorId.firstName || ''} ${doctorId.lastName || ''}`.trim();
+    }
+    // If it's a string ID, look it up.
+    if (typeof doctorId === 'string') {
       const doctor = doctors.find((d) => d._id === doctorId);
       return doctor ? `${doctor.firstName} ${doctor.lastName}` : 'N/A';
     }
+    // Fallback for any other case (null, undefined, etc.)
     return 'N/A';
   };
 

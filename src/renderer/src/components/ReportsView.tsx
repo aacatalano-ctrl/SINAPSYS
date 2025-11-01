@@ -1,6 +1,8 @@
 import React, { useMemo, useCallback, useEffect } from 'react';
-import { Order } from '../../types';
+import { Order, Doctor } from '../../types';
 import { ClipboardList, DollarSign, Bell } from 'lucide-react';
+import { getJobTypeCategory } from '../../server/database/constants.js';
+import { getJobTypeCategory } from '../../server/database/constants.js';
 
 interface ReportsViewProps {
   doctors: Doctor[];
@@ -181,7 +183,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ doctors, jobTypePrefixMap, re
             </thead>
             <tbody>
               {Object.keys(jobTypePrefixMap).map(jobType => {
-                const jobTypeOrders = filteredOrders.filter(order => order.jobType === jobType);
+                const jobTypeOrders = filteredOrders.filter(order => getJobTypeCategory(order.jobType) === jobType);
                 const totalOrdersOfType = jobTypeOrders.length;
                 const totalCostOfType = jobTypeOrders.reduce((sum, order) => sum + order.cost, 0);
                 const totalDepositedOfType = jobTypeOrders.reduce((sum, order) => sum + order.payments.reduce((pSum, p) => pSum + p.amount, 0), 0);
