@@ -1,8 +1,7 @@
 import React, { useMemo, useCallback, useEffect } from 'react';
 import { Order, Doctor } from '../../types';
 import { ClipboardList, DollarSign, Bell } from 'lucide-react';
-import { getJobTypeCategory } from '../../server/database/constants.js';
-import { getJobTypeCategory } from '../../server/database/constants.js';
+import { getJobTypeCategory } from '../utils/helpers';
 
 interface ReportsViewProps {
   doctors: Doctor[];
