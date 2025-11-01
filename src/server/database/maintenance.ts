@@ -56,7 +56,38 @@ const initializeCounters = async () => {
   console.log('Counter initialization complete.');
 };
 
+async function cleanupStaleSessions(): Promise<void> {
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+
+  try {
+    const staleUsers = await db.users.find({
+      isOnline: true,
+      lastActiveAt: { $lt: sixHoursAgo }
+    }).select('_id').lean();
+
+    if (staleUsers.length === 0) {
+      console.log("No stale user sessions to clean up.");
+      return;
+    }
+
+    const userIds = staleUsers.map(user => user._id);
+
+    const result = await db.users.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { isOnline: false, socketId: undefined } }
+    );
+
+    if (result.modifiedCount > 0) {
+      console.log(`Successfully cleaned up ${result.modifiedCount} stale user sessions.`);
+    }
+
+  } catch (err) {
+    console.error("Error cleaning up stale user sessions:", err);
+  }
+}
+
 export {
   purgeOldOrders,
   initializeCounters,
+  cleanupStaleSessions,
 };

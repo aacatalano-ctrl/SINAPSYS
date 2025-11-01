@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema<User>({
   status: { type: String, enum: ['active', 'blocked'], default: 'active' },
   isOnline: { type: Boolean, default: false },
   socketId: { type: String },
+  lastActiveAt: { type: Date, default: Date.now },
 });
 
 const notificationSchema = new mongoose.Schema<Notification>({

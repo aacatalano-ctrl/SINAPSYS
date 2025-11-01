@@ -82,11 +82,10 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }, 3000);
   }, [hideToast]);
 
-  const handleLogout = useCallback(() => {
+  const clientSideLogout = useCallback(() => {
     setCurrentUser(null);
     localStorage.removeItem('token');
-    showToast('Sesión cerrada.');
-  }, [setCurrentUser, showToast]);
+  }, [setCurrentUser]);
 
   const authFetch = useCallback(async (url: string, options?: RequestInit) => {
     const token = localStorage.getItem('token');
@@ -97,11 +96,22 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     };
     const response = await fetch(url, { ...options, headers });
     if (response.status === 401) { // Unauthorized (e.g., bad token)
-      handleLogout();
+      clientSideLogout();
       showToast('Sesión expirada. Por favor, inicia sesión de nuevo.', 'error');
     }
     return response;
-  }, [showToast, handleLogout]);
+  }, [showToast, clientSideLogout]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await authFetch('/api/logout', { method: 'POST' });
+    } catch (error) {
+      console.error("Error during API logout:", error);
+    } finally {
+      clientSideLogout();
+      showToast('Sesión cerrada.');
+    }
+  }, [clientSideLogout, showToast, authFetch]);
 
   const fetchNotifications = useCallback(async () => {
     try {

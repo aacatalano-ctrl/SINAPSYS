@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
     // --- ATOMIC UPDATE TO PREVENT RACE CONDITION ---
     const updatedUser = await db.users.findOneAndUpdate(
       { _id: user._id, isOnline: { $ne: true } }, // Condition: Find user only if they are not already online
-      { $set: { isOnline: true } }, // Action: Set them to online
+      { $set: { isOnline: true, lastActiveAt: new Date() } }, // Action: Set them to online
       { new: true } // Options: Return the document *after* the update
     );
 
@@ -55,6 +55,35 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error(`Error during login for user ${username}:`, error);
     res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+  }
+});
+
+import { io } from '../server.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+
+// POST /logout
+router.post('/logout', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await db.users.findById(userId);
+
+    if (user && user.socketId) {
+      // Find the socket on the server across all instances and disconnect it
+      io.to(user.socketId).disconnect(true);
+      console.log(`Forcing disconnect for socket ID: ${user.socketId}`);
+    } else if (user) {
+        // Fallback if socketId is not present for some reason
+        user.isOnline = false;
+        user.socketId = undefined;
+        await user.save();
+        io.emit('user_status_change', { userId: user._id, isOnline: false });
+        console.log(`User ${user.username} set to offline via fallback.`);
+    }
+
+    res.status(200).json({ success: true, message: 'Logout initiated.' });
+  } catch (error) {
+    console.error('Error during manual logout:', error);
+    res.status(500).json({ success: false, message: 'Server error during logout.' });
   }
 });
 

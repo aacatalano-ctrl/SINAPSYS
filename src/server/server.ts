@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { db } from './database/index.js';
 import { connectDB, initializeDb } from './database/index.js';
-import { purgeOldOrders, initializeCounters } from './database/maintenance.js';
+import { purgeOldOrders, initializeCounters, cleanupStaleSessions } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 
@@ -37,7 +37,7 @@ subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
   cors: {
     origin: '*', // En producción, deberías restringir esto a la URL de tu frontend
   },
@@ -163,6 +163,7 @@ async function connectToDatabase() {
       console.log('Scheduling background tasks for local development...');
       setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);
       setInterval(purgeOldOrders, 7 * 24 * 60 * 60 * 1000);
+      setInterval(cleanupStaleSessions, 60 * 60 * 1000); // Run every hour
     }
     isInitialized = true;
   }

@@ -7,6 +7,8 @@ interface AuthenticatedRequest extends Request {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
 
+import { db } from '../database/index.js';
+
 const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
@@ -19,6 +21,10 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
+
+    // Fire-and-forget update to lastActiveAt to avoid delaying the response
+    db.users.updateOne({ _id: decoded.userId }, { $set: { lastActiveAt: new Date() } }).exec();
+
     next();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
