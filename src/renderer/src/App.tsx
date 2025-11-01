@@ -6,24 +6,7 @@ import { useUI } from './context/UIContext';
 import { User } from '../types';
 
 function App() {
-  const { currentUser, setCurrentUser, authFetch } = useUI();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'info' }>({ show: false, message: '', type: 'info' });
-
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast((prev) => ({ ...prev, show: false }));
-    }, 3000);
-  }, []);
-
-  const closeAuthModal = useCallback(() => {
-    if (currentUser) { // Only close auth modal if a user is logged in
-      setAuthModalOpen(false);
-    }
-  }, [currentUser]);
+  const { currentUser, setCurrentUser, authFetch, showToast } = useUI();
 
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
@@ -33,28 +16,31 @@ function App() {
 
   const API_URL = '/api';
 
-
-
-
-
   useEffect(() => {
-    // Intentar cargar el usuario desde el token al iniciar la app
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decodedUser = JSON.parse(atob(token.split('.')[1]));
-        setCurrentUser({ username: decodedUser.username, role: decodedUser.role });
-      } catch (e) {
-        console.error("Error decodificando token:", e);
-        localStorage.removeItem('token');
+    const verifyToken = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await authFetch(`${API_URL}/auth/me`);
+          if (response.ok) {
+            const result = await response.json();
+            setCurrentUser(result.user as User);
+          } else {
+            // Token is invalid or expired, clear it
+            localStorage.removeItem('token');
+            setCurrentUser(null);
+          }
+        } catch (e) {
+          console.error("Error verificando token:", e);
+          localStorage.removeItem('token');
+          setCurrentUser(null);
+        }
+      } else {
         setCurrentUser(null);
       }
-    } else {
-      setCurrentUser(null); // Asegurarse de que no haya usuario si no hay token
-    }
-  }, [setCurrentUser]);
-
-
+    };
+    verifyToken();
+  }, [setCurrentUser, authFetch]);
 
   const handleLogin = async (username: string, password: string) => {
     setAuthError('');
@@ -69,7 +55,6 @@ function App() {
         setCurrentUser(result.user as User);
         localStorage.setItem('token', result.token); // Guardar el token
         showToast(`Bienvenido, ${result.user.username}!`);
-        closeAuthModal(); // Cerrar el modal de autenticación
       } else {
         setAuthError(result.message || 'Error de autenticación');
         showToast(result.message || 'Error de autenticación', 'error');

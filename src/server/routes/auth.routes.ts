@@ -61,6 +61,21 @@ router.post('/login', async (req, res) => {
 import { io } from '../server.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
+// GET /me - Protected route to get current user's data
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    // req.user is populated by authMiddleware
+    const user = await db.users.findById(req.user.userId).select('-password'); // Exclude password
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+    res.json({ success: true, user: { _id: user._id, username: user.username, role: user.role, nombre: user.nombre, apellido: user.apellido, email: user.email } });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching user data.' });
+  }
+});
+
 // POST /logout
 router.post('/logout', authMiddleware, async (req, res) => {
   try {
