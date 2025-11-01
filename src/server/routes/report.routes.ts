@@ -11,9 +11,9 @@ router.get('/income-breakdown', async (req, res) => {
       {
         $group: {
           _id: '$jobType',
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' },
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: { $sum: '$payments.amount' } },
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
           count: { $sum: 1 }
         }
       },
@@ -59,9 +59,9 @@ router.get('/doctor-performance', async (req, res) => {
             }
           },
           totalOrders: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: { $sum: '$payments.amount' } },
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
         }
       },
       {
@@ -83,9 +83,9 @@ router.get('/order-status', async (req, res) => {
         $group: {
           _id: '$status',
           count: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: { $sum: '$payments.amount' } },
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
         }
       },
       {
@@ -107,9 +107,9 @@ router.get('/daily-summary', async (req, res) => {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           totalOrders: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: { $sum: '$payments.amount' } },
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
         }
       },
       {
@@ -144,9 +144,9 @@ router.get('/pdf/:reportType', async (req, res) => {
           {
             $group: {
               _id: '$jobType',
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' },
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: { $sum: '$payments.amount' } },
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
               count: { $sum: 1 }
             }
           },
@@ -174,12 +174,18 @@ router.get('/pdf/:reportType', async (req, res) => {
             $group: {
               _id: {
                 doctorId: '$doctorId',
-                doctorName: { $ifNull: ['$doctorInfo.name', 'N/A'] }
+                doctorName: {
+                  $cond: {
+                    if: { $and: ['$doctorInfo.firstName', '$doctorInfo.lastName'] },
+                    then: { $concat: ['$doctorInfo.firstName', ' ', '$doctorInfo.lastName'] },
+                    else: 'N/A'
+                  }
+                }
               },
               totalOrders: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: { $sum: '$payments.amount' } },
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
             }
           },
           { $sort: { '_id.doctorName': 1 } }
@@ -192,9 +198,9 @@ router.get('/pdf/:reportType', async (req, res) => {
             $group: {
               _id: '$status',
               count: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: { $sum: '$payments.amount' } },
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
             }
           },
           { $sort: { _id: 1 } }
@@ -207,9 +213,9 @@ router.get('/pdf/:reportType', async (req, res) => {
             $group: {
               _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
               totalOrders: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: { $sum: '$payments.amount' } },
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
             }
           },
           { $sort: { _id: 1 } }
