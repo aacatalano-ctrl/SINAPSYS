@@ -10,6 +10,7 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [masterCode, setMasterCode] = useState(''); // Temporary state for debug tool
 
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,6 +31,30 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
       handleSetNewPassword(newPassword);
     }
   };
+
+  // --- TEMPORARY DEBUG HANDLER ---
+  const handleForceLogout = async () => {
+    if (!masterCode) {
+      showNotification('Por favor, introduce el código maestro.', 'error');
+      return;
+    }
+    try {
+      const response = await fetch('/api/force-logout-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ masterCode }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        showNotification(result.message, 'success');
+      } else {
+        showNotification(result.message || 'Error al forzar cierre de sesión.', 'error');
+      }
+    } catch (err) {
+      showNotification('Error de red al forzar cierre de sesión.', 'error');
+    }
+  };
+  // --- END TEMPORARY DEBUG HANDLER ---
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
@@ -140,65 +165,89 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
           </form>
 
         ) : (
-          <form onSubmit={handleAuthSubmit}>
-            <div className="mb-4">
-              <label htmlFor="username" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
-              <input
-                type="text"
-                id="username"
-                className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="relative mb-6"> {/* Added relative for icon positioning */}
-              <label htmlFor="password" className="mb-2 block text-sm font-bold text-gray-700">Contraseña:</label>
-              <input
-                type={showLoginPassword ? 'text' : 'password'} // Dynamic type
-                id="password"
-                className="w-full appearance-none rounded-lg border px-4 py-3 pr-10 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <span
-                className="absolute inset-y-0 right-0 top-7 flex cursor-pointer items-center pr-3" // Adjusted top
-                onClick={() => setShowLoginPassword(!showLoginPassword)}
-              >
-                {showLoginPassword ? (
-                  <EyeOff className="size-5 text-gray-400" />
-                ) : (
-                  <Eye className="size-5 text-gray-400" />
-                )}
-              </span>
-            </div>
+          <>
+            <form onSubmit={handleAuthSubmit}>
+              <div className="mb-4">
+                <label htmlFor="username" className="mb-2 block text-sm font-bold text-gray-700">Nombre de Usuario:</label>
+                <input
+                  type="text"
+                  id="username"
+                  className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="relative mb-6"> {/* Added relative for icon positioning */}
+                <label htmlFor="password" className="mb-2 block text-sm font-bold text-gray-700">Contraseña:</label>
+                <input
+                  type={showLoginPassword ? 'text' : 'password'} // Dynamic type
+                  id="password"
+                  className="w-full appearance-none rounded-lg border px-4 py-3 pr-10 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" // Added pr-10
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <span
+                  className="absolute inset-y-0 right-0 top-7 flex cursor-pointer items-center pr-3" // Adjusted top
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                >
+                  {showLoginPassword ? (
+                    <EyeOff className="size-5 text-gray-400" />
+                  ) : (
+                    <Eye className="size-5 text-gray-400" />
+                  )}
+                </span>
+              </div>
 
-            {authError && <p className="mb-4 text-center text-sm text-red-500">{authError}</p>}
+              {authError && <p className="mb-4 text-center text-sm text-red-500">{authError}</p>}
 
-            <div className="flex items-center justify-end">
-              <button
-                type="submit"
-                className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/75"
-              >
-                Iniciar Sesión
-              </button>
+              <div className="flex items-center justify-end">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/75"
+                >
+                  Iniciar Sesión
+                </button>
+              </div>
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPasswordModal(true);
+                    showNotification('', 'error');
+                    setForgotPasswordStep(1);
+                    setForgotPasswordUsername('');
+                  }}
+                  className="inline-block align-baseline text-sm font-bold text-gray-600 transition-colors duration-200 hover:text-gray-800"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            </form>
+
+            {/* --- TEMPORARY DEBUG TOOL --- */}
+            <div className="mt-6 border-t-2 border-dashed border-gray-200 pt-4">
+              <h3 className="text-center text-xs font-medium text-gray-400">HERRAMIENTA DE DEPURACIÓN</h3>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="password"
+                  placeholder="Código Maestro"
+                  value={masterCode}
+                  onChange={(e) => setMasterCode(e.target.value)}
+                  className="w-full appearance-none rounded-lg border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleForceLogout}
+                  className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/75"
+                >
+                  Forzar Cierre de Sesión de Todos
+                </button>
+              </div>
             </div>
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForgotPasswordModal(true);
-                  showNotification('', 'error');
-                  setForgotPasswordStep(1);
-                  setForgotPasswordUsername('');
-                }}
-                className="inline-block align-baseline text-sm font-bold text-gray-600 transition-colors duration-200 hover:text-gray-800"
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </div>
-          </form>
+            {/* --- END TEMPORARY DEBUG TOOL --- */}
+          </>
         )}
       </div>
     </div>

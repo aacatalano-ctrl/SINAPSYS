@@ -1,32 +1,29 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import { db, connectDB } from './src/server/database/index.js';
 
-const MONGODB_URI = 'mongodb+srv://aacatalano:boxy1983.@sinapsys.rce6a6o.mongodb.net/SINAPSYS?retryWrites=true&w=majority&appName=SINAPSYS';
+// Load environment variables from .env file
+dotenv.config();
 
-const userSchema = new mongoose.Schema({}, { strict: false });
-const User = mongoose.model('User', userSchema);
-
-async function cleanup() {
-  console.log('Conectando a la base de datos para limpiar usuarios...');
+const cleanup = async () => {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Conexión exitosa.');
+    console.log('Connecting to database...');
+    await connectDB();
 
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      console.log('La colección de usuarios ya está vacía. No se necesita ninguna acción.');
-      return;
-    }
+    console.log('Resetting isOnline status for all users...');
+    const result = await db.users.updateMany(
+      {},
+      { $set: { isOnline: false, socketId: undefined } }
+    );
 
-    console.log(`Se encontraron ${userCount} usuarios. Eliminando...`);
-    const deleteResult = await User.deleteMany({});
-    console.log(`Éxito. Se eliminaron ${deleteResult.deletedCount} usuarios.`);
-
+    console.log(`Cleanup successful. ${result.modifiedCount} users were updated.`);
   } catch (error) {
-    console.error('Error durante la limpieza:', error);
+    console.error('An error occurred during cleanup:', error);
   } finally {
+    console.log('Disconnecting from database...');
     await mongoose.disconnect();
-    console.log('\nDesconectado de la base de datos.');
+    console.log('Disconnected.');
   }
-}
+};
 
 cleanup();

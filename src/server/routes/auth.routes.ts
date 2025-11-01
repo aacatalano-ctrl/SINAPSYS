@@ -58,4 +58,25 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// --- TEMPORARY CLEANUP ENDPOINT ---
+router.post('/force-logout-all', async (req, res) => {
+  const { masterCode } = req.body;
+
+  if (masterCode !== process.env.MASTER_CODE) {
+    return res.status(403).json({ success: false, message: 'Código maestro incorrecto.' });
+  }
+
+  try {
+    const result = await db.users.updateMany(
+      {},
+      { $set: { isOnline: false, socketId: undefined } }
+    );
+    res.json({ success: true, message: `Cleanup successful. ${result.modifiedCount} users were updated.` });
+  } catch (error) {
+    console.error('Error during force logout:', error);
+    res.status(500).json({ success: false, message: 'Error del servidor durante el cleanup.' });
+  }
+});
+// --- END TEMPORARY CLEANUP ENDPOINT ---
+
 export default router;
