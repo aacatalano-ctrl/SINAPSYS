@@ -34,9 +34,9 @@ interface MainAppWrapperProps {
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch }) => {
   const navigate = useNavigate();
-  const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder } = useOrders();
+  const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, isDataLoaded } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification, handleLogout } = useUI();
-  const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor } = useDoctors();
+  const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor, isDoctorsLoaded } = useDoctors();
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
@@ -55,6 +55,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [jobTypeCosts, setJobTypeCosts] = useState({});
   const [jobTypePrefixMap, setJobTypePrefixMap] = useState({});
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
+
+  const isLoading = !isDataLoaded || !isDoctorsLoaded;
 
   const fetchJobCategories = useCallback(async () => {
     try {
@@ -158,7 +160,13 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 relative">
+      {isLoading && (
+        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm">
+          <div className="size-20 animate-spin rounded-full border-t-4 border-b-4 border-blue-500"></div>
+          <p className="mt-4 text-lg font-semibold text-white">Conectando y cargando datos...</p>
+        </div>
+      )}
       <Sidebar 
         currentUser={currentUser}
         handleLogout={handleLogout}

@@ -10,7 +10,6 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-  const [masterCode, setMasterCode] = useState(''); // Temporary state for debug tool
 
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,30 +30,6 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
       handleSetNewPassword(newPassword);
     }
   };
-
-  // --- TEMPORARY DEBUG HANDLER ---
-  const handleForceLogout = async () => {
-    if (!masterCode) {
-      showNotification('Por favor, introduce el código maestro.', 'error');
-      return;
-    }
-    try {
-      const response = await fetch('/api/force-logout-all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ masterCode }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        showNotification(result.message, 'success');
-      } else {
-        showNotification(result.message || 'Error al forzar cierre de sesión.', 'error');
-      }
-    } catch (err) {
-      showNotification('Error de red al forzar cierre de sesión.', 'error');
-    }
-  };
-  // --- END TEMPORARY DEBUG HANDLER ---
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/75">
@@ -225,28 +200,6 @@ const AuthModal = ({ onLogin, onForgotPassword, authError, showForgotPasswordMod
                 </button>
               </div>
             </form>
-
-            {/* --- TEMPORARY DEBUG TOOL --- */}
-            <div className="mt-6 border-t-2 border-dashed border-gray-200 pt-4">
-              <h3 className="text-center text-xs font-medium text-gray-400">HERRAMIENTA DE DEPURACIÓN</h3>
-              <div className="mt-2 space-y-2">
-                <input
-                  type="password"
-                  placeholder="Código Maestro"
-                  value={masterCode}
-                  onChange={(e) => setMasterCode(e.target.value)}
-                  className="w-full appearance-none rounded-lg border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleForceLogout}
-                  className="w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/75"
-                >
-                  Forzar Cierre de Sesión de Todos
-                </button>
-              </div>
-            </div>
-            {/* --- END TEMPORARY DEBUG TOOL --- */}
           </>
         )}
       </div>
