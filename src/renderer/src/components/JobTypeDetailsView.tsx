@@ -3,6 +3,7 @@
 import React from 'react';
 import { Order } from '../../types';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
+import { getJobTypeCategory } from '../utils/helpers';
 
 interface JobTypeDetailsViewProps {
   jobType: string | null;
@@ -15,7 +16,7 @@ interface JobTypeDetailsViewProps {
 }
 
 const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({ jobType, orders, onBack, getDoctorFullNameById, formatDate, onViewOrderDetails, calculateBalance }) => {
-  const filteredOrdersByJobType = jobType ? orders.filter((order: Order) => order.jobType === jobType) : [];
+  const filteredOrdersByJobType = jobType ? orders.filter((order: Order) => getJobTypeCategory(order.jobType) === jobType) : [];
 
   return (
     <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">

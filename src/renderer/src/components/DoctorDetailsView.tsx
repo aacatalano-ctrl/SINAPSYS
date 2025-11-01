@@ -13,7 +13,7 @@ interface DoctorDetailsViewProps {
   const { orders, calculateBalance } = useOrders(); // Use useOrders hook directly
   if (!doctor) return null;
 
-  const doctorOrders = orders.filter(order => String(order.doctorId) === doctor._id);
+  const doctorOrders = orders.filter(order => order.doctorId._id === doctor._id);
   const activeDoctorOrders = doctorOrders.filter(order => order.status !== 'Completado');
 
   const totalCostActive = activeDoctorOrders.reduce((sum: number, order: Order) => sum + order.cost, 0);
@@ -29,7 +29,7 @@ interface DoctorDetailsViewProps {
         <ArrowLeft className="mr-2" /> Volver a Gestión de Doctores
       </button>
       <h2 className="mb-6 flex items-center text-3xl font-bold text-gray-800">
-        <User className="mr-3 text-blue-600" size={30} /> Ficha del Doctor: {doctor.title} {doctor.name}
+        <User className="mr-3 text-blue-600" size={30} /> Ficha del Doctor: {doctor.title} {doctor.firstName} {doctor.lastName}
       </h2>
 
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
