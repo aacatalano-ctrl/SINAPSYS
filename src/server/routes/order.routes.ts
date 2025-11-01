@@ -11,6 +11,7 @@ import type { Payment, Note } from '../../types.js';
 
 
 const router = Router();
+router.use(authMiddleware);
 
 // --- ORDERS ---
 router.get('/', async (req, res) => {
