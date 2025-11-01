@@ -81,7 +81,7 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true });
+    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
