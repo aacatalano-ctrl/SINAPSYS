@@ -68,8 +68,11 @@ router.post('/logout', authMiddleware, async (req, res) => {
     const user = await db.users.findById(userId);
 
     if (user && user.socketId) {
-      // Find the socket on the server across all instances and disconnect it
-      io.to(user.socketId).disconnect(true);
+      // Use `remoteDisconnect` from the socket.io-redis adapter to disconnect a socket
+      // from any server instance in the cluster.
+      // We cast to `any` because the method is added dynamically by the adapter and
+      // may not be present in the default TypeScript Server type.
+      (io as any).remoteDisconnect(user.socketId, true);
       console.log(`Forcing disconnect for socket ID: ${user.socketId}`);
     } else if (user) {
         // Fallback if socketId is not present for some reason

@@ -29,6 +29,7 @@ export interface User {
   status: 'active' | 'blocked';
   isOnline?: boolean;
   socketId?: string;
+  lastActiveAt?: Date;
 }
 
 export interface Doctor {
