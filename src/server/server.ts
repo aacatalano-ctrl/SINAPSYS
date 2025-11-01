@@ -23,7 +23,13 @@ if (!REDIS_URL) {
   process.exit(1);
 }
 
-const pubClient = new Redis(REDIS_URL);
+const pubClient = new Redis(REDIS_URL, {
+  lazyConnect: true, // Connect only when first command is issued
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000); // Exponential backoff up to 2 seconds
+    return delay;
+  },
+});
 const subClient = pubClient.duplicate();
 
 pubClient.on('error', (err) => console.error('Redis PubClient Error:', err));
