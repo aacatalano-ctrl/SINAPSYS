@@ -8,7 +8,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { db } from './database/index.js';
-import { connectDB, initializeDb } from './database/index.js';
+import { connectDB, initializeDb, isDatabaseConnected } from './database/index.js';
 import { purgeOldOrders, initializeCounters, cleanupStaleSessions } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';

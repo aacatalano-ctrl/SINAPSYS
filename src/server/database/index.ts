@@ -98,7 +98,7 @@ const db: AppDatabase = {
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 5000; // 5 seconds
 
-export let isDatabaseConnected = false; // New flag to track connection status
+let isDatabaseConnected = false; // New flag to track connection status
 
 // 3. Connect to MongoDB
 const connectDB = async () => {
