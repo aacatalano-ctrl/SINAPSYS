@@ -145,7 +145,7 @@ router.post('/:orderId/payments', async (req, res) => {
 
     res.status(201).json(order);
   } catch (error) {
-    console.error(`Error al agregar pago a la orden ${orderId}:`, error);
+    console.error(`Error al agregar pago a la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error interno del servidor al agregar pago.' });
   }
 });
@@ -176,7 +176,7 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    console.error(`Error al actualizar el pago ${paymentId} de la orden ${orderId}:`, error);
+    console.error(`Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error interno del servidor al actualizar el pago.' });
   }
 });
@@ -203,7 +203,7 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
     await order.save();
     res.status(200).json(order);
   } catch (error) {
-    console.error(`Error al eliminar el pago ${paymentId} de la orden ${orderId}:`, error);
+    console.error(`Error al eliminar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error al eliminar pago.' });
   }
 });
@@ -231,7 +231,7 @@ router.post('/:orderId/notes', async (req, res) => {
     await order.save();
     res.status(201).json(order);
   } catch (error) {
-    console.error(`Error al agregar nota a la orden ${orderId}:`, error);
+    console.error(`Error al agregar nota a la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error interno del servidor al agregar nota.' });
   }
 });
@@ -261,7 +261,7 @@ router.put('/:orderId/notes/:noteId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    console.error(`Error al actualizar la nota ${noteId} de la orden ${orderId}:`, error);
+    console.error(`Error al actualizar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error interno del servidor al actualizar la nota.' });
   }
 });
@@ -283,7 +283,7 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    console.error(`Error al eliminar la nota ${noteId} de la orden ${orderId}:`, error);
+    console.error(`Error al eliminar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, error);
     res.status(500).json({ error: 'Error al eliminar la nota.' });
   }
 });
