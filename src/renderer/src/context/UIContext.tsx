@@ -123,7 +123,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   React.useEffect(() => {
     checkDatabaseStatus(); // Initial check
     const interval = setInterval(checkDatabaseStatus, 15000); // Poll every 15 seconds
-    return () => React.clearInterval(interval);
+    return () => clearInterval(interval);
   }, [checkDatabaseStatus]);
 
   const handleLogout = React.useCallback(async () => {
