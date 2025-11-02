@@ -116,7 +116,8 @@ router.get('/', adminAuthMiddleware, async (req, res) => {
   try {
     const users = await db.users.find({ role: { $ne: 'master' } }, '-password -securityAnswer');
     res.json(users);
-  } catch {
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error);
     res.status(500).json({ error: 'Error al obtener los usuarios.' });
   }
 });
