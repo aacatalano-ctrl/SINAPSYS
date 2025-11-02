@@ -136,6 +136,9 @@ app.use('/api/reports', reportRouter);
 import notificationRouter from './routes/notification.routes.js';
 app.use('/api/notifications', notificationRouter);
 
+import statusRouter from './routes/status.routes.js';
+app.use('/api', statusRouter);
+
 // --- SERVER INITIALIZATION ---
 let isInitialized = false;
 
@@ -146,15 +149,9 @@ async function connectToDatabase() {
   }
 
   console.log('Attempting to connect to MongoDB...');
-  try {
-    await connectDB();
-    console.log('MongoDB connected successfully.');
-  } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
-    throw error; // Re-throw to indicate failure
-  }
+  await connectDB(); // connectDB now handles retries and sets isDatabaseConnected
 
-  if (!isInitialized) {
+  if (!isInitialized && isDatabaseConnected) {
     console.log('Initializing database and tasks...');
     await initializeDb();
     await initializeCounters();

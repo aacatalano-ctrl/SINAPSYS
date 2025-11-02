@@ -30,6 +30,7 @@ interface UIContextType {
   handleClearAllNotifications: () => Promise<void>;
   handleDeleteNotification: (id: string) => Promise<void>;
   toast: ToastState;
+  isDatabaseMaintenance: boolean; // New state for database maintenance
   openAddDoctorModal: () => void;
   closeAddDoctorModal: () => void;
   openAddNoteModal: () => void;
@@ -70,6 +71,9 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isDatabaseMaintenance, setIsDatabaseMaintenance] = useState(false); // New state
+
+  const API_URL = '/api';
 
   const hideToast = useCallback(() => {
     setToast((prev) => ({ ...prev, show: false }));
@@ -101,6 +105,26 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
     return response;
   }, [showToast, clientSideLogout]);
+
+  const checkDatabaseStatus = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/status`); // Use plain fetch, not authFetch
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setIsDatabaseMaintenance(!data.databaseConnected);
+    } catch (error) {
+      console.error("Error checking database status:", error);
+      setIsDatabaseMaintenance(true); // Assume maintenance if check fails
+    }
+  }, []);
+
+  useEffect(() => {
+    checkDatabaseStatus(); // Initial check
+    const interval = setInterval(checkDatabaseStatus, 15000); // Poll every 15 seconds
+    return () => clearInterval(interval);
+  }, [checkDatabaseStatus]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -196,6 +220,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     handleMarkNotificationsAsRead,
     handleClearAllNotifications,
     handleDeleteNotification,
+    isDatabaseMaintenance, // Include new state
     openAddDoctorModal,
     closeAddDoctorModal,
     openAddNoteModal,

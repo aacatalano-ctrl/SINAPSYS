@@ -95,16 +95,34 @@ const db: AppDatabase = {
   sequences: SequenceModel,
 };
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 5000; // 5 seconds
+
+export let isDatabaseConnected = false; // New flag to track connection status
+
 // 3. Connect to MongoDB
 const connectDB = async () => {
-  try {
-    console.log('Connecting to MongoDB at:', MONGODB_URI);
-    await mongoose.connect(MONGODB_URI);
-    console.log('MongoDB connected successfully!');
-  } catch (err) {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit process with failure
-  }
+  let attempts = 0;
+  const connectWithRetry = async () => {
+    attempts++;
+    try {
+      console.log(`Attempting to connect to MongoDB (attempt ${attempts}/${MAX_RETRIES}) at:`, MONGODB_URI);
+      await mongoose.connect(MONGODB_URI);
+      console.log('MongoDB connected successfully!');
+      isDatabaseConnected = true;
+    } catch (err) {
+      console.error(`MongoDB connection error (attempt ${attempts}):`, err);
+      if (attempts < MAX_RETRIES) {
+        console.log(`Retrying MongoDB connection in ${RETRY_DELAY_MS / 1000} seconds...`);
+        setTimeout(connectWithRetry, RETRY_DELAY_MS);
+      } else {
+        console.error('Max MongoDB connection retries reached. Database is unavailable.');
+        isDatabaseConnected = false; // Database remains disconnected
+        // Do NOT call process.exit(1) here. The server will continue to run.
+      }
+    }
+  };
+  connectWithRetry();
 };
 
 // 4. Function to initialize data if the database is empty
@@ -120,7 +138,8 @@ const initializeDb = async (): Promise<void> => {
 export {
   db,
   initializeDb,
-  connectDB // Export connectDB so it can be called from server.ts
+  connectDB,
+  isDatabaseConnected
 };
 
 // Call connectDB when the module is loaded, but don't initializeDb here
