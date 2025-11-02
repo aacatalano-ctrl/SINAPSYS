@@ -7,13 +7,13 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SINAPS
 // 1. Define Mongoose Schemas
 const paymentSchema = new mongoose.Schema<Payment>({
   amount: { type: Number, required: true },
-  date: { type: String, required: true }, // Consider using Date type
+  date: { type: Date, required: true },
   description: { type: String },
 });
 
 const noteSchema = new mongoose.Schema<Note>({
   text: { type: String, required: true },
-  timestamp: { type: String, required: true }, // Consider using Date type
+  timestamp: { type: Date, required: true },
   author: { type: String, required: true },
 });
 
