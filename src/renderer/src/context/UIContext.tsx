@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
+import * as React from 'react';
 
 import { User } from '../../types';
 
@@ -52,46 +52,46 @@ interface UIContextType {
 }
 
 // Create the context
-const UIContext = createContext<UIContextType | undefined>(undefined);
+const UIContext = React.createContext<UIContextType | undefined>(undefined);
 
 // Create a provider component
 interface UIProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAddDoctorModalOpen, setAddDoctorModalOpen] = useState(false);
-  const [isAddNoteModalOpen, setAddNoteModalOpen] = useState(false);
-  const [isAddPaymentModalOpen, setAddPaymentModalOpen] = useState(false);
-  const [isAuthModalOpen, setAuthModalOpen] = useState(true); // Default to open
-  const [isConfirmCompletionModalOpen, setConfirmCompletionModalOpen] = useState(false);
-  const [isEditOrderModalOpen, setEditOrderModalOpen] = useState(false);
-  const [isEmailDraftModalOpen, setEmailDraftModalOpen] = useState(false);
-  const [isDeleteReportModalOpen, setDeleteReportModalOpen] = useState(false);
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isDatabaseMaintenance, setIsDatabaseMaintenance] = useState(false); // New state
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [isAddDoctorModalOpen, setAddDoctorModalOpen] = React.useState(false);
+  const [isAddNoteModalOpen, setAddNoteModalOpen] = React.useState(false);
+  const [isAddPaymentModalOpen, setAddPaymentModalOpen] = React.useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = React.useState(true); // Default to open
+  const [isConfirmCompletionModalOpen, setConfirmCompletionModalOpen] = React.useState(false);
+  const [isEditOrderModalOpen, setEditOrderModalOpen] = React.useState(false);
+  const [isEmailDraftModalOpen, setEmailDraftModalOpen] = React.useState(false);
+  const [isDeleteReportModalOpen, setDeleteReportModalOpen] = React.useState(false);
+  const [toast, setToast] = React.useState<ToastState>({ show: false, message: '', type: 'info' });
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  const [isDatabaseMaintenance, setIsDatabaseMaintenance] = React.useState(false); // New state
 
   const API_URL = '/api';
 
-  const hideToast = useCallback(() => {
+  const hideToast = React.useCallback(() => {
     setToast((prev) => ({ ...prev, show: false }));
   }, []);
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = React.useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
       hideToast();
     }, 3000);
   }, [hideToast]);
 
-  const clientSideLogout = useCallback(() => {
+  const clientSideLogout = React.useCallback(() => {
     setCurrentUser(null);
     localStorage.removeItem('token');
   }, [setCurrentUser]);
 
-  const authFetch = useCallback(async (url: string, options?: RequestInit) => {
+  const authFetch = React.useCallback(async (url: string, options?: RequestInit) => {
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     return response;
   }, [showToast, clientSideLogout]);
 
-  const checkDatabaseStatus = useCallback(async () => {
+  const checkDatabaseStatus = React.useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/status`); // Use plain fetch, not authFetch
       if (!response.ok) {
@@ -120,24 +120,24 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkDatabaseStatus(); // Initial check
     const interval = setInterval(checkDatabaseStatus, 15000); // Poll every 15 seconds
-    return () => clearInterval(interval);
+    return () => React.clearInterval(interval);
   }, [checkDatabaseStatus]);
 
-  const handleLogout = useCallback(async () => {
+  const handleLogout = React.useCallback(async () => {
     try {
       await authFetch('/api/logout', { method: 'POST' });
     } catch (error) {
       console.error("Error during API logout:", error);
     } finally {
       clientSideLogout();
-      showToast('Sesión cerrada.');
+      showToast('Sesión cerrada.', 'info'); // Changed type to 'info' for consistency
     }
   }, [clientSideLogout, showToast, authFetch]);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = React.useCallback(async () => {
     try {
       const fetchedNotifications = await authFetch(`/api/notifications`).then(res => res.json());
       setNotifications(fetchedNotifications);
@@ -146,7 +146,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, [authFetch]);
 
-  const handleMarkNotificationsAsRead = useCallback(async () => {
+  const handleMarkNotificationsAsRead = React.useCallback(async () => {
     try {
       await authFetch(`/api/notifications/mark-all-read`, { method: 'PUT' });
       fetchNotifications(); // Refresh notifications list
@@ -155,7 +155,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, [fetchNotifications, authFetch]);
 
-  const handleClearAllNotifications = useCallback(async () => {
+  const handleClearAllNotifications = React.useCallback(async () => {
     try {
       await authFetch(`/api/notifications`, { method: 'DELETE' });
       fetchNotifications(); // Refresh to show empty list
@@ -164,7 +164,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, [fetchNotifications, authFetch]);
 
-  const handleDeleteNotification = useCallback(async (id: string) => {
+  const handleDeleteNotification = React.useCallback(async (id: string) => {
     try {
       await authFetch(`/api/notifications/${id}`, { method: 'DELETE' });
       fetchNotifications(); // Refresh notifications list
@@ -173,33 +173,33 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, [fetchNotifications, authFetch]);
 
-  const openAddDoctorModal = useCallback(() => setAddDoctorModalOpen(true), []);
-  const closeAddDoctorModal = useCallback(() => setAddDoctorModalOpen(false), []);
+  const openAddDoctorModal = React.useCallback(() => setAddDoctorModalOpen(true), []);
+  const closeAddDoctorModal = React.useCallback(() => setAddDoctorModalOpen(false), []);
 
-  const openAddNoteModal = useCallback(() => setAddNoteModalOpen(true), []);
-  const closeAddNoteModal = useCallback(() => setAddNoteModalOpen(false), []);
+  const openAddNoteModal = React.useCallback(() => setAddNoteModalOpen(true), []);
+  const closeAddNoteModal = React.useCallback(() => setAddNoteModalOpen(false), []);
 
-  const openAddPaymentModal = useCallback(() => setAddPaymentModalOpen(true), []);
-  const closeAddPaymentModal = useCallback(() => setAddPaymentModalOpen(false), []);
+  const openAddPaymentModal = React.useCallback(() => setAddPaymentModalOpen(true), []);
+  const closeAddPaymentModal = React.useCallback(() => setAddPaymentModalOpen(false), []);
 
-  const openAuthModal = useCallback(() => setAuthModalOpen(true), []);
-  const closeAuthModal = useCallback(() => {
+  const openAuthModal = React.useCallback(() => setAuthModalOpen(true), []);
+  const closeAuthModal = React.useCallback(() => {
     if (currentUser) { // Only close auth modal if a user is logged in
       setAuthModalOpen(false);
     }
   }, [currentUser]);
 
-  const openConfirmCompletionModal = useCallback(() => setConfirmCompletionModalOpen(true), []);
-  const closeConfirmCompletionModal = useCallback(() => setConfirmCompletionModalOpen(false), []);
+  const openConfirmCompletionModal = React.useCallback(() => setConfirmCompletionModalOpen(true), []);
+  const closeConfirmCompletionModal = React.useCallback(() => setConfirmCompletionModalOpen(false), []);
 
-  const openEditOrderModal = useCallback(() => setEditOrderModalOpen(true), []);
-  const closeEditOrderModal = useCallback(() => setEditOrderModalOpen(false), []);
+  const openEditOrderModal = React.useCallback(() => setEditOrderModalOpen(true), []);
+  const closeEditOrderModal = React.useCallback(() => setEditOrderModalOpen(false), []);
 
-  const openEmailDraftModal = useCallback(() => setEmailDraftModalOpen(true), []);
-  const closeEmailDraftModal = useCallback(() => setEmailDraftModalOpen(false), []);
+  const openEmailDraftModal = React.useCallback(() => setEmailDraftModalOpen(true), []);
+  const closeEmailDraftModal = React.useCallback(() => setEmailDraftModalOpen(false), []);
 
-  const openDeleteReportModal = useCallback(() => setDeleteReportModalOpen(true), []);
-  const closeDeleteReportModal = useCallback(() => setDeleteReportModalOpen(false), []);
+  const openDeleteReportModal = React.useCallback(() => setDeleteReportModalOpen(true), []);
+  const closeDeleteReportModal = React.useCallback(() => setDeleteReportModalOpen(false), []);
 
   const value = {
     currentUser,
@@ -251,7 +251,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 // Create a custom hook to use the context
 // eslint-disable-next-line react-refresh/only-export-components
 export const useUI = (): UIContextType => {
-  const context = useContext(UIContext);
+  const context = React.useContext(UIContext); // Changed
   if (context === undefined) {
     throw new Error('useUI must be used within a UIProvider');
   }
