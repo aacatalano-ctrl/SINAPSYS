@@ -243,7 +243,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 
   return (
     <UIContext.Provider value={value}>
-      {children}
+      <React.Fragment>{children}</React.Fragment>
     </UIContext.Provider>
   );
 };
