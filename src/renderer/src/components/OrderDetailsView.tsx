@@ -261,7 +261,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
                     </div>
                   </div>
                 </div>
-              ))}}
+              ))}
             </div>
           )}
         </div>
