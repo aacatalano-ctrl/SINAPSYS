@@ -128,7 +128,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 
   const handleLogout = React.useCallback(async () => {
     try {
-      await authFetch('/api/logout', { method: 'POST' });
+      await authFetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error("Error during API logout:", error);
     } finally {

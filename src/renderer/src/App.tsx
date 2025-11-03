@@ -45,7 +45,7 @@ function App() {
   const handleLogin = async (username: string, password: string) => {
     setAuthError('');
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
