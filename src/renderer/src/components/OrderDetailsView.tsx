@@ -233,8 +233,25 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
         </div>
 
         {/* Internal Notes Section */}
-        <div className="rounded-lg bg-white p-6 shadow-xl">
-            {/* ... existing notes code ... */}
+        <div className="mb-8 rounded-lg bg-white p-6 shadow-xl">
+          <h3 className="mb-4 flex items-center text-xl font-semibold text-gray-800">
+            <MessageSquare className="mr-2" /> Historial de Notas
+          </h3>
+          {(!order.notes || order.notes.length === 0) ? (
+            <p className="text-gray-600">No hay notas registradas para esta orden.</p>
+          ) : (
+            <div className="space-y-4">
+              {order.notes.map((note) => (
+                <div key={note._id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-gray-800">{note.text}</p>
+                  <div className="mt-2 text-right text-xs text-gray-500">
+                    <span>- {note.author}</span>
+                    <span className="ml-2">({formatDateTime(note.timestamp)})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
