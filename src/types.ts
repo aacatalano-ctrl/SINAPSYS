@@ -45,14 +45,14 @@ export interface Doctor {
 export interface Payment {
   _id?: string;
   amount: number;
-  date: string;
+  date: Date;
   description?: string;
 }
 
 export interface Note {
   _id?: string;
   text: string;
-  timestamp: string;
+  timestamp: Date;
   author: string;
 }
 
