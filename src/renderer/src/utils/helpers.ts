@@ -4,8 +4,9 @@
 // The frontend will need to be updated to fetch this data from an API endpoint.
 
 // Función para generar el código de caso único
-export const generateCaseCode = (jobType: string): string => { // Add type for jobType
-  const prefix = jobTypePrefixMap[jobType] || 'CAS';
+export const generateCaseCode = (jobType: string, jobTypePrefixMap: { [key: string]: string }): string => {
+  const category = jobType.split(' - ')[0].trim();
+  const prefix = jobTypePrefixMap[category] || 'CAS';
   const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   return `${prefix}-${uniqueId}`;
 };
