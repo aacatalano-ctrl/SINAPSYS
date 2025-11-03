@@ -256,7 +256,7 @@ router.put('/:orderId/notes/:noteId', async (req, res) => {
     }
 
     note.text = text;
-    note.timestamp = new Date().toISOString(); // Update timestamp on edit
+    note.timestamp = new Date(); // Update timestamp on edit
 
     await order.save();
     res.json(order);
