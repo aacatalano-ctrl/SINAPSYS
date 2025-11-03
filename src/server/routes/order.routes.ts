@@ -16,7 +16,7 @@ router.use(authMiddleware);
 // --- ORDERS ---
 router.get('/', async (req, res) => {
   try {
-    const orders = await db.orders.find({}).populate('doctorId');
+    const orders = await db.orders.find({}).populate('doctorId', 'firstName lastName');
     res.json(orders);
   } catch (error) {
     console.error('Error al obtener las órdenes:', error);
@@ -83,7 +83,7 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId');
+    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId', 'firstName lastName');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
@@ -292,7 +292,7 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
 router.post('/:orderId/receipt', async (req, res) => {
   try {
     const { currentUser } = req.body;
-    const order = await db.orders.findById(req.params.orderId).populate('doctorId');
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
@@ -392,7 +392,7 @@ router.post('/:orderId/receipt', async (req, res) => {
 router.post('/:orderId/payment-history-pdf', async (req, res) => {
   try {
     const { currentUser } = req.body;
-    const order = await db.orders.findById(req.params.orderId).populate('doctorId');
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
