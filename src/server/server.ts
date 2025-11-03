@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { Redis } from 'ioredis';
@@ -167,7 +167,7 @@ async function connectToDatabase() {
 }
 
 // Export a handler function for Vercel
-export default async (req: any, res: any) => {
+export default async (req: Request, res: Response) => {
   console.log('Serverless handler invoked.');
   await connectToDatabase();
   // Attach server to the handler, ensuring it's listening

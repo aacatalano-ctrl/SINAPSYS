@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
 import { useUI } from './context/UIContext';

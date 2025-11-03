@@ -87,6 +87,7 @@ router.post('/logout', authMiddleware, async (req, res) => {
       // from any server instance in the cluster.
       // We cast to `any` because the method is added dynamically by the adapter and
       // may not be present in the default TypeScript Server type.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (io as any).remoteDisconnect(user.socketId, true);
       console.log(`Forcing disconnect for socket ID: ${user.socketId}`);
     } else if (user) {

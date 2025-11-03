@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, Edit, Trash2, MessageSquare } from 'lucide-react';
 import { Order, User as UserType, Payment } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 import AddPaymentModal from './AddPaymentModal'; // Import the modal
@@ -9,6 +9,7 @@ interface OrderDetailsViewProps {
     order: Order;
     onBack: () => void;
     onEditOrder: (order: Order) => void;
+    onAddNote: () => void;
     getDoctorFullNameById: (id: string) => string;
     formatDate: (dateString: string) => string;
     formatDateTime: (dateString: string) => string;
@@ -16,7 +17,7 @@ interface OrderDetailsViewProps {
     onConfirmPayment: (order: Order) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onConfirmPayment }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, onAddNote, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onConfirmPayment }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const {
@@ -73,6 +74,12 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
               className="flex items-center rounded-lg bg-green-600 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-green-700"
             >
               <Edit className="mr-2" size={20} /> Editar Orden
+            </button>
+            <button
+              onClick={onAddNote}
+              className="flex items-center rounded-lg bg-orange-500 px-4 py-2 font-bold text-white shadow-lg transition-colors duration-200 hover:bg-orange-600"
+            >
+              <MessageSquare className="mr-2" size={20} /> Añadir Nota
             </button>
             {currentUser?.role !== 'operador' && (
               <button

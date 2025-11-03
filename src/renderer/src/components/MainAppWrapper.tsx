@@ -164,21 +164,21 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 relative">
+    <div className="relative flex h-screen bg-gray-100">
       {isLoading && (
-        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm">
-          <div className="size-20 animate-spin rounded-full border-t-4 border-b-4 border-blue-500"></div>
+        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900/75 backdrop-blur-sm">
+          <div className="size-20 animate-spin rounded-full border-y-4 border-blue-500"></div>
           <p className="mt-4 text-lg font-semibold text-white">Conectando y cargando datos...</p>
         </div>
       )}
 
       {isDatabaseMaintenance && (
-        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-red-900 bg-opacity-75 backdrop-blur-sm text-white p-4 text-center">
-          <svg className="w-20 h-20 mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-          <h2 className="text-3xl font-bold mb-2">¡Atención!</h2>
-          <p className="text-xl mb-4">La base de datos está en mantenimiento o no está disponible.</p>
+        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-red-900/75 p-4 text-center text-white backdrop-blur-sm">
+          <svg className="mb-4 size-20 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <h2 className="mb-2 text-3xl font-bold">¡Atención!</h2>
+          <p className="mb-4 text-xl">La base de datos está en mantenimiento o no está disponible.</p>
           <p className="text-lg">Por favor, intente de nuevo más tarde.</p>
-          <p className="text-sm mt-4">Si el problema persiste, contacte a soporte técnico.</p>
+          <p className="mt-4 text-sm">Si el problema persiste, contacte a soporte técnico.</p>
         </div>
       )}
 
