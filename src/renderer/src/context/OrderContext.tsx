@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useUI } from './UIContext';
 import { useDoctors } from './DoctorContext';
 import { Order, Payment, Note, User } from '../../types';
-import mongoose from 'mongoose';
-
 interface OrderContextType {
   orders: Order[];
   fetchOrders: () => Promise<void>;
@@ -190,8 +188,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const handleSaveNote = async (orderId: string, noteText: string): Promise<void> => {
     const order = orders.find(o => o._id === orderId);
     if (!order) return;
-    const newNote: Note = {
-      _id: new mongoose.Types.ObjectId().toString(),
+    const newNote: Omit<Note, '_id'> = {
       text: noteText,
       timestamp: new Date().toISOString(),
       author: currentUser?.username || 'Usuario',
