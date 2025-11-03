@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { ArrowLeft, ClipboardList, User, Calendar, DollarSign, Edit, Trash2, MessageSquare } from 'lucide-react';
-import { Order, User as UserType, Payment } from '../../types';
+import { Order, User as UserType, Payment, Note } from '../../types';
 import ConfirmCompletionModal from './ConfirmCompletionModal';
 import AddPaymentModal from './AddPaymentModal'; // Import the modal
 
@@ -10,6 +10,7 @@ interface OrderDetailsViewProps {
     onBack: () => void;
     onEditOrder: (order: Order) => void;
     onAddNote: () => void;
+    onEditNote: (note: Note) => void;
     getDoctorFullNameById: (id: string) => string;
     formatDate: (dateString: string) => string;
     formatDateTime: (dateString: string) => string;
@@ -17,7 +18,7 @@ interface OrderDetailsViewProps {
     onConfirmPayment: (order: Order) => void;
 }
 
-const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, onAddNote, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onConfirmPayment }) => {
+const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEditOrder, onAddNote, onEditNote, getDoctorFullNameById, formatDate, formatDateTime, currentUser, onConfirmPayment }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [currentOrderForModal, setCurrentOrderForModal] = useState<Order | null>(null);
   const {
@@ -29,6 +30,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
     addPaymentToOrder, // Keep for the modal
     updatePaymentInOrder, // New function
     deletePaymentFromOrder, // New function
+    handleDeleteNote,
   } = useOrders();
 
 
@@ -244,12 +246,22 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({ order, onBack, onEd
               {order.notes.map((note) => (
                 <div key={note._id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <p className="text-gray-800">{note.text}</p>
-                  <div className="mt-2 text-right text-xs text-gray-500">
+                  <div className="mt-2 flex items-center justify-end text-xs text-gray-500">
                     <span>- {note.author}</span>
                     <span className="ml-2">({formatDateTime(note.timestamp)})</span>
+                    <div className="ml-4 flex items-center space-x-2">
+                      <button onClick={() => onEditNote(note)} className="text-blue-600 hover:text-blue-800" title="Editar Nota">
+                        <Edit size={14} />
+                      </button>
+                      {currentUser?.role !== 'operador' && (
+                        <button onClick={() => handleDeleteNote(order._id, note._id!)} className="text-red-600 hover:text-red-800" title="Eliminar Nota">
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              ))}
+              ))}}
             </div>
           )}
         </div>

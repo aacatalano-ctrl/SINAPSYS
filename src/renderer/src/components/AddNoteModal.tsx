@@ -1,26 +1,37 @@
-import React, { useState } from 'react';
-import { Order } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Order, Note } from '../../types';
 
 interface AddNoteModalProps {
     order: Order;
     onClose: () => void;
     onSaveNote: (noteText: string) => Promise<void>;
+    onUpdateNote: (noteId: string, newText: string) => Promise<void>;
+    noteToEdit?: Note | null;
 }
 
-const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote }) => {
+const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote, onUpdateNote, noteToEdit }) => {
   const [noteText, setNoteText] = useState('');
+  const isEditMode = !!noteToEdit;
+
+  useEffect(() => {
+    if (isEditMode) {
+      setNoteText(noteToEdit.text);
+    }
+  }, [isEditMode, noteToEdit]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!noteText.trim()) {
-      // You might want to show a notification here
       return;
     }
     try {
-      await onSaveNote(noteText);
+      if (isEditMode) {
+        await onUpdateNote(noteToEdit._id!, noteText);
+      } else {
+        await onSaveNote(noteText);
+      }
     } catch (error) {
-      console.error("Failed to save note:", error);
-      // You might want to show a notification here
+      console.error(`Failed to ${isEditMode ? 'update' : 'save'} note:`, error);
     } finally {
       onClose();
     }
@@ -29,7 +40,9 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-        <h2 className="mb-6 text-2xl font-bold text-gray-800">Añadir Nota a Orden: {order._id}</h2>
+        <h2 className="mb-6 text-2xl font-bold text-gray-800">
+          {isEditMode ? 'Editar Nota' : 'Añadir Nota'} a Orden: {order.orderNumber}
+        </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">Nota:</label>
@@ -53,7 +66,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
               type="submit"
               className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
             >
-              Guardar Nota
+              {isEditMode ? 'Guardar Cambios' : 'Guardar Nota'}
             </button>
           </div>
         </form>
