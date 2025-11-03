@@ -43,7 +43,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
     }
   }, [order, doctors, jobCategories]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedDoctor) {
       showNotification('Por favor, selecciona un doctor.', 'error');
@@ -59,15 +59,15 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
       caseDescription,
     };
 
-    onUpdateOrder(order._id, updatedOrderData)
-      .then(() => {
-        showNotification('Orden actualizada con éxito', 'success');
-        onClose();
-      })
-      .catch((error) => {
-        console.error("Failed to update order:", error);
-        // Notification is already shown in the context
-      });
+    try {
+      await onUpdateOrder(order._id, updatedOrderData);
+      showNotification('Orden actualizada con éxito', 'success');
+    } catch (error) {
+      console.error("Failed to update order:", error);
+      // Notification is already shown in the context
+    } finally {
+      onClose();
+    }
   };
 
   return (

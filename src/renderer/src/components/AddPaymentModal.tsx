@@ -56,17 +56,15 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({ order, onClose, isOpe
     
     try {
       if (isEditMode && paymentToEdit?._id) {
-        // In edit mode, we only send the fields that can be changed
         await onUpdatePayment(order._id, paymentToEdit._id, { amount: parsedAmount, description, date: paymentToEdit.date });
-        showNotification('Abono actualizado con éxito.', 'success');
       } else {
         await onAddPayment(parsedAmount, description);
-        showNotification('Pago registrado con éxito.', 'success');
       }
-      onClose();
     } catch (error) {
       console.error("Failed to save payment:", error);
-      showNotification(isEditMode ? 'Error al actualizar el abono.' : 'Error al registrar el pago.', 'error');
+      // The notification is already shown in the context's catch block
+    } finally {
+      onClose();
     }
   };
 

@@ -260,7 +260,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
             setNoteToEdit(null);
           }}
           onSaveNote={(noteText) => handleSaveNote(selectedOrder._id, noteText)}
-          onUpdateNote={handleUpdateNote}
+          onUpdateNote={(noteId, newText) => handleUpdateNote(selectedOrder._id, noteId, newText)}
           noteToEdit={noteToEdit}
         />
       )}
