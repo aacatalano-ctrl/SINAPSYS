@@ -18,10 +18,11 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote 
     }
     try {
       await onSaveNote(noteText);
-      onClose();
     } catch (error) {
       console.error("Failed to save note:", error);
       // You might want to show a notification here
+    } finally {
+      onClose();
     }
   }
 
