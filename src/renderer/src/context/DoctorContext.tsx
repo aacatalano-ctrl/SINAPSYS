@@ -58,7 +58,6 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       }
       const newDoctor = await response.json(); // Get the newly created doctor from the response
       setDoctors(prevDoctors => [...prevDoctors, newDoctor]); // Immediately add to state
-      await fetchDoctors(); // Refresh list to ensure full consistency
       return newDoctor; // Return the new doctor for potential use in CreateOrderView
     } catch (error) {
       console.error('Failed to add doctor:', error);
