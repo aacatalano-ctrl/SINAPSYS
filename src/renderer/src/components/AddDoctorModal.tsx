@@ -26,8 +26,6 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
       const addedDoctor = await onAddDoctor(newDoctorData);
       if (addedDoctor) {
         onClose();
-        newDoctorFormRef.current?.reset();
-        showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
       }
     } catch (error) {
       console.error("Error adding doctor:", error);
