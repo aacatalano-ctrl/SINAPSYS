@@ -182,7 +182,7 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
             id="cost"
             name="cost"
             className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-            step="10"
+            step="0.01"
             min="0"
             value={cost}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
