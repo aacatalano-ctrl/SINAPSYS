@@ -26,7 +26,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
 
   // Effect to initialize form state when the order prop is available
   useEffect(() => {
-    if (order) {
+    if (order && doctors.length > 0) {
       const doctor = doctors.find(d => d._id === order.doctorId) || null;
       setSelectedDoctor(doctor);
       setPatientName(order.patientName);
@@ -155,7 +155,6 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
               value={cost}
               onChange={(e) => setCost(parseFloat(e.target.value) || 0)}
               className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              step="10"
               min="0"
               required
             />

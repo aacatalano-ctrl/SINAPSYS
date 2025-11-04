@@ -142,6 +142,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const updatePaymentInOrder = async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(paymentData),
       });
