@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { db } from '../database/index.js';
 import { paymentSchema } from '../validation/orders.validation.js';
 import { createNotification } from '../database/notifications.js';
+import type { Payment } from '../../types.js';
 
 interface AuthenticatedRequest extends Request {
   user?: { userId: string; username: string; role: 'admin' | 'cliente' | 'operador' };
@@ -53,8 +55,7 @@ export const updatePayment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payment = (order.payments as any).id(paymentId);
+    const payment = (order.payments as mongoose.Types.DocumentArray<Payment>).id(paymentId);
     if (!payment) {
       return res.status(404).json({ error: 'Pago no encontrado.' });
     }

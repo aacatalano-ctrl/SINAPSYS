@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { db } from '../database/index.js';
 import { noteSchema, updateNoteSchema } from '../validation/orders.validation.js';
 import type { Note } from '../../types.js';
@@ -48,8 +49,7 @@ export const updateNote = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const note = (order.notes as any).id(noteId) as Note;
+    const note = (order.notes as mongoose.Types.DocumentArray<Note>).id(noteId);
     if (!note) {
       return res.status(404).json({ error: 'Nota no encontrada.' });
     }

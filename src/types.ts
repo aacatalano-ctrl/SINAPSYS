@@ -74,6 +74,6 @@ export interface Notification {
   _id?: string;
   orderId: mongoose.Types.ObjectId | string;
   message: string;
-  createdAt?: Date | string;
+  createdAt: Date | string;
   read: boolean;
 }
