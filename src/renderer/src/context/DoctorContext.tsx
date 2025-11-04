@@ -79,11 +79,14 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      await fetchDoctors(); // Refresh list
+      const updatedDoctor = await response.json();
+      setDoctors(prevDoctors => prevDoctors.map(d => d._id === id ? updatedDoctor : d));
+      showToast('Doctor actualizado exitosamente.', 'success');
     } catch (error) {
       console.error('Failed to update doctor:', error);
+      showToast('Error al actualizar el doctor. Por favor, intente de nuevo.', 'error');
     }
-  }, [fetchDoctors, authFetch]);
+  }, [authFetch, showToast]);
 
   const deleteDoctor = useCallback(async (id: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {

@@ -199,7 +199,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(newNote),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await fetchOrders(); // Refresh orders after successful note save
+      const updatedOrder = await response.json();
+      setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
       showToast('Nota añadida con éxito.', 'success');
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -216,7 +217,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify({ text: newText }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await fetchOrders();
+      const updatedOrder = await response.json();
+      setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
       showToast('Nota actualizada con éxito.', 'success');
     } catch (error) {
       console.error("Failed to update note:", error);
@@ -232,7 +234,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        await fetchOrders();
+        const updatedOrder = await response.json();
+        setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
         showToast('Nota eliminada con éxito.', 'success');
       } catch (error) {
         console.error("Failed to delete note:", error);

@@ -65,7 +65,10 @@ router.post('/', async (req, res) => {
     });
 
     await newOrder.save();
-    res.status(201).json(newOrder);
+
+    const populatedOrder = await db.orders.findById(newOrder._id).populate('doctorId', 'firstName lastName');
+
+    res.status(201).json(populatedOrder);
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       console.error("Error de clave duplicada al crear la orden:", error);
