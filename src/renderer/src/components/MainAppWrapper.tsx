@@ -49,6 +49,10 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [prefixFilter, setPrefixFilter] = useState<string>('all');
   const [sortDoctorsColumn, setSortDoctorsColumn] = useState<string>('');
   const [sortDoctorsDirection, setSortDoctorsDirection] = useState<'asc' | 'desc'>('asc');
+  const [newlyCreatedDoctorId, setNewlyCreatedDoctorId] = useState<string | null>(null);
+  const [deletedDoctorId, setDeletedDoctorId] = useState<string | null>(null);
+  const [newlyCreatedOrderId, setNewlyCreatedOrderId] = useState<string | null>(null);
+  const [deletedOrderId, setDeletedOrderId] = useState<string | null>(null);
 
   const [orderToComplete, setOrderToComplete] = useState<Order | null>(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
@@ -143,6 +147,34 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     };
   }, [navigate]);
 
+  useEffect(() => {
+    if (deletedDoctorId && !doctors.find(d => d._id === deletedDoctorId)) {
+      showToast('Doctor eliminado exitosamente.', 'success');
+      setDeletedDoctorId(null);
+    }
+  }, [doctors, deletedDoctorId, showToast]);
+
+  useEffect(() => {
+    if (newlyCreatedOrderId && orders.find(o => o._id === newlyCreatedOrderId)) {
+      showToast('Orden creada exitosamente.', 'success');
+      setNewlyCreatedOrderId(null);
+    }
+  }, [orders, newlyCreatedOrderId, showToast]);
+
+  useEffect(() => {
+    if (deletedOrderId && !orders.find(o => o._id === deletedOrderId)) {
+      showToast('Orden eliminada exitosamente.', 'success');
+      setDeletedOrderId(null);
+    }
+  }, [orders, deletedOrderId, showToast]);
+
+  useEffect(() => {
+    if (deletedDoctorId && !doctors.find(d => d._id === deletedDoctorId)) {
+      showToast('Doctor eliminado exitosamente.', 'success');
+      setDeletedDoctorId(null);
+    }
+  }, [doctors, deletedDoctorId, showToast]);
+
   const handleSortDoctors = (column: string) => {
     if (sortDoctorsColumn === column) {
       setSortDoctorsDirection(sortDoctorsDirection === 'asc' ? 'desc' : 'asc');
@@ -214,10 +246,31 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
                     <Suspense fallback={<div className="flex size-full items-center justify-center"><div className="size-32 animate-spin rounded-full border-y-2 border-blue-600"></div></div>}>
             <Routes>
-              <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { const order = await addOrder(newOrder); if(order) navigate('/orders'); }} onAddDoctor={openAddDoctorModal} />} />
-              <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={handleOpenAddNoteModal} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={handleDeleteOrder} />} />
-              <Route path="/history" element={<HistoryOrdersView orders={orders.filter(o => o.status === 'Completado')} searchHistoryTerm={searchHistoryTerm} setSearchHistoryTerm={setSearchHistoryTerm} setFullClientView={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} sortOrdersColumn={sortOrdersColumn} sortOrdersDirection={sortOrdersDirection} handleSortOrders={handleSortOrders} calculateBalance={calculateBalance} handleDeleteOrder={handleDeleteOrder} />} />
-                          <Route path="/doctors" element={<DoctorsView doctors={doctors} editingDoctor={editingDoctor} setEditingDoctor={setEditingDoctor} handleEditDoctor={updateDoctor} handleDeleteDoctor={deleteDoctor} searchDoctorTerm={searchDoctorTerm} setSearchDoctorTerm={setSearchDoctorTerm} prefixFilter={prefixFilter} setPrefixFilter={setPrefixFilter} sortDoctorsColumn={sortDoctorsColumn} sortDoctorsDirection={sortDoctorsDirection} handleSortDoctors={handleSortDoctors} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} onExportDoctors={exportDoctors} />} />
+              <Route path="/" element={<CreateOrderView doctors={doctors} jobCategories={jobCategories} jobTypeCosts={jobTypeCosts} onOrderCreated={async (newOrder) => { 
+                const order = await handleOrderCreated(newOrder); 
+                if(order) {
+                  setNewlyCreatedOrderId(order._id);
+                  navigate('/orders');
+                }
+              }} onAddDoctor={openAddDoctorModal} />} />
+              <Route path="/orders" element={<ExistingOrdersView orders={orders.filter(o => o.status !== 'Completado')} onViewDetails={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} onEditOrder={handleEditOrder} onConfirmCompletion={(order) => { setOrderToComplete(order); openConfirmCompletionModal(); }} onConfirmPayment={(order) => { setSelectedOrderForPayment(order); openAddPaymentModal(); }} onAddNote={handleOpenAddNoteModal} getDoctorFullNameById={getDoctorFullNameById} onDeleteOrder={async (id) => {
+                const deletedId = await handleDeleteOrder(id);
+                if (deletedId) {
+                  setDeletedOrderId(deletedId);
+                }
+              }} />} />
+              <Route path="/history" element={<HistoryOrdersView orders={orders.filter(o => o.status === 'Completado')} searchHistoryTerm={searchHistoryTerm} setSearchHistoryTerm={setSearchHistoryTerm} setFullClientView={(order) => { setSelectedOrder(order); navigate('/orders/details'); }} getDoctorFullNameById={getDoctorFullNameById} formatDate={formatDate} sortOrdersColumn={sortOrdersColumn} sortOrdersDirection={sortOrdersDirection} handleSortOrders={handleSortOrders} calculateBalance={calculateBalance} handleDeleteOrder={async (id) => {
+                const deletedId = await handleDeleteOrder(id);
+                if (deletedId) {
+                  setDeletedOrderId(deletedId);
+                }
+              }} />} />
+                          <Route path="/doctors" element={<DoctorsView doctors={doctors} editingDoctor={editingDoctor} setEditingDoctor={setEditingDoctor} handleEditDoctor={updateDoctor} handleDeleteDoctor={async (id) => {
+                const deletedId = await deleteDoctor(id);
+                if (deletedId) {
+                  setDeletedDoctorId(deletedId);
+                }
+              }} searchDoctorTerm={searchDoctorTerm} setSearchDoctorTerm={setSearchDoctorTerm} prefixFilter={prefixFilter} setPrefixFilter={setPrefixFilter} sortDoctorsColumn={sortDoctorsColumn} sortDoctorsDirection={sortDoctorsDirection} handleSortDoctors={handleSortDoctors} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} onExportDoctors={exportDoctors} />} />
               <Route path="/reports" element={<ReportsView orders={orders} calculateBalance={calculateBalance} doctors={doctors} jobTypePrefixMap={jobTypePrefixMap} jobTypeCosts={jobTypeCosts} reportTimeframe={reportTimeframe} setReportTimeframe={setReportTimeframe} setFullDoctorView={(doctor) => { setSelectedDoctor(doctor); navigate('/doctors/details'); }} setFullJobTypeView={(jobType) => { setSelectedJobType(jobType); navigate('/reports/job-type'); }} setReportFilter={setReportFilter} setCurrentView={(view) => navigate(view === 'incomeBreakdown' ? '/income-breakdown' : '/reports/results')} />} />
               <Route path="/notifications" element={<NotificationsView notifications={notifications} onNotificationClick={handleNotificationClick} onClearNotifications={handleClearAllNotifications} onDeleteNotification={handleDeleteNotification} currentUser={currentUser} />} />
               <Route path="/admin/users" element={(currentUser.role === 'admin' || currentUser.role === 'master') ? <UsersAdminView authFetch={authFetch} currentUser={currentUser} showToast={showToast} /> : <div>Acceso denegado.</div>} />
@@ -235,16 +288,16 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
         <AddDoctorModal
           isOpen={isAddDoctorModalOpen}
           onClose={closeAddDoctorModal}
-          onAddDoctor={addDoctor}
+          onAddDoctor={async (doctorData) => {
+            const newDoctor = await addDoctor(doctorData);
+            if (newDoctor) {
+              setNewlyCreatedDoctorId(newDoctor._id);
+            }
+          }}
           onEditDoctor={updateDoctor}
           doctorToEdit={editingDoctor}
           showToast={showToast}
-          onDoctorAdded={(doctor) => {
-            if (resolveAddDoctorPromise.current) {
-              resolveAddDoctorPromise.current(doctor._id);
-              resolveAddDoctorPromise.current = null;
-            }
-          }}
+
         />
       )}
       {isEditOrderModalOpen && selectedOrder && (

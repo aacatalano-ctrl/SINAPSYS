@@ -5,9 +5,9 @@ import { OrderProvider } from './context/OrderContext';
 import App from './App';
 
 const AppWrapper = () => {
-  const { currentUser, authFetch } = useUI();
+  const { currentUser, authFetch, showToast } = useUI();
   return (
-    <DoctorProvider authFetch={authFetch}>
+    <DoctorProvider authFetch={authFetch} showToast={showToast}>
       <OrderProvider currentUser={currentUser} authFetch={authFetch}>
         <App />
       </OrderProvider>

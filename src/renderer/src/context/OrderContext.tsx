@@ -17,7 +17,7 @@ interface OrderContextType {
   handleUpdateNote: (orderId: string, noteId: string, newText: string) => Promise<void>;
   handleDeleteNote: (orderId: string, noteId: string) => Promise<void>;
   handleUpdateOrderStatus: (orderId: string, newStatus: 'Pendiente' | 'Procesando' | 'Completado', completionDate?: string | null) => Promise<void>;
-  handleDeleteOrder: (id: string) => Promise<void>;
+  handleDeleteOrder: (id: string) => Promise<string | void>;
   handleUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
   generateReceiptPDF: (order: Order, currentUser: User) => Promise<void>;
   generatePaymentHistoryPDF: (order: Order, currentUser: User) => Promise<void>;
@@ -100,7 +100,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const addedOrder = await response.json();
       setOrders(prevOrders => [addedOrder, ...prevOrders]);
-      showToast('Orden creada con éxito.');
       return addedOrder;
     } catch (error) {
       console.error("Error creating order:", error);
@@ -252,13 +251,13 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
     fetchNotifications();
   };
 
-  const handleDeleteOrder = async (id: string): Promise<void> => {
+  const handleDeleteOrder = async (id: string): Promise<string | void> => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.')) {
       try {
         const response = await authFetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await fetchOrders();
-        showToast('Orden eliminada con éxito.');
+        return id;
       } catch (error) {
         console.error("Error deleting order:", error);
         showToast('Error al eliminar la orden.', 'error');

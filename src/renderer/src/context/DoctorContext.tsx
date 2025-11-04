@@ -11,7 +11,7 @@ interface DoctorContextType {
   fetchDoctors: () => Promise<void>;
   addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>;
   updateDoctor: (id: string, fields: Partial<Doctor>) => Promise<void>;
-  deleteDoctor: (id: string) => Promise<void>;
+  deleteDoctor: (id: string) => Promise<string | void>;
   exportDoctors: () => Promise<void>;
 }
 
@@ -20,9 +20,10 @@ const DoctorContext = createContext<DoctorContextType | undefined>(undefined);
 interface DoctorProviderProps {
   children: ReactNode;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFetch }) => {
+export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFetch, showToast }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
@@ -61,9 +62,10 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       return newDoctor; // Return the new doctor for potential use in CreateOrderView
     } catch (error) {
       console.error('Failed to add doctor:', error);
+      showToast('Error al agregar el doctor. Por favor, intente de nuevo.', 'error');
       throw error; // Re-throw to allow error handling in components
     }
-  }, [fetchDoctors, authFetch]);
+  }, [fetchDoctors, authFetch, showToast]);
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
@@ -93,11 +95,13 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         await fetchDoctors(); // Refresh list
+        return id;
       } catch (error) {
         console.error('Failed to delete doctor:', error);
+        showToast('Error al eliminar el doctor. Por favor, intente de nuevo.', 'error');
       }
     }
-  }, [fetchDoctors, authFetch]);
+  }, [fetchDoctors, authFetch, showToast]);
 
   const exportDoctors = useCallback(async () => {
     try {
