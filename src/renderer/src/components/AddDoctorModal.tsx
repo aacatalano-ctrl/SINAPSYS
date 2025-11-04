@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 
-const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { onClose: () => void; onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>; showToast: (message: string, type?: string) => void; onDoctorAdded: (doctor: Doctor) => void; }) => {
+const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => void; onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>; showToast: (message: string, type?: string) => void; }) => {
   const newDoctorFormRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -24,7 +24,7 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast, onDoctorAdded }: { on
     console.log('New Doctor object being sent:', newDoctorData);
     try {
       const addedDoctor = await onAddDoctor(newDoctorData);
-      onDoctorAdded(addedDoctor);
+
       onClose();
       newDoctorFormRef.current?.reset();
       showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
