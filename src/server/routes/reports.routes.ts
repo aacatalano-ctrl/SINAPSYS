@@ -1,12 +1,10 @@
 import { Router } from 'express';
-import { getIncomeBreakdown, getDoctorPerformance, getOrderStatus, getDailySummary, generateReportPDF } from '../controllers/reports.controller.js';
+// Importamos SOLO la función que realmente existe
+import { getReports } from '../controllers/reports.controller.js';
 
 const router = Router();
 
-router.get('/income-breakdown', getIncomeBreakdown);
-router.get('/doctor-performance', getDoctorPerformance);
-router.get('/order-status', getOrderStatus);
-router.get('/daily-summary', getDailySummary);
-router.get('/pdf/:reportType', generateReportPDF);
+// Usamos SOLO la ruta que funciona
+router.get('/', getReports);
 
 export default router;
