@@ -55,7 +55,7 @@ export const updateNote = async (req: Request, res: Response) => {
     }
 
     note.text = text;
-    note.timestamp = new Date().toISOString(); // Update timestamp on edit
+    note.timestamp = new Date(); // Update timestamp on edit
 
     await order.save();
     res.json(order);
