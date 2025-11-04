@@ -145,6 +145,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   const updatePaymentInOrder = async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+        method: 'PUT', // <-- CORRECCIÓN: especificar PUT para actualizar el abono
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(paymentData),
       });
@@ -312,8 +313,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       window.URL.revokeObjectURL(url);
       showToast('Historial de pagos descargado.');
     } catch (error) {
-      console.error("Error generating payment history PDF:", error);
-      showToast('Error al generar el historial de pagos PDF.', 'error');
+      console.error("Error generating payment history PDF:", error);\n      showToast('Error al generar el historial de pagos PDF.', 'error');
     }
   };
 
