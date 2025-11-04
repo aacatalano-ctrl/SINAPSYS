@@ -1,84 +1,60 @@
-import { connectDB, db } from './database';
+import { Request, Response } from 'express';
+// ESTA ES LA RUTA CORRECTA QUE ARREGLA TODO
+import { db } from '../database/index.js';
 
-async function debugReports() {
-  console.log('Iniciando script de depuración de reportes...');
-
+export const getReports = async (req: Request, res: Response) => {
   try {
-    await connectDB();
-    console.log('Conectado a la base de datos.');
-
-    console.log('\n--- PASO 1: Datos después de $lookup (unión con doctores) ---');
-    const step1_lookup = await db.orders.aggregate([
+    // 1. General Stats
+    const generalStatsPipeline = await db.orders.aggregate([
       {
-        $limit: 5 // Limitar a 5 órdenes para una salida manejable
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+          totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
+        }
       },
       {
-        $lookup: {
-          from: 'doctors',
-          localField: 'doctorId',
-          foreignField: '_id',
-          as: 'doctorInfo'
+        $project: {
+          _id: 0,
+          totalOrders: 1,
+          totalIncome: '$totalPaid',
+          totalPendingBalance: { $subtract: ['$totalCost', '$totalPaid'] }
         }
       }
-    ]).exec();
-    console.log(JSON.stringify(step1_lookup, null, 2));
+    ]);
+    const stats = generalStatsPipeline[0] || { totalOrders: 0, totalIncome: 0, totalPendingBalance: 0 };
 
-    console.log('\n--- PASO 2: Datos después de $unwind (deconstruir doctorInfo) ---');
-    const step2_unwind = await db.orders.aggregate([
-       {
-        $limit: 5
-      },
-      {
-        $lookup: {
-          from: 'doctors',
-          localField: 'doctorId',
-          foreignField: '_id',
-          as: 'doctorInfo'
-        }
-      },
-      {
-        $unwind: {
-          path: '$doctorInfo',
-          preserveNullAndEmptyArrays: true
-        }
-      }
-    ]).exec();
-    console.log(JSON.stringify(step2_unwind, null, 2));
-
-    console.log('\n--- PASO 3: Datos después de $group (agrupación final) ---');
-    const step3_group = await db.orders.aggregate([
-      {
-        $lookup: {
-          from: 'doctors',
-          localField: 'doctorId',
-          foreignField: '_id',
-          as: 'doctorInfo'
-        }
-      },
-      {
-        $unwind: {
-          path: '$doctorInfo',
-          preserveNullAndEmptyArrays: true
-        }
-      },
+    // 2. Orders by Doctor
+    const ordersByDoctor = await db.orders.aggregate([
+      { $lookup: { from: 'doctors', localField: 'doctorId', foreignField: '_id', as: 'doctorInfo' } },
+      { $unwind: { path: '$doctorInfo', preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: '$doctorInfo',
           totalOrders: { $sum: 1 },
-          totalCost: { $sum: '$cost' },
-          totalPaid: { $sum: { $sum: '$payments.amount' } }
+          totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+          totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
         }
       },
-    ]).exec();
-    console.log('Resultado de la agrupación:', JSON.stringify(step3_group, null, 2));
+      {
+        $project: {
+          _id: 0,
+          doctor: {
+            $trim: {
+              input: {
+                $cond: {
+                  if: { $eq: ['$_id', null] },
+                  then: 'Sin Asignar',
+                  else: { $concat: [ { $ifNull: ['$_id.title', ''] }, ' ', { $ifNull: ['$_id.firstName', ''] }, ' ', { $ifNull: ['$_id.lastName', ''] } ] }
+                }
+              }
+            }
+          },
+          totalOrders: 1,
+          totalCost: 1,
+          totalPaid: 1,
+          pendingBalance: { $subtract: ['$totalCost', '$totalPaid'] }
+        }
 
-    console.log('\n--- Script de depuración finalizado. ---');
-    process.exit(0);
-
-  } catch (error) {
-    console.error('ERROR DURANTE LA DEPURACIÓN:', error);
-    process.exit(1);
-  }
-}
-
-debugReports();
+
