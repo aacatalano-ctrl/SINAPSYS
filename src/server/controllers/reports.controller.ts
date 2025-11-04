@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
-// ESTA ES LA RUTA CORRECTA QUE ARREGLA TODO
 import { db } from '../database/index.js';
 
 export const getReports = async (req: Request, res: Response) => {
   try {
-    // 1. General Stats
     const generalStatsPipeline = await db.orders.aggregate([
       {
         $group: {
@@ -25,7 +23,6 @@ export const getReports = async (req: Request, res: Response) => {
     ]);
     const stats = generalStatsPipeline[0] || { totalOrders: 0, totalIncome: 0, totalPendingBalance: 0 };
 
-    // 2. Orders by Doctor
     const ordersByDoctor = await db.orders.aggregate([
       { $lookup: { from: 'doctors', localField: 'doctorId', foreignField: '_id', as: 'doctorInfo' } },
       { $unwind: { path: '$doctorInfo', preserveNullAndEmptyArrays: true } },
@@ -56,5 +53,30 @@ export const getReports = async (req: Request, res: Response) => {
           totalPaid: 1,
           pendingBalance: { $subtract: ['$totalCost', '$totalPaid'] }
         }
+      },
+      { $sort: { doctor: 1 } }
+    ]);
 
-
+    const ordersByJobType = await db.orders.aggregate([
+        {
+          $group: {
+            _id: '$jobType',
+            totalOrders: { $sum: 1 },
+            totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+            totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
+          }
+        },
+        { $project: { _id: 0, jobType: '$_id', totalOrders: 1, totalCost: 1, totalPaid: 1 } },
+        { $sort: { jobType: 1 } }
+    ]);
+
+    res.json({
+      generalStats: stats,
+      ordersByDoctor,
+      ordersByJobType,
+    });
+  } catch (error) {
+    console.error('Error generating reports:', error);
+    res.status(500).json({ message: 'Error al generar los reportes' });
+  }
+};
