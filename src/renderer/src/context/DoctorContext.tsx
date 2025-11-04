@@ -64,7 +64,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
       showToast('Error al agregar el doctor. Por favor, intente de nuevo.', 'error');
       throw error; // Re-throw to allow error handling in components
     }
-  }, [fetchDoctors, authFetch, showToast]);
+  }, [authFetch, showToast]);
 
   const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
     try {
@@ -96,14 +96,15 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        await fetchDoctors(); // Refresh list
+        setDoctors(prevDoctors => prevDoctors.filter(d => d._id !== id));
+        showToast('Doctor eliminado exitosamente.', 'success');
         return id;
       } catch (error) {
         console.error('Failed to delete doctor:', error);
         showToast('Error al eliminar el doctor. Por favor, intente de nuevo.', 'error');
       }
     }
-  }, [fetchDoctors, authFetch, showToast]);
+  }, [authFetch, showToast]);
 
   const exportDoctors = useCallback(async () => {
     try {
