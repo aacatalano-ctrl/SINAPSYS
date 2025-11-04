@@ -41,14 +41,14 @@ export interface Doctor {
 export interface Payment {
   _id?: string;
   amount: number;
-  date: string;
+  date: Date | string;
   description?: string;
 }
 
 export interface Note {
   _id?: string;
   text: string;
-  timestamp: string;
+  timestamp: Date | string;
   author: string;
 }
 
@@ -62,8 +62,8 @@ export interface Order {
   balance: number;
   paidAmount: number;
   status: 'Pendiente' | 'Procesando' | 'Completado';
-  creationDate: Date;
-  completionDate?: Date;
+  creationDate: Date | string;
+  completionDate?: Date | string;
   priority: 'Baja' | 'Normal' | 'Alta' | 'Urgente';
   caseDescription: string;
   payments: Payment[];
@@ -74,6 +74,6 @@ export interface Notification {
   _id?: string;
   orderId: mongoose.Types.ObjectId | string;
   message: string;
-  createdAt: string;
+  createdAt?: Date | string;
   read: boolean;
 }
