@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext';
 import { useUI } from '../context/UIContext';
 import { useDoctors } from '../context/DoctorContext';
@@ -34,6 +34,7 @@ interface MainAppWrapperProps {
 
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, handleUpdateNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, isDataLoaded } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification, handleLogout, isDatabaseMaintenance } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor, isDoctorsLoaded } = useDoctors();
@@ -107,12 +108,18 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   useEffect(() => {
     if (selectedOrder) {
-      const updatedOrder = orders.find(o => o._id === selectedOrder._id);
-      if (updatedOrder) {
-        setSelectedOrder(updatedOrder);
-      }
+        const updatedOrder = orders.find(o => o._id === selectedOrder._id);
+        if (!updatedOrder) {
+            setSelectedOrder(null); // Limpiar la orden seleccionada
+            // Redirigir si estamos en la vista de detalles de la orden eliminada
+            if (location.pathname === '/orders/details') { // Asegúrate de tener `location` de `useLocation`
+                navigate('/orders');
+            }
+        } else {
+            setSelectedOrder(updatedOrder);
+        }
     }
-  }, [orders, selectedOrder]);
+}, [orders, selectedOrder, navigate, location.pathname]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
