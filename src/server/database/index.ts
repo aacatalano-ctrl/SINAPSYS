@@ -1,72 +1,11 @@
 import mongoose from 'mongoose';
-import type { Doctor, Order, User, Notification, Payment, Note } from '../../types.js';
+import { DoctorModel } from './models/Doctor.model.js';
+import { OrderModel } from './models/Order.model.js';
+import { UserModel } from './models/User.model.js';
+import { NotificationModel } from './models/Notification.model.js';
 
 // MongoDB Connection String (replace with environment variable in production)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SINAPSYS'; // Use environment variable for production
-
-// 1. Define Mongoose Schemas
-const paymentSchema = new mongoose.Schema<Payment>({
-  amount: { type: Number, required: true },
-  date: { type: String, required: true }, // Consider using Date type
-  description: { type: String },
-});
-
-const noteSchema = new mongoose.Schema<Note>({
-  text: { type: String, required: true },
-  timestamp: { type: String, required: true }, // Consider using Date type
-  author: { type: String, required: true },
-});
-
-const doctorSchema = new mongoose.Schema<Doctor>({
-  title: { type: String, required: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String },
-  email: { type: String },
-  phone: { type: String },
-  address: { type: String },
-});
-
-const orderSchema = new mongoose.Schema<Order>({
-  orderNumber: { type: String, unique: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
-  patientName: { type: String, required: true },
-  jobType: { type: String, required: true },
-  cost: { type: Number, required: true },
-  status: { type: String, required: true },
-  creationDate: { type: Date, required: true }, // Consider using Date type
-  completionDate: { type: Date }, // Consider using Date type
-  priority: { type: String },
-  caseDescription: { type: String },
-  payments: [paymentSchema],
-  notes: [noteSchema],
-});
-
-const userSchema = new mongoose.Schema<User>({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  securityQuestion: { type: String, required: true },
-  securityAnswer: { type: String, required: true },
-  nombre: { type: String, required: true },
-  apellido: { type: String, required: true },
-  cedula: { type: String, required: true },
-  direccion: { type: String, required: true },
-  razonSocial: { type: String, required: true },
-  rif: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'cliente', 'operador'], default: 'cliente' },
-  status: { type: String, enum: ['active', 'blocked'], default: 'active' },
-});
-
-const notificationSchema = new mongoose.Schema<Notification>({
-  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
-  message: { type: String, required: true },
-  read: { type: Boolean, default: false },
-}, { timestamps: true });
-
-// 2. Create Mongoose Models
-const DoctorModel = mongoose.model<Doctor>('Doctor', doctorSchema);
-const OrderModel = mongoose.model<Order>('Order', orderSchema);
-const UserModel = mongoose.model<User>('User', userSchema);
-const NotificationModel = mongoose.model<Notification>('Notification', notificationSchema);
 
 // Define the structure of the db object with Mongoose Models
 interface AppDatabase {
