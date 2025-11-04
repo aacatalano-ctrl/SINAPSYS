@@ -9,6 +9,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
 
 import { db } from '../database/index.js';
 
+const lastActiveUpdate: Map<string, number> = new Map();
+const DEBOUNCE_INTERVAL = 60 * 1000; // 60 seconds
+
 const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
@@ -22,8 +25,15 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
 
-    // Fire-and-forget update to lastActiveAt to avoid delaying the response
-    db.users.updateOne({ _id: decoded.userId }, { $set: { lastActiveAt: new Date() } }).exec();
+    // Debounced update to lastActiveAt
+    const now = Date.now();
+    const lastUpdate = lastActiveUpdate.get(decoded.userId) || 0;
+
+    if (now - lastUpdate > DEBOUNCE_INTERVAL) {
+      // Fire-and-forget update to lastActiveAt to avoid delaying the response
+      db.users.updateOne({ _id: decoded.userId }, { $set: { lastActiveAt: new Date() } }).exec();
+      lastActiveUpdate.set(decoded.userId, now); // Record the new update time
+    }
 
     next();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
