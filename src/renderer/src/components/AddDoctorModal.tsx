@@ -24,10 +24,11 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
     console.log('New Doctor object being sent:', newDoctorData);
     try {
       const addedDoctor = await onAddDoctor(newDoctorData);
-
-      onClose();
-      newDoctorFormRef.current?.reset();
-      showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
+      if (addedDoctor) {
+        onClose();
+        newDoctorFormRef.current?.reset();
+        showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
+      }
     } catch (error) {
       console.error("Error adding doctor:", error);
       showToast('Error al añadir doctor.', 'error');
