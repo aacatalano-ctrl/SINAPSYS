@@ -61,9 +61,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
 
     try {
       await onUpdateOrder(order._id, updatedOrderData);
-      showNotification('Orden actualizada con éxito', 'success');
     } catch (error) {
-      console.error("Failed to update order:", error);
       // Notification is already shown in the context
     } finally {
       onClose();

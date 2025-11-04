@@ -8,6 +8,7 @@ import { createOrderSchema, updateOrderSchema, paymentSchema, noteSchema, update
 import authMiddleware from '../middleware/authMiddleware.js';
 import type { Payment, Note } from '../../types.js';
 import logger from '../utils/logger.js';
+import { getErrorMessage, getErrorStack } from '../utils/errorUtils.js';
 
 
 
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
     const orders = await db.orders.find({}).populate('doctorId', 'firstName lastName');
     res.json(orders);
   } catch (error) {
-    logger.error('Error al obtener las órdenes:', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener las órdenes:', { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al obtener las órdenes.' });
   }
 });
@@ -33,7 +34,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(order);
   } catch (error) {
-    logger.error(`Error al obtener la orden con ID ${req.params.id}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al obtener la orden con ID ${req.params.id}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al obtener la orden.' });
   }
 });
@@ -72,10 +73,10 @@ router.post('/', async (req, res) => {
     res.status(201).json(populatedOrder);
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      logger.error("Error de clave duplicada al crear la orden:", { error: error.message, stack: error.stack });
+      logger.error("Error de clave duplicada al crear la orden:", { error: getErrorMessage(error), stack: getErrorStack(error) });
       return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
     }
-    logger.error("Error creating order:", { error: error.message, stack: error.stack });
+    logger.error("Error creating order:", { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al crear la orden.' });
   }
 });
@@ -100,7 +101,7 @@ router.put('/:id', async (req, res) => {
 
     res.json(updatedOrder);
   } catch (error) {
-    logger.error('Error al actualizar la orden:', { error: error.message, stack: error.stack });
+    logger.error('Error al actualizar la orden:', { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al actualizar la orden.' });
   }
 });
@@ -116,7 +117,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
     res.status(204).send();
   } catch (error) {
-    logger.error(`Error al eliminar la orden con ID ${req.params.id}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al eliminar la orden con ID ${req.params.id}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al eliminar la orden.' });
   }
 });
@@ -149,7 +150,7 @@ router.post('/:orderId/payments', async (req, res) => {
 
     res.status(201).json(order);
   } catch (error) {
-    logger.error(`Error al agregar pago a la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al agregar pago a la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al agregar pago.' });
   }
 });
@@ -180,7 +181,7 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al actualizar el pago.' });
   }
 });
@@ -207,7 +208,7 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
     await order.save();
     res.status(200).json(order);
   } catch (error) {
-    logger.error(`Error al eliminar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al eliminar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al eliminar pago.' });
   }
 });
@@ -235,7 +236,7 @@ router.post('/:orderId/notes', async (req, res) => {
     await order.save();
     res.status(201).json(order);
   } catch (error) {
-    logger.error(`Error al agregar nota a la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al agregar nota a la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al agregar nota.' });
   }
 });
@@ -265,7 +266,7 @@ router.put('/:orderId/notes/:noteId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al actualizar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al actualizar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error interno del servidor al actualizar la nota.' });
   }
 });
@@ -287,7 +288,7 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al eliminar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al eliminar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al eliminar la nota.' });
   }
 });
@@ -388,7 +389,7 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.end();
 
   } catch (error) {
-    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al generar el recibo.' });
   }
 });
@@ -481,7 +482,7 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.end();
 
   } catch (error) {
-    logger.error(`Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`, { error: error.message, stack: error.stack });
+    logger.error(`Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
     res.status(500).json({ error: 'Error al generar el historial de pagos.' });
   }
 });
