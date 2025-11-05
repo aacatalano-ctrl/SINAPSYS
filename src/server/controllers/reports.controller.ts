@@ -15,11 +15,16 @@ export const getIncomeBreakdown = async (req: Request, res: Response) => {
   try {
     const incomeBreakdown = await db.orders.aggregate([
       {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
+      {
         $group: {
           _id: '$jobType',
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' },
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: '$totalPaid' },
+          totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } },
           count: { $sum: 1 }
         }
       },
@@ -38,6 +43,11 @@ export const getDoctorPerformance = async (req: Request, res: Response) => {
   console.log('Request received for /api/reports/doctor-performance.');
   try {
     const doctorPerformance = await db.orders.aggregate([
+      {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
       {
         $lookup: {
           from: 'doctors',
@@ -65,9 +75,9 @@ export const getDoctorPerformance = async (req: Request, res: Response) => {
             }
           },
           totalOrders: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: '$totalPaid' },
+          totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
         }
       },
       {
@@ -86,12 +96,17 @@ export const getOrderStatus = async (req: Request, res: Response) => {
   try {
     const orderStatus = await db.orders.aggregate([
       {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
+      {
         $group: {
           _id: '$status',
           count: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: '$totalPaid' },
+          totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
         }
       },
       {
@@ -109,12 +124,17 @@ export const getDailySummary = async (req: Request, res: Response) => {
   try {
     const dailySummary = await db.orders.aggregate([
       {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
+      {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           totalOrders: { $sum: 1 },
-          totalIncome: { $sum: '$totalPrice' },
-          totalPaid: { $sum: '$paidAmount' },
-          totalBalance: { $sum: '$balance' }
+          totalIncome: { $sum: '$cost' },
+          totalPaid: { $sum: '$totalPaid' },
+          totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
         }
       },
       {
@@ -138,11 +158,16 @@ export const generateReportPDF = async (req: Request, res: Response) => {
       case 'income-breakdown':
         data = await db.orders.aggregate([
           {
+            $addFields: {
+              totalPaid: { $sum: '$payments.amount' }
+            }
+          },
+          {
             $group: {
               _id: '$jobType',
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' },
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: '$totalPaid' },
+              totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } },
               count: { $sum: 1 }
             }
           },
@@ -152,6 +177,11 @@ export const generateReportPDF = async (req: Request, res: Response) => {
         break;
       case 'doctor-performance':
         data = await db.orders.aggregate([
+          {
+            $addFields: {
+              totalPaid: { $sum: '$payments.amount' }
+            }
+          },
           {
             $lookup: {
               from: 'doctors',
@@ -173,9 +203,9 @@ export const generateReportPDF = async (req: Request, res: Response) => {
                 doctorName: { $ifNull: ['$doctorInfo.name', 'N/A'] }
               },
               totalOrders: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: '$totalPaid' },
+              totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
             }
           },
           { $sort: { '_id.doctorName': 1 } }
@@ -185,12 +215,17 @@ export const generateReportPDF = async (req: Request, res: Response) => {
       case 'order-status':
         data = await db.orders.aggregate([
           {
+            $addFields: {
+              totalPaid: { $sum: '$payments.amount' }
+            }
+          },
+          {
             $group: {
               _id: '$status',
               count: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: '$totalPaid' },
+              totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
             }
           },
           { $sort: { _id: 1 } }
@@ -200,12 +235,17 @@ export const generateReportPDF = async (req: Request, res: Response) => {
       case 'daily-summary':
         data = await db.orders.aggregate([
           {
+            $addFields: {
+              totalPaid: { $sum: '$payments.amount' }
+            }
+          },
+          {
             $group: {
               _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
               totalOrders: { $sum: 1 },
-              totalIncome: { $sum: '$totalPrice' },
-              totalPaid: { $sum: '$paidAmount' },
-              totalBalance: { $sum: '$balance' }
+              totalIncome: { $sum: '$cost' },
+              totalPaid: { $sum: '$totalPaid' },
+              totalBalance: { $sum: { $subtract: ['$cost', '$totalPaid'] } }
             }
           },
           { $sort: { _id: 1 } }
@@ -247,11 +287,16 @@ export const getReports = async (req: Request, res: Response) => {
   try {
     const generalStatsPipeline = await db.orders.aggregate([
       {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
+      {
         $group: {
           _id: null,
           totalOrders: { $sum: 1 },
           totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-          totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
+          totalPaid: { $sum: '$totalPaid' }
         }
       },
       {
@@ -266,6 +311,11 @@ export const getReports = async (req: Request, res: Response) => {
     const stats = generalStatsPipeline[0] || { totalOrders: 0, totalIncome: 0, totalPendingBalance: 0 };
 
     const ordersByDoctor = await db.orders.aggregate([
+      {
+        $addFields: {
+          totalPaid: { $sum: '$payments.amount' }
+        }
+      },
       { $lookup: { from: 'doctors', localField: 'doctorId', foreignField: '_id', as: 'doctorInfo' } },
       { $unwind: { path: '$doctorInfo', preserveNullAndEmptyArrays: true } },
       {
@@ -273,7 +323,7 @@ export const getReports = async (req: Request, res: Response) => {
           _id: '$doctorInfo',
           totalOrders: { $sum: 1 },
           totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-          totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
+          totalPaid: { $sum: '$totalPaid' }
         }
       },
       {
@@ -301,11 +351,16 @@ export const getReports = async (req: Request, res: Response) => {
 
     const ordersByJobType = await db.orders.aggregate([
         {
+          $addFields: {
+            totalPaid: { $sum: '$payments.amount' }
+          }
+        },
+        {
           $group: {
             _id: '$jobType',
             totalOrders: { $sum: 1 },
             totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-            totalPaid: { $sum: { $ifNull: [{ $sum: '$payments.amount' }, 0] } }
+            totalPaid: { $sum: '$totalPaid' }
           }
         },
         { $project: { _id: 0, jobType: '$_id', totalOrders: 1, totalCost: 1, totalPaid: 1 } },
