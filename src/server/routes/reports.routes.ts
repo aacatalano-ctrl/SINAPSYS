@@ -1,8 +1,12 @@
 import { Router } from 'express';
-import { getIncomeBreakdown, getDoctorPerformance, getOrderStatus, getDailySummary, generateReportPDF } from '../controllers/reports.controller.js';
+import { getIncomeBreakdown, getDoctorPerformance, getOrderStatus, getDailySummary, generateReportPDF, getReports } from '../controllers/reports.controller.js';
 
 const router = Router();
 
+// Backward compatibility endpoint - returns aggregate format from main
+router.get('/', getReports);
+
+// Modular report endpoints
 router.get('/income-breakdown', getIncomeBreakdown);
 router.get('/doctor-performance', getDoctorPerformance);
 router.get('/order-status', getOrderStatus);

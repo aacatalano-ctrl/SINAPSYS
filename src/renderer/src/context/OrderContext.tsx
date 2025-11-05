@@ -313,7 +313,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       window.URL.revokeObjectURL(url);
       showToast('Historial de pagos descargado.');
     } catch (error) {
-      console.error("Error generating payment history PDF:", error);\n      showToast('Error al generar el historial de pagos PDF.', 'error');
+      console.error("Error generating payment history PDF:", error);
+      showToast('Error al generar el historial de pagos PDF.', 'error');
     }
   };
 
