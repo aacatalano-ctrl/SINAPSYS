@@ -76,11 +76,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       
       const updatedOrder = await response.json();
       
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order._id === id ? updatedOrder : order
-        )
-      );
+      // setOrders(prevOrders => 
+      //   prevOrders.map(order => 
+      //     order._id === id ? updatedOrder : order
+      //   )
+      // );
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
 
       showToast('Orden actualizada con éxito.');
     } catch (error) {
@@ -99,7 +100,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const addedOrder = await response.json();
-      setOrders(prevOrders => [addedOrder, ...prevOrders]);
+      // setOrders(prevOrders => [addedOrder, ...prevOrders]); // Remove direct state update
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
       return addedOrder;
     } catch (error) {
       console.error("Error creating order:", error);
@@ -124,11 +126,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       
       const updatedOrder = await response.json();
 
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order._id === orderId ? updatedOrder : order
-        )
-      );
+      // setOrders(prevOrders => 
+      //   prevOrders.map(order => 
+      //     order._id === orderId ? updatedOrder : order
+      //   )
+      // );
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
 
       showToast('Pago añadido con éxito.', 'success');
       fetchNotifications();
@@ -149,11 +152,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
       const updatedOrder = await response.json();
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order._id === orderId ? updatedOrder : order
-        )
-      );
+      // setOrders(prevOrders => 
+      //   prevOrders.map(order => 
+      //     order._id === orderId ? updatedOrder : order
+      //   )
+      // );
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Abono actualizado con éxito.', 'success');
     } catch (error) {
       console.error("Failed to update payment:", error);
@@ -171,11 +175,12 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const updatedOrder = await response.json();
-        setOrders(prevOrders => 
-          prevOrders.map(order => 
-            order._id === orderId ? updatedOrder : order
-          )
-        );
+        // setOrders(prevOrders => 
+        //   prevOrders.map(order => 
+        //     order._id === orderId ? updatedOrder : order
+        //   )
+        // );
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
         showToast('Abono eliminado con éxito.', 'success');
       } catch (error) {
         console.error("Failed to delete payment:", error);
@@ -201,7 +206,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const updatedOrder = await response.json();
-      setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+      // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota añadida con éxito.', 'success');
     } catch (error) {
       console.error("Failed to save note:", error);
@@ -219,7 +225,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const updatedOrder = await response.json();
-      setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+      // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+      await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota actualizada con éxito.', 'success');
     } catch (error) {
       console.error("Failed to update note:", error);
@@ -236,7 +243,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const updatedOrder = await response.json();
-        setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+        // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
         showToast('Nota eliminada con éxito.', 'success');
       } catch (error) {
         console.error("Failed to delete note:", error);
