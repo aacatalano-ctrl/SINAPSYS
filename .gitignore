@@ -21,6 +21,7 @@ dist/
 
 # Logs
 *.log
+dump.rdb
 
 .vercel
 \n# Archivos de diagnóstico y temporales\ncheckDb.mjs
