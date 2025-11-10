@@ -5,14 +5,19 @@ interface AuthenticatedRequest extends Request {
   user: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
 }
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 import { db } from '../database/index.js';
 
 const lastActiveUpdate: Map<string, number> = new Map();
 const DEBOUNCE_INTERVAL = 60 * 1000; // 60 seconds
 
 const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const JWT_SECRET = process.env.JWT_SECRET;
+
+  if (!JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined.');
+    return res.status(500).json({ message: 'Internal Server Error: JWT secret not configured.' });
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
