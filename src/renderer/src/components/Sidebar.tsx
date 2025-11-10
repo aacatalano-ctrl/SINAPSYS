@@ -18,6 +18,8 @@ interface SidebarProps {
   handleLogout: () => void;
   notifications: Notification[];
   markNotificationsAsRead: () => Promise<void>;
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -25,6 +27,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   handleLogout,
   notifications,
   markNotificationsAsRead,
+  isSidebarOpen,
+  toggleSidebar,
 }) => {
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
@@ -45,9 +49,34 @@ const Sidebar: React.FC<SidebarProps> = ({
     `flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700'}`;
 
   return (
-    <aside className="flex w-64 flex-col bg-gray-800 p-4 text-white shadow-lg">
+    <aside
+      className={`flex flex-col bg-gray-800 p-4 text-white shadow-lg
+        md:w-64 md:relative md:translate-x-0
+        fixed inset-y-0 z-50 h-screen w-64 transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+    >
       <div className="mb-8 flex items-center justify-center">
         <CecatLogo className="h-auto w-40 text-white" />
+        {/* Close button for mobile sidebar */}
+        <button
+          onClick={toggleSidebar}
+          className="md:hidden absolute top-4 right-4 p-2 rounded-md text-gray-400 hover:bg-gray-700"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
       </div>
 
       <nav className="flex-1 space-y-2">

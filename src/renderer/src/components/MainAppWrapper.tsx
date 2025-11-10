@@ -101,6 +101,9 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [sortDoctorsDirection, setSortDoctorsDirection] = useState<'asc' | 'desc'>('asc');
   const [newlyCreatedOrderId, setNewlyCreatedOrderId] = useState<string | null>(null);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768); // true for md and up
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   const [orderToComplete, setOrderToComplete] = useState<Order | null>(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [reportTimeframe, setReportTimeframe] = useState<string>('all');
@@ -278,14 +281,37 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
         </div>
       )}
 
+      {/* Hamburger menu for mobile */}
+      <button
+        onClick={toggleSidebar}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
+        </svg>
+      </button>
+
       <Sidebar
         currentUser={currentUser}
         handleLogout={handleLogout}
         notifications={notifications}
         markNotificationsAsRead={handleMarkNotificationsAsRead}
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-4 md:p-6">
           <Suspense
             fallback={
               <div className="flex size-full items-center justify-center">
