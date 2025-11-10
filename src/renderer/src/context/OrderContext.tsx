@@ -40,19 +40,24 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const API_URL = '/api';
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      const response = await authFetch(`${API_URL}/orders`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const loadedOrders = await response.json();
-      setOrders(loadedOrders.filter(Boolean));
-      setIsDataLoaded(true);
-    } catch (error) {
-      console.error("Error loading orders from web server:", error);
-      showToast('Error al cargar órdenes.', 'error');
-    }
-  }, [showToast, authFetch]);
+  const fetchOrders = useCallback(
+    async () => {
+      try {
+        const response = await authFetch(`${API_URL}/orders`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const loadedOrders = await response.json();
+        setOrders(loadedOrders.filter(Boolean));
+        setIsDataLoaded(true);
+      } catch (error) {
+        console.error("Error loading orders from web server:", error);
+        showToast('Error al cargar órdenes.', 'error');
+      }
+    },
+    [showToast, authFetch]
+  );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isDoctorsLoaded) {
       fetchOrders();
@@ -74,7 +79,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
-      const updatedOrder = await response.json();
+      await response.json();
       
       // setOrders(prevOrders => 
       //   prevOrders.map(order => 
@@ -124,7 +129,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
-      const updatedOrder = await response.json();
+      await response.json();
 
       // setOrders(prevOrders => 
       //   prevOrders.map(order => 
@@ -151,7 +156,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
-      const updatedOrder = await response.json();
+      await response.json();
       // setOrders(prevOrders => 
       //   prevOrders.map(order => 
       //     order._id === orderId ? updatedOrder : order
@@ -173,8 +178,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const updatedOrder = await response.json();
+        await response.json();
         // setOrders(prevOrders => 
         //   prevOrders.map(order => 
         //     order._id === orderId ? updatedOrder : order
@@ -205,7 +209,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(newNote),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const updatedOrder = await response.json();
+      await response.json();
       // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota añadida con éxito.', 'success');
@@ -224,7 +228,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify({ text: newText }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const updatedOrder = await response.json();
+      await response.json();
       // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota actualizada con éxito.', 'success');
@@ -242,7 +246,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const updatedOrder = await response.json();
+        await response.json();
         // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
         await fetchOrders(); // Re-fetch all orders to ensure consistency
         showToast('Nota eliminada con éxito.', 'success');

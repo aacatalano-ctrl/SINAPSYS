@@ -61,7 +61,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
 
     try {
       await onUpdateOrder(order._id, updatedOrderData);
-    } catch (error) {
+    } catch {
       // Notification is already shown in the context
     } finally {
       onClose();

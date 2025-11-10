@@ -35,7 +35,7 @@ interface MainAppWrapperProps {
 const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orders, addOrder, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, handleUpdateNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, isDataLoaded } = useOrders();
+  const { orders, handleUpdateOrder: updateOrder, fetchOrders, addPaymentToOrder, handleSaveNote, handleUpdateNote, calculateBalance, sortOrdersColumn, sortOrdersDirection, handleSortOrders, handleDeleteOrder, isDataLoaded, handleOrderCreated } = useOrders();
   const { isAddDoctorModalOpen, isAddNoteModalOpen, isAddPaymentModalOpen, isConfirmCompletionModalOpen, isEditOrderModalOpen, toast, openAddDoctorModal: _openAddDoctorModal, closeAddDoctorModal: _closeAddDoctorModal, openAddNoteModal, closeAddNoteModal, openAddPaymentModal, closeAddPaymentModal, openConfirmCompletionModal, closeConfirmCompletionModal, openEditOrderModal, closeEditOrderModal, showToast, hideToast, notifications, fetchNotifications, handleMarkNotificationsAsRead, handleClearAllNotifications, handleDeleteNotification, handleLogout, isDatabaseMaintenance } = useUI();
   const { doctors, addDoctor, updateDoctor, deleteDoctor, fetchDoctors, exportDoctors, editingDoctor, setEditingDoctor, isDoctorsLoaded } = useDoctors();
 
@@ -49,7 +49,6 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [prefixFilter, setPrefixFilter] = useState<string>('all');
   const [sortDoctorsColumn, setSortDoctorsColumn] = useState<string>('');
   const [sortDoctorsDirection, setSortDoctorsDirection] = useState<'asc' | 'desc'>('asc');
-  const [newlyCreatedDoctorId, setNewlyCreatedDoctorId] = useState<string | null>(null);
   const [newlyCreatedOrderId, setNewlyCreatedOrderId] = useState<string | null>(null);
 
 
@@ -252,10 +251,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
           isOpen={isAddDoctorModalOpen}
           onClose={closeAddDoctorModal}
           onAddDoctor={async (doctorData) => {
-            const newDoctor = await addDoctor(doctorData);
-            if (newDoctor) {
-              setNewlyCreatedDoctorId(newDoctor._id);
-            }
+            await addDoctor(doctorData);
           }}
           onEditDoctor={updateDoctor}
           doctorToEdit={editingDoctor}
