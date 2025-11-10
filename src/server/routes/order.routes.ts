@@ -367,7 +367,7 @@ router.post('/:orderId/receipt', async (req, res) => {
     // Header
     doc.fontSize(24).font('Helvetica-Bold').text('RECIBO DE PAGO', { align: 'center' });
     doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleString()}`, { align: 'right' });
+    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, { align: 'right' });
     doc.moveDown(1);
 
     // Order Info
@@ -443,9 +443,7 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.font('Helvetica');
     doc.moveDown(3);
 
-    // Footer
-    doc.fontSize(10).text(`Recibo generado por: ${currentUser.username}`, { align: 'center' });
-    doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
+
 
     doc.end();
   } catch (error) {
@@ -479,10 +477,9 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.pipe(res);
 
     // Header
-    doc.fontSize(10).text('SINAPSIS Laboratorio Dental', { align: 'center' });
     doc.fontSize(24).font('Helvetica-Bold').text('HISTORIAL DE PAGOS', { align: 'center' });
     doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleString()}`, { align: 'right' });
+    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, { align: 'right' });
     doc.moveDown(1);
 
     // Order Info
