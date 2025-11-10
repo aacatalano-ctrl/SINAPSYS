@@ -24,7 +24,8 @@
     "src/**/*.js",
     "src/**/*.jsx",
     "src/global.d.ts",
-    "src/types.d.ts"
+    "src/types.d.ts",
+    "src/server/types/socket.io.d.ts"
   ],
   "exclude": ["node_modules", "out"]
 }
