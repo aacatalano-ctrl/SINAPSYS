@@ -50,14 +50,27 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
 }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { showToast, fetchNotifications } = useUI();
+  const { showToast, fetchNotifications, setIsLoading } = useUI(); // Get setIsLoading from UIContext
   const { isDoctorsLoaded } = useDoctors();
 
   const API_URL = '/api';
 
+  const withLoading = useCallback(async <T,>(asyncFunc: () => Promise<T>): Promise<T | undefined> => {
+    setIsLoading(true);
+    try {
+      return await asyncFunc();
+    } catch (error) {
+      console.error('An error occurred during a withLoading operation:', error);
+      showToast('Ocurrió un error. Por favor, intente de nuevo.', 'error');
+      return undefined;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, showToast]);
+
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await authFetch(`${API_URL}/orders`);
+      const response = await authFetch(`${API_URL}/orders`, { manualLoading: true }); // Use manualLoading
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const loadedOrders = await response.json();
       setOrders(loadedOrders.filter(Boolean));
@@ -82,306 +95,275 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
 
   const handleUpdateOrder = useCallback(
     async (id: string, updatedFields: Partial<Order>) => {
-      try {
+      await withLoading(async () => {
         const response = await authFetch(`${API_URL}/orders/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedFields),
+          manualLoading: true, // Use manualLoading
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         await response.json();
-
-        // setOrders(prevOrders =>
-        //   prevOrders.map(order =>
-        //     order._id === id ? updatedOrder : order
-        //   )
-        // );
         await fetchOrders(); // Re-fetch all orders to ensure consistency
-
         showToast('Orden actualizada con éxito.');
-      } catch (error) {
-        console.error('Error updating order:', error);
-        showToast('Error al actualizar la orden.', 'error');
-        throw error;
-      }
+      });
     },
-    [showToast, authFetch],
+    [showToast, authFetch, fetchOrders, withLoading],
   );
 
-  const handleOrderCreated = async (
-    orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
-  ): Promise<Order | undefined> => {
-    try {
-      const response = await authFetch(`${API_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
+  const handleOrderCreated = useCallback(
+    async (
+      orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
+    ): Promise<Order | undefined> => {
+      return await withLoading(async () => {
+        const response = await authFetch(`${API_URL}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData),
+          manualLoading: true, // Use manualLoading
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const addedOrder = await response.json();
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
+        return addedOrder;
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const addedOrder = await response.json();
-      // setOrders(prevOrders => [addedOrder, ...prevOrders]); // Remove direct state update
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
-      return addedOrder;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      showToast(`Error al crear la orden: ${error}`, 'error');
-      throw error;
-    }
-  };
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
 
-  const addPaymentToOrder = async (
-    orderId: string,
-    amount: number,
-    description: string,
-  ): Promise<void> => {
-    const newPayment: Omit<Payment, '_id'> = {
-      amount: parseFloat(String(amount)),
-      date: new Date().toISOString(),
-      description: description || 'Pago',
-    };
-    try {
-      const response = await authFetch(`${API_URL}/orders/${orderId}/payments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPayment),
+  const addPaymentToOrder = useCallback(
+    async (orderId: string, amount: number, description: string): Promise<void> => {
+      await withLoading(async () => {
+        const newPayment: Omit<Payment, '_id'> = {
+          amount: parseFloat(String(amount)),
+          date: new Date().toISOString(),
+          description: description || 'Pago',
+        };
+        const response = await authFetch(`${API_URL}/orders/${orderId}/payments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPayment),
+          manualLoading: true, // Use manualLoading
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        await response.json();
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
+        showToast('Pago añadido con éxito.', 'success');
+        fetchNotifications();
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    },
+    [showToast, authFetch, fetchOrders, fetchNotifications, withLoading],
+  );
 
-      await response.json();
-
-      // setOrders(prevOrders =>
-      //   prevOrders.map(order =>
-      //     order._id === orderId ? updatedOrder : order
-      //   )
-      // );
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
-
-      showToast('Pago añadido con éxito.', 'success');
-      fetchNotifications();
-    } catch (error) {
-      console.error('Failed to add payment:', error);
-      showToast('Error al añadir pago.', 'error');
-      throw error;
-    }
-  };
-
-  const updatePaymentInOrder = async (
-    orderId: string,
-    paymentId: string,
-    paymentData: Partial<Payment>,
-  ): Promise<void> => {
-    try {
-      const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData),
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      await response.json();
-      // setOrders(prevOrders =>
-      //   prevOrders.map(order =>
-      //     order._id === orderId ? updatedOrder : order
-      //   )
-      // );
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
-      showToast('Abono actualizado con éxito.', 'success');
-    } catch (error) {
-      console.error('Failed to update payment:', error);
-      showToast('Error al actualizar el abono.', 'error');
-      throw error;
-    }
-  };
-
-  const deletePaymentFromOrder = async (orderId: string, paymentId: string): Promise<void> => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este abono?')) {
-      try {
+  const updatePaymentInOrder = useCallback(
+    async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
+      await withLoading(async () => {
         const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
-          method: 'DELETE',
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(paymentData),
+          manualLoading: true, // Use manualLoading
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        await response.json();
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
+        showToast('Abono actualizado con éxito.', 'success');
+      });
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
+
+  const deletePaymentFromOrder = useCallback(
+    async (orderId: string, paymentId: string): Promise<void> => {
+      if (window.confirm('¿Estás seguro de que quieres eliminar este abono?')) {
+        await withLoading(async () => {
+          const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
+            method: 'DELETE',
+            manualLoading: true, // Use manualLoading
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          await response.json();
+          await fetchOrders(); // Re-fetch all orders to ensure consistency
+          showToast('Abono eliminado con éxito.', 'success');
+        });
+      }
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
+
+  const handleSaveNote = useCallback(
+    async (orderId: string, noteText: string): Promise<void> => {
+      const order = orders.find((o) => o._id === orderId);
+      if (!order) return;
+      await withLoading(async () => {
+        const newNote: Omit<Note, '_id'> = {
+          text: noteText,
+          timestamp: new Date().toISOString(),
+          author: currentUser?.username || 'Usuario',
+        };
+        const response = await authFetch(`${API_URL}/orders/${orderId}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newNote),
+          manualLoading: true, // Use manualLoading
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await response.json();
-        // setOrders(prevOrders =>
-        //   prevOrders.map(order =>
-        //     order._id === orderId ? updatedOrder : order
-        //   )
-        // );
         await fetchOrders(); // Re-fetch all orders to ensure consistency
-        showToast('Abono eliminado con éxito.', 'success');
-      } catch (error) {
-        console.error('Failed to delete payment:', error);
-        showToast('Error al eliminar el abono.', 'error');
-        throw error;
-      }
-    }
-  };
-
-  const handleSaveNote = async (orderId: string, noteText: string): Promise<void> => {
-    const order = orders.find((o) => o._id === orderId);
-    if (!order) return;
-    const newNote: Omit<Note, '_id'> = {
-      text: noteText,
-      timestamp: new Date().toISOString(),
-      author: currentUser?.username || 'Usuario',
-    };
-    try {
-      const response = await authFetch(`${API_URL}/orders/${orderId}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newNote),
+        showToast('Nota añadida con éxito.', 'success');
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await response.json();
-      // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
-      showToast('Nota añadida con éxito.', 'success');
-    } catch (error) {
-      console.error('Failed to save note:', error);
-      showToast('Error al añadir nota.', 'error');
-      throw error;
-    }
-  };
+    },
+    [showToast, authFetch, fetchOrders, orders, currentUser, withLoading],
+  );
 
-  const handleUpdateNote = async (
-    orderId: string,
-    noteId: string,
-    newText: string,
-  ): Promise<void> => {
-    try {
-      const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: newText }),
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      await response.json();
-      // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
-      showToast('Nota actualizada con éxito.', 'success');
-    } catch (error) {
-      console.error('Failed to update note:', error);
-      showToast('Error al actualizar la nota.', 'error');
-      throw error;
-    }
-  };
-
-  const handleDeleteNote = async (orderId: string, noteId: string): Promise<void> => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
-      try {
+  const handleUpdateNote = useCallback(
+    async (orderId: string, noteId: string, newText: string): Promise<void> => {
+      await withLoading(async () => {
         const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
-          method: 'DELETE',
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: newText }),
+          manualLoading: true, // Use manualLoading
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await response.json();
-        // setOrders(prevOrders => prevOrders.map(o => o._id === orderId ? updatedOrder : o));
         await fetchOrders(); // Re-fetch all orders to ensure consistency
-        showToast('Nota eliminada con éxito.', 'success');
-      } catch (error) {
-        console.error('Failed to delete note:', error);
-        showToast('Error al eliminar la nota.', 'error');
-        throw error;
+        showToast('Nota actualizada con éxito.', 'success');
+      });
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
+
+  const handleDeleteNote = useCallback(
+    async (orderId: string, noteId: string): Promise<void> => {
+      if (window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+        await withLoading(async () => {
+          const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
+            method: 'DELETE',
+            manualLoading: true, // Use manualLoading
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          await response.json();
+          await fetchOrders(); // Re-fetch all orders to ensure consistency
+          showToast('Nota eliminada con éxito.', 'success');
+        });
       }
-    }
-  };
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
 
-  const handleUpdateOrderStatus = async (
-    orderId: string,
-    newStatus: Order['status'],
-    completionDate: string | null = null,
-  ): Promise<void> => {
-    const updateFields: Partial<Order> = { status: newStatus };
-    if (newStatus === 'Completado') {
-      updateFields.completionDate = completionDate || new Date().toISOString();
-    }
-    await handleUpdateOrder(orderId, updateFields);
-    fetchNotifications();
-  };
+  const handleUpdateOrderStatus = useCallback(
+    async (
+      orderId: string,
+      newStatus: 'Pendiente' | 'Procesando' | 'Completado',
+      completionDate: string | null = null,
+    ): Promise<void> => {
+      await withLoading(async () => {
+        const updateFields: Partial<Order> = { status: newStatus };
+        if (newStatus === 'Completado') {
+          updateFields.completionDate = completionDate || new Date().toISOString();
+        }
+        await handleUpdateOrder(orderId, updateFields); // This calls the wrapped handleUpdateOrder
+        fetchNotifications();
+      });
+    },
+    [handleUpdateOrder, fetchNotifications, withLoading],
+  );
 
-  const handleDeleteOrder = async (id: string): Promise<string | void> => {
-    if (
-      window.confirm(
-        '¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.',
-      )
-    ) {
-      try {
-        const response = await authFetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
+  const handleDeleteOrder = useCallback(
+    async (id: string): Promise<string | void> => {
+      if (
+        window.confirm(
+          '¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.',
+        )
+      ) {
+        return await withLoading(async () => {
+          const response = await authFetch(`${API_URL}/orders/${id}`, {
+            method: 'DELETE',
+            manualLoading: true, // Use manualLoading
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          await fetchOrders();
+          showToast('Orden eliminada con éxito.', 'success');
+          return id;
+        });
+      }
+      return undefined;
+    },
+    [showToast, authFetch, fetchOrders, withLoading],
+  );
+
+  const generateReceiptPDF = useCallback(
+    async (order: Order, currentUser: User): Promise<void> => {
+      await withLoading(async () => {
+        const response = await authFetch(`${API_URL}/orders/${order._id}/receipt`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order, currentUser }),
+          manualLoading: true, // Use manualLoading
+        });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        await fetchOrders();
-        return id;
-      } catch (error) {
-        console.error('Error deleting order:', error);
-        showToast('Error al eliminar la orden.', 'error');
-      }
-    }
-  };
-
-  const generateReceiptPDF = async (order: Order, currentUser: User): Promise<void> => {
-    try {
-      const response = await authFetch(`${API_URL}/orders/${order._id}/receipt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order, currentUser }),
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${order._id}-Recibo.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        showToast('Recibo descargado.', 'success');
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${order._id}-Recibo.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      showToast('Recibo descargado.');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      showToast('Error al generar el recibo PDF.', 'error');
-    }
-  };
+    },
+    [showToast, authFetch, withLoading],
+  );
 
-  const generatePaymentHistoryPDF = async (order: Order, currentUser: User): Promise<void> => {
-    try {
-      const response = await authFetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentUser }),
+  const generatePaymentHistoryPDF = useCallback(
+    async (order: Order, currentUser: User): Promise<void> => {
+      await withLoading(async () => {
+        const response = await authFetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentUser }),
+          manualLoading: true, // Use manualLoading
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${order.orderNumber}-HistorialDePagos.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        showToast('Historial de pagos descargado.', 'success');
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${order.orderNumber}-HistorialDePagos.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      showToast('Historial de pagos descargado.');
-    } catch (error) {
-      console.error('Error generating payment history PDF:', error);
-      showToast('Error al generar el historial de pagos PDF.', 'error');
-    }
-  };
+    },
+    [showToast, authFetch, withLoading],
+  );
 
-  const confirmCompletion = async (order: Order, paymentAmount: number): Promise<void> => {
-    if (!order) return;
-    try {
-      if (paymentAmount > 0) {
-        await addPaymentToOrder(order._id, paymentAmount, 'Pago al completar');
-      }
-      await handleUpdateOrderStatus(order._id, 'Completado');
-      const balance = calculateBalance(order) - paymentAmount;
-      if (balance > 0) {
-        showToast(`Orden completada con saldo pendiente de ${balance.toFixed(2)}.`, 'info');
-      } else {
-        showToast('Orden completada y pagada.', 'success');
-      }
-    } catch (error) {
-      console.error('Error confirming completion:', error);
-      showToast('Error al confirmar la finalización.', 'error');
-    }
-  };
+  const confirmCompletion = useCallback(
+    async (order: Order, paymentAmount: number): Promise<void> => {
+      if (!order) return;
+      await withLoading(async () => {
+        if (paymentAmount > 0) {
+          await addPaymentToOrder(order._id, paymentAmount, 'Pago al completar'); // This calls the wrapped addPaymentToOrder
+        }
+        await handleUpdateOrderStatus(order._id, 'Completado'); // This calls the wrapped handleUpdateOrderStatus
+        const balance = calculateBalance(order) - paymentAmount;
+        if (balance > 0) {
+          showToast(`Orden completada con saldo pendiente de ${balance.toFixed(2)}.`, 'info');
+        } else {
+          showToast('Orden completada y pagada.', 'success');
+        }
+      });
+    },
+    [addPaymentToOrder, handleUpdateOrderStatus, calculateBalance, showToast, withLoading],
+  );
 
   return (
     <OrderContext.Provider

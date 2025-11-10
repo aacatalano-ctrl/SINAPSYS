@@ -1,5 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Doctor } from '../../types';
+import { useUI } from './UIContext'; // Import useUI
+import { useOrders } from './OrderContext'; // Import useOrders
 
 const API_URL = '/api';
 
@@ -32,10 +34,26 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
 
+  const { setIsLoading } = useUI(); // Get setIsLoading from UIContext
+  const { fetchOrders } = useOrders(); // Get fetchOrders from OrderContext
+
+  const withLoading = useCallback(async <T,>(asyncFunc: () => Promise<T>): Promise<T | undefined> => {
+    setIsLoading(true);
+    try {
+      return await asyncFunc();
+    } catch (error) {
+      console.error('An error occurred during a withLoading operation:', error);
+      showToast('Ocurrió un error. Por favor, intente de nuevo.', 'error');
+      return undefined;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, showToast]);
+
   const fetchDoctors = useCallback(async () => {
     setIsDoctorsLoaded(false);
     try {
-      const response = await authFetch(`${API_URL}/doctors`);
+      const response = await authFetch(`${API_URL}/doctors`, { manualLoading: true }); // Use manualLoading
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -50,38 +68,37 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
 
   const addDoctor = useCallback(
     async (doctor: Omit<Doctor, 'id'>) => {
-      try {
+      return await withLoading(async () => {
         const response = await authFetch(`${API_URL}/doctors`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(doctor),
+          manualLoading: true, // Use manualLoading
         });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const newDoctor = await response.json(); // Get the newly created doctor from the response
-        setDoctors((prevDoctors) => [...prevDoctors, newDoctor]); // Immediately add to state
-        return newDoctor; // Return the new doctor for potential use in CreateOrderView
-      } catch (error) {
-        console.error('Failed to add doctor:', error);
-        showToast('Error al agregar el doctor. Por favor, intente de nuevo.', 'error');
-        throw error; // Re-throw to allow error handling in components
-      }
+        const newDoctor = await response.json();
+        setDoctors((prevDoctors) => [...prevDoctors, newDoctor]);
+        showToast('Doctor agregado exitosamente.', 'success');
+        return newDoctor;
+      });
     },
-    [authFetch, showToast],
+    [authFetch, showToast, withLoading],
   );
 
   const updateDoctor = useCallback(
     async (id: string, fields: Partial<Doctor>) => {
-      try {
+      await withLoading(async () => {
         const response = await authFetch(`${API_URL}/doctors/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(fields),
+          manualLoading: true, // Use manualLoading
         });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -89,12 +106,10 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
         const updatedDoctor = await response.json();
         setDoctors((prevDoctors) => prevDoctors.map((d) => (d._id === id ? updatedDoctor : d)));
         showToast('Doctor actualizado exitosamente.', 'success');
-      } catch (error) {
-        console.error('Failed to update doctor:', error);
-        showToast('Error al actualizar el doctor. Por favor, intente de nuevo.', 'error');
-      }
+        await fetchOrders(); // Refetch orders as doctor name might have changed
+      });
     },
-    [authFetch, showToast],
+    [authFetch, showToast, withLoading, fetchOrders],
   );
 
   const deleteDoctor = useCallback(
@@ -104,28 +119,28 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
           '¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.',
         )
       ) {
-        try {
+        await withLoading(async () => {
           const response = await authFetch(`${API_URL}/doctors/${id}`, {
             method: 'DELETE',
+            manualLoading: true, // Use manualLoading
           });
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           setDoctors((prevDoctors) => prevDoctors.filter((d) => d._id !== id));
           showToast('Doctor eliminado exitosamente.', 'success');
-          return id;
-        } catch (error) {
-          console.error('Failed to delete doctor:', error);
-          showToast('Error al eliminar el doctor. Por favor, intente de nuevo.', 'error');
-        }
+          await fetchOrders(); // Refetch orders after doctor deletion
+        });
+        return id;
       }
+      return undefined;
     },
-    [authFetch, showToast],
+    [authFetch, showToast, withLoading, fetchOrders],
   );
 
   const exportDoctors = useCallback(async () => {
-    try {
-      const response = await authFetch(`${API_URL}/export/doctors`);
+    await withLoading(async () => {
+      const response = await authFetch(`${API_URL}/export/doctors`, { manualLoading: true }); // Use manualLoading
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -138,10 +153,9 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to export doctors:', error);
-    }
-  }, [authFetch]);
+      showToast('Doctores exportados exitosamente.', 'success');
+    });
+  }, [authFetch, showToast, withLoading]);
 
   const value = {
     doctors,

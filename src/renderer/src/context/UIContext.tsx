@@ -14,7 +14,7 @@ interface UIContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
   handleLogout: () => void;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  authFetch: (url: string, options?: RequestInit & { manualLoading?: boolean }) => Promise<Response>;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -31,6 +31,7 @@ interface UIContextType {
   toast: ToastState;
   isDatabaseMaintenance: boolean;
   isLoading: boolean; // New state for global loading indicator
+  setIsLoading: (isLoading: boolean) => void; // Allow external control
   openAddDoctorModal: () => void;
   closeAddDoctorModal: () => void;
   openAddNoteModal: () => void;
@@ -96,7 +97,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   }, [setCurrentUser]);
 
   const authFetch = React.useCallback(
-    async (url: string, options?: RequestInit) => {
+    async (url: string, options?: RequestInit & { manualLoading?: boolean }) => {
       setIsLoading(true); // Set loading to true before fetch
       try {
         const token = localStorage.getItem('token');
@@ -129,7 +130,9 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
         }
         return response;
       } finally {
-        setIsLoading(false); // Set loading to false after fetch (success or error)
+        if (!options?.manualLoading) {
+          setIsLoading(false); // Set loading to false after fetch (success or error)
+        }
       }
     },
     [showToast, clientSideLogout],
@@ -306,6 +309,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     handleDeleteNotification,
     isDatabaseMaintenance,
     isLoading, // Include new loading state
+    setIsLoading, // Include new loading state
     openAddDoctorModal,
     closeAddDoctorModal,
     openAddNoteModal,

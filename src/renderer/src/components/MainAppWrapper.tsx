@@ -49,6 +49,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     handleDeleteOrder,
     isDataLoaded,
     handleOrderCreated,
+    handleUpdateOrderStatus,
+    confirmCompletion,
   } = useOrders();
   const {
     isAddDoctorModalOpen,
@@ -76,6 +78,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     handleDeleteNotification,
     handleLogout,
     isDatabaseMaintenance,
+    isLoading: isGlobalLoading, // Destructure global isLoading
+    setIsLoading, // Destructure global setIsLoading
   } = useUI();
   const {
     doctors,
@@ -109,11 +113,11 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [jobTypePrefixMap, setJobTypePrefixMap] = useState({});
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
 
-  const isLoading = !isDataLoaded || !isDoctorsLoaded;
+  const isInitialLoading = !isDataLoaded || !isDoctorsLoaded;
 
   const fetchJobCategories = useCallback(async () => {
     try {
-      const response = await authFetch(`${API_URL}/job-categories`);
+      const response = await authFetch(`${API_URL}/job-categories`, { manualLoading: true });
       if (!response.ok) {
         throw new Error('Failed to fetch job categories');
       }
@@ -246,10 +250,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   return (
     <div className="relative flex h-screen bg-gray-100">
-      {isLoading && (
+      {(isInitialLoading || isGlobalLoading) && (
         <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900/75 backdrop-blur-sm">
           <div className="size-20 animate-spin rounded-full border-y-4 border-blue-500"></div>
-          <p className="mt-4 text-lg font-semibold text-white">Conectando y cargando datos...</p>
+          <p className="mt-4 text-lg font-semibold text-white">
+            {isInitialLoading ? 'Conectando y cargando datos...' : 'Procesando...'}
+          </p>
         </div>
       )}
 
