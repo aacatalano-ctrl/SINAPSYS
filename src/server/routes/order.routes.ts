@@ -365,16 +365,13 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.pipe(res);
 
     // Header
-    doc.fontSize(24).font('Helvetica-Bold').text('SINAPSIS Laboratorio Dental', { align: 'center' });
-    doc.fontSize(16).font('Helvetica').text('Recibo de Pago', { align: 'center' }); // Changed to Recibo de Pago
-    doc.moveDown(); // Reduced spacing
-
-    // Add current generation date/time at the top
-    doc.fontSize(10).text(`Fecha de Emisión: ${new Date().toLocaleString()}`, { align: 'right' });
-    doc.moveDown(2); // Increased spacing after emission date
+    doc.fontSize(24).font('Helvetica-Bold').text('RECIBO DE PAGO', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleString()}`, { align: 'right' });
+    doc.moveDown(1);
 
     // Order Info
-    doc.fontSize(14).font('Helvetica-Bold').text(`Orden:`, 50, doc.y, { continued: true });
+    doc.fontSize(12).font('Helvetica-Bold').text(`Orden:`, 50, doc.y, { continued: true });
     doc.font('Helvetica').text(`${order.orderNumber}`, 100, doc.y);
     doc.moveDown(0.5);
 
@@ -386,7 +383,7 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.font('Helvetica').text(`${order.patientName}`, 110, doc.y);
     doc.moveDown(0.5);
 
-    let doctorName = 'N/A'; // Declared once with 'let'
+    let doctorName = 'N/A';
     if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
       doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
     }
@@ -414,8 +411,6 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.text('Monto', amountX, doc.y, { align: 'right' });
     doc.font('Helvetica');
     doc.moveDown();
-    const headerY = doc.y;
-    doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
 
     // Table Rows for Payments
     let totalPaid = 0;
@@ -432,9 +427,6 @@ router.post('/:orderId/receipt', async (req, res) => {
       doc.text('No hay pagos registrados.', itemX, doc.y);
       doc.moveDown();
     }
-
-    const tableBottomY = doc.y;
-    doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
     doc.moveDown();
 
     // Totals
@@ -487,23 +479,35 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.pipe(res);
 
     // Header
-    doc.fontSize(20).text('SINAPSIS Laboratorio Dental', { align: 'center' });
-    doc.fontSize(12).text('Historial de Pagos', { align: 'center' });
-    doc.moveDown(2);
+    doc.fontSize(10).text('SINAPSIS Laboratorio Dental', { align: 'center' });
+    doc.fontSize(24).font('Helvetica-Bold').text('HISTORIAL DE PAGOS', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').text(`Fecha de Emisión: ${new Date().toLocaleString()}`, { align: 'right' });
+    doc.moveDown(1);
 
     // Order Info
-    doc.fontSize(14).text(`Orden: ${order.orderNumber}`, { continued: true });
-    doc
-      .fontSize(12)
-      .text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
-    doc.moveDown();
-    doc.text(`Paciente: ${order.patientName}`);
+    doc.fontSize(12).font('Helvetica-Bold').text(`Orden:`, 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${order.orderNumber}`, 100, doc.y);
+    doc.moveDown(0.5);
+
+    doc.font('Helvetica-Bold').text(`Fecha de Creación:`, 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${new Date(order.creationDate).toLocaleDateString()}`, 160, doc.y);
+    doc.moveDown(0.5);
+
+    doc.font('Helvetica-Bold').text(`Paciente:`, 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${order.patientName}`, 110, doc.y);
+    doc.moveDown(0.5);
+
     let doctorName = 'N/A';
     if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
       doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
     }
-    doc.text(`Doctor: ${doctorName}`);
-    doc.text(`Trabajo: ${order.jobType}`);
+    doc.font('Helvetica-Bold').text(`Doctor:`, 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${doctorName}`, 105, doc.y);
+    doc.moveDown(0.5);
+
+    doc.font('Helvetica-Bold').text(`Trabajo:`, 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${order.jobType}`, 110, doc.y);
     doc.moveDown(2);
 
     // Financials
@@ -522,8 +526,6 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.text('Monto', amountX, doc.y, { align: 'right' });
     doc.font('Helvetica');
     doc.moveDown();
-    const headerY = doc.y;
-    doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
 
     // Table Rows for Payments
     let totalPaid = 0;
@@ -540,22 +542,12 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
       doc.text('No hay pagos registrados.', itemX, doc.y);
       doc.moveDown();
     }
-
-    const tableBottomY = doc.y;
-    doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
     doc.moveDown();
 
     // Totals
-    doc.font('Helvetica-Bold');
+    doc.fontSize(12).font('Helvetica-Bold'); // Smaller font for totals labels
     const totalsY = doc.y;
-    doc.text('Total Pagado:', descriptionX, totalsY, { align: 'right', width: 200 });
-    doc.text(`${totalPaid.toFixed(2)}`, amountX, totalsY, { align: 'right' });
-    doc.font('Helvetica');
-    doc.moveDown(3);
 
-    // Footer
-    doc.fontSize(10).text(`Recibo generado por: ${currentUser.username}`, { align: 'center' });
-    doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
 
     doc.end();
   } catch (error) {
