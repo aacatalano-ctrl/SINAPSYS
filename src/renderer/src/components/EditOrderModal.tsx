@@ -4,15 +4,22 @@ import { Order, Doctor, JobCategory } from '../../types';
 import DoctorCombobox from './DoctorCombobox';
 
 interface EditOrderModalProps {
-    order: Order;
-    doctors: Doctor[];
-    jobCategories: JobCategory[];
-    jobTypeCosts: { [key: string]: number };
-    onClose: () => void;
-    onUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
+  order: Order;
+  doctors: Doctor[];
+  jobCategories: JobCategory[];
+  jobTypeCosts: { [key: string]: number };
+  onClose: () => void;
+  onUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
 }
 
-const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCategories, jobTypeCosts, onClose, onUpdateOrder }) => {
+const EditOrderModal: React.FC<EditOrderModalProps> = ({
+  order,
+  doctors,
+  jobCategories,
+  jobTypeCosts,
+  onClose,
+  onUpdateOrder,
+}) => {
   const { showNotification } = useOrders();
 
   // State for form fields
@@ -27,7 +34,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
   // Effect to initialize form state when the order prop is available
   useEffect(() => {
     if (order && doctors.length > 0) {
-      const doctor = doctors.find(d => d._id === order.doctorId) || null;
+      const doctor = doctors.find((d) => d._id === order.doctorId) || null;
       setSelectedDoctor(doctor);
       setPatientName(order.patientName);
       setCost(order.cost);
@@ -36,7 +43,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
 
       // Initialize category and job type
       const [category] = order.jobType.split(' - ');
-      if (category && jobCategories.some(c => c.category === category)) {
+      if (category && jobCategories.some((c) => c.category === category)) {
         setSelectedCategory(category);
         setSelectedJobType(order.jobType);
       }
@@ -74,7 +81,9 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
         <h3 className="mb-6 text-2xl font-bold text-gray-800">Editar Orden: {order.orderNumber}</h3>
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
-            <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
+            <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">
+              Doctor:
+            </label>
             <DoctorCombobox
               doctors={doctors}
               selectedDoctor={selectedDoctor}
@@ -83,7 +92,9 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="mb-4">
-            <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre del Paciente:</label>
+            <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">
+              Nombre del Paciente:
+            </label>
             <input
               type="text"
               id="patientName"
@@ -96,7 +107,9 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="mb-4">
-            <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">Categoría de Trabajo:</label>
+            <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">
+              Categoría de Trabajo:
+            </label>
             <select
               id="jobCategory"
               name="jobCategory"
@@ -110,7 +123,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
               required
             >
               <option value="">Selecciona una categoría</option>
-              {jobCategories.map(cat => (
+              {jobCategories.map((cat) => (
                 <option key={cat.category} value={cat.category}>
                   {cat.category}
                 </option>
@@ -119,7 +132,9 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="mb-4">
-            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">Tipo de Trabajo:</label>
+            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">
+              Tipo de Trabajo:
+            </label>
             <select
               id="jobType"
               name="jobType"
@@ -135,19 +150,23 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
             >
               <option value="">Selecciona tipo de trabajo</option>
               {selectedCategory &&
-                jobCategories.find(cat => cat.category === selectedCategory)?.services.map(service => {
-                  const fullJobName = `${selectedCategory} - ${service.name}`;
-                  return (
-                    <option key={fullJobName} value={fullJobName}>
-                      {service.name}
-                    </option>
-                  );
-                })}
+                jobCategories
+                  .find((cat) => cat.category === selectedCategory)
+                  ?.services.map((service) => {
+                    const fullJobName = `${selectedCategory} - ${service.name}`;
+                    return (
+                      <option key={fullJobName} value={fullJobName}>
+                        {service.name}
+                      </option>
+                    );
+                  })}
             </select>
           </div>
 
           <div className="mb-4">
-            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">Costo ($):</label>
+            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">
+              Costo ($):
+            </label>
             <input
               type="number"
               id="cost"
@@ -161,12 +180,16 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="mb-4">
-            <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">Prioridad:</label>
+            <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">
+              Prioridad:
+            </label>
             <select
               id="priority"
               name="priority"
               value={priority}
-              onChange={(e) => setPriority(e.target.value as 'Baja' | 'Normal' | 'Alta' | 'Urgente')}
+              onChange={(e) =>
+                setPriority(e.target.value as 'Baja' | 'Normal' | 'Alta' | 'Urgente')
+              }
               className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Baja">Baja</option>
@@ -177,7 +200,12 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="mb-6">
-            <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
+            <label
+              htmlFor="caseDescription"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
+              Descripción del Caso:
+            </label>
             <textarea
               id="caseDescription"
               name="caseDescription"
@@ -190,8 +218,19 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, doctors, jobCate
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={onClose} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Guardar Cambios</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
+            >
+              Guardar Cambios
+            </button>
           </div>
         </form>
       </div>

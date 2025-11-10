@@ -22,7 +22,11 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      username: string;
+      role: 'master' | 'admin' | 'cliente' | 'operador';
+    };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
 
     // Debounced update to lastActiveAt

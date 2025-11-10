@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ success: false, message: 'Este usuario ha sido bloqueado.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password!)
+    const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
@@ -37,24 +37,28 @@ router.post('/login', async (req, res) => {
     const updatedUser = await db.users.findOneAndUpdate(
       { _id: user._id, isOnline: { $ne: true } }, // Condition: Find user only if they are not already online
       { $set: { isOnline: true, lastActiveAt: new Date() } }, // Action: Set them to online
-      { new: true } // Options: Return the document *after* the update
+      { new: true }, // Options: Return the document *after* the update
     );
 
     if (!updatedUser) {
       // If updatedUser is null, it means the condition failed - the user was already online.
-      return res.status(403).json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
     }
     // --- END OF ATOMIC UPDATE ---
 
     const token = jwt.sign(
       { userId: user._id, username: user.username, role: user.role },
       JWT_SECRET!,
-      { expiresIn: '1h' }
+      { expiresIn: '1h' },
     );
     res.json({ success: true, user: { username: user.username, role: user.role }, token });
   } catch (error) {
     console.error(`Error during login for user ${username}:`, error);
-    res.status(500).json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Error del servidor durante el inicio de sesión.' });
   }
 });
 
@@ -69,7 +73,17 @@ router.get('/me', authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
-    res.json({ success: true, user: { _id: user._id, username: user.username, role: user.role, nombre: user.nombre, apellido: user.apellido, email: user.email } });
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error('Error fetching user data:', error);
     res.status(500).json({ success: false, message: 'Server error fetching user data.' });
@@ -87,16 +101,15 @@ router.post('/logout', authMiddleware, async (req, res) => {
       // from any server instance in the cluster.
       // We cast to `any` because the method is added dynamically by the adapter and
       // may not be present in the default TypeScript Server type.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (io as any).remoteDisconnect(user.socketId, true);
+      io.remoteDisconnect(user.socketId, true);
       console.log(`Forcing disconnect for socket ID: ${user.socketId}`);
     } else if (user) {
-        // Fallback if socketId is not present for some reason
-        user.isOnline = false;
-        user.socketId = undefined;
-        await user.save();
-        io.emit('user_status_change', { userId: user._id, isOnline: false });
-        console.log(`User ${user.username} set to offline via fallback.`);
+      // Fallback if socketId is not present for some reason
+      user.isOnline = false;
+      user.socketId = undefined;
+      await user.save();
+      io.emit('user_status_change', { userId: user._id, isOnline: false });
+      console.log(`User ${user.username} set to offline via fallback.`);
     }
 
     res.status(200).json({ success: true, message: 'Logout initiated.' });

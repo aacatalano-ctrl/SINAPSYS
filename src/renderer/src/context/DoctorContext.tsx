@@ -23,7 +23,11 @@ interface DoctorProviderProps {
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFetch, showToast }) => {
+export const DoctorProvider: React.FC<DoctorProviderProps> = ({
+  children,
+  authFetch,
+  showToast,
+}) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
@@ -44,67 +48,80 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
     }
   }, [authFetch]);
 
-  const addDoctor = useCallback(async (doctor: Omit<Doctor, 'id'>) => {
-    try {
-      const response = await authFetch(`${API_URL}/doctors`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(doctor),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const newDoctor = await response.json(); // Get the newly created doctor from the response
-      setDoctors(prevDoctors => [...prevDoctors, newDoctor]); // Immediately add to state
-      return newDoctor; // Return the new doctor for potential use in CreateOrderView
-    } catch (error) {
-      console.error('Failed to add doctor:', error);
-      showToast('Error al agregar el doctor. Por favor, intente de nuevo.', 'error');
-      throw error; // Re-throw to allow error handling in components
-    }
-  }, [authFetch, showToast]);
-
-  const updateDoctor = useCallback(async (id: string, fields: Partial<Doctor>) => {
-    try {
-      const response = await authFetch(`${API_URL}/doctors/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(fields),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const updatedDoctor = await response.json();
-      setDoctors(prevDoctors => prevDoctors.map(d => d._id === id ? updatedDoctor : d));
-      showToast('Doctor actualizado exitosamente.', 'success');
-    } catch (error) {
-      console.error('Failed to update doctor:', error);
-      showToast('Error al actualizar el doctor. Por favor, intente de nuevo.', 'error');
-    }
-  }, [authFetch, showToast]);
-
-  const deleteDoctor = useCallback(async (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.')) {
+  const addDoctor = useCallback(
+    async (doctor: Omit<Doctor, 'id'>) => {
       try {
-        const response = await authFetch(`${API_URL}/doctors/${id}`, {
-          method: 'DELETE',
+        const response = await authFetch(`${API_URL}/doctors`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(doctor),
         });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        setDoctors(prevDoctors => prevDoctors.filter(d => d._id !== id));
-        showToast('Doctor eliminado exitosamente.', 'success');
-        return id;
+        const newDoctor = await response.json(); // Get the newly created doctor from the response
+        setDoctors((prevDoctors) => [...prevDoctors, newDoctor]); // Immediately add to state
+        return newDoctor; // Return the new doctor for potential use in CreateOrderView
       } catch (error) {
-        console.error('Failed to delete doctor:', error);
-        showToast('Error al eliminar el doctor. Por favor, intente de nuevo.', 'error');
+        console.error('Failed to add doctor:', error);
+        showToast('Error al agregar el doctor. Por favor, intente de nuevo.', 'error');
+        throw error; // Re-throw to allow error handling in components
       }
-    }
-  }, [authFetch, showToast]);
+    },
+    [authFetch, showToast],
+  );
+
+  const updateDoctor = useCallback(
+    async (id: string, fields: Partial<Doctor>) => {
+      try {
+        const response = await authFetch(`${API_URL}/doctors/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(fields),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const updatedDoctor = await response.json();
+        setDoctors((prevDoctors) => prevDoctors.map((d) => (d._id === id ? updatedDoctor : d)));
+        showToast('Doctor actualizado exitosamente.', 'success');
+      } catch (error) {
+        console.error('Failed to update doctor:', error);
+        showToast('Error al actualizar el doctor. Por favor, intente de nuevo.', 'error');
+      }
+    },
+    [authFetch, showToast],
+  );
+
+  const deleteDoctor = useCallback(
+    async (id: string) => {
+      if (
+        window.confirm(
+          '¿Estás seguro de que quieres eliminar este doctor? Esta acción es irreversible y eliminará también las órdenes asociadas.',
+        )
+      ) {
+        try {
+          const response = await authFetch(`${API_URL}/doctors/${id}`, {
+            method: 'DELETE',
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          setDoctors((prevDoctors) => prevDoctors.filter((d) => d._id !== id));
+          showToast('Doctor eliminado exitosamente.', 'success');
+          return id;
+        } catch (error) {
+          console.error('Failed to delete doctor:', error);
+          showToast('Error al eliminar el doctor. Por favor, intente de nuevo.', 'error');
+        }
+      }
+    },
+    [authFetch, showToast],
+  );
 
   const exportDoctors = useCallback(async () => {
     try {
@@ -138,11 +155,7 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({ children, authFe
     exportDoctors,
   };
 
-  return (
-    <DoctorContext.Provider value={value}>
-      {children}
-    </DoctorContext.Provider>
-  );
+  return <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

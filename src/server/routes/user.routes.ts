@@ -1,8 +1,16 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../database/index.js';
-import { securityQuestionSchema, verifyAnswerSchema, resetPasswordSchema } from '../schemas/auth.schemas.js';
-import { createUserSchema, updateUserSchema, updateUserStatusSchema } from '../schemas/user.schemas.js';
+import {
+  securityQuestionSchema,
+  verifyAnswerSchema,
+  resetPasswordSchema,
+} from '../schemas/auth.schemas.js';
+import {
+  createUserSchema,
+  updateUserSchema,
+  updateUserStatusSchema,
+} from '../schemas/user.schemas.js';
 import adminAuthMiddleware from '../middleware/adminAuthMiddleware.js';
 
 const router = Router();
@@ -28,7 +36,12 @@ router.post('/security-question', async (req, res) => {
     }
   } catch (error) {
     console.error('Error al buscar la pregunta de seguridad:', error);
-    res.status(500).json({ success: false, error: 'Error interno del servidor al buscar la pregunta de seguridad.' });
+    res
+      .status(500)
+      .json({
+        success: false,
+        error: 'Error interno del servidor al buscar la pregunta de seguridad.',
+      });
   }
 });
 
@@ -52,7 +65,9 @@ router.post('/verify-answer', async (req, res) => {
     }
   } catch (error) {
     console.error('Error al verificar la respuesta:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor al verificar la respuesta.' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Error interno del servidor al verificar la respuesta.' });
   }
 });
 
@@ -86,24 +101,33 @@ router.post('/', adminAuthMiddleware, async (req, res) => {
   if (!validation.success) {
     return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
   }
-  
+
   const { password, securityAnswer, role: roleToCreate, ...userData } = validation.data;
   const currentUser = req.user;
 
   // Rule: Only master can create admin users
   if (roleToCreate === 'admin' && currentUser.role !== 'master') {
-    return res.status(403).json({ error: 'Solo el usuario maestro puede crear nuevos administradores.' });
+    return res
+      .status(403)
+      .json({ error: 'Solo el usuario maestro puede crear nuevos administradores.' });
   }
 
   // Rule: No one can create a master user via the API
   if (roleToCreate === 'master') {
-    return res.status(403).json({ error: 'El rol maestro no se puede asignar a través de la API.' });
+    return res
+      .status(403)
+      .json({ error: 'El rol maestro no se puede asignar a través de la API.' });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedSecurityAnswer = await bcrypt.hash(securityAnswer, 10);
-    const newUser = new db.users({ ...userData, role: roleToCreate, password: hashedPassword, securityAnswer: hashedSecurityAnswer });
+    const newUser = new db.users({
+      ...userData,
+      role: roleToCreate,
+      password: hashedPassword,
+      securityAnswer: hashedSecurityAnswer,
+    });
     await newUser.save();
     res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser });
   } catch (error) {
@@ -137,15 +161,15 @@ router.put('/:id/status', adminAuthMiddleware, async (req, res) => {
 
     if (userToModify.role === 'admin') {
       if (masterCode !== process.env.MASTER_CODE) {
-        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+        return res
+          .status(403)
+          .json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
 
-    const updatedUser = await db.users.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    ).select('-password -securityAnswer');
+    const updatedUser = await db.users
+      .findByIdAndUpdate(req.params.id, { status }, { new: true })
+      .select('-password -securityAnswer');
 
     res.json(updatedUser);
   } catch (error) {
@@ -171,21 +195,23 @@ router.put('/:id', adminAuthMiddleware, async (req, res) => {
 
     if (masterCode && userToModify.role === 'admin') {
       if (masterCode !== process.env.MASTER_CODE) {
-        return res.status(403).json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
+        return res
+          .status(403)
+          .json({ error: 'Código maestro incorrecto para modificar un usuario administrador.' });
       }
     }
-    
-    const finalUpdateData: Partial<typeof updateData> & { securityAnswer?: string } = { ...updateData };
+
+    const finalUpdateData: Partial<typeof updateData> & { securityAnswer?: string } = {
+      ...updateData,
+    };
 
     if (securityAnswer) {
-        finalUpdateData.securityAnswer = await bcrypt.hash(securityAnswer, 10);
+      finalUpdateData.securityAnswer = await bcrypt.hash(securityAnswer, 10);
     }
 
-    const updatedUser = await db.users.findByIdAndUpdate(
-      userId,
-      finalUpdateData,
-      { new: true }
-    ).select('-password -securityAnswer');
+    const updatedUser = await db.users
+      .findByIdAndUpdate(userId, finalUpdateData, { new: true })
+      .select('-password -securityAnswer');
 
     res.json(updatedUser);
   } catch (error) {
@@ -217,7 +243,11 @@ router.delete('/:id', adminAuthMiddleware, async (req, res) => {
     // Rule: Admin can delete 'cliente' and 'operador'
     if (currentUser.role === 'admin') {
       if (userToDelete.role === 'admin' || userToDelete.role === 'master') {
-        return res.status(403).json({ error: 'Un administrador no puede eliminar a otro administrador o al usuario maestro.' });
+        return res
+          .status(403)
+          .json({
+            error: 'Un administrador no puede eliminar a otro administrador o al usuario maestro.',
+          });
       }
       await db.users.findByIdAndDelete(req.params.id);
       return res.status(204).send();
@@ -225,7 +255,6 @@ router.delete('/:id', adminAuthMiddleware, async (req, res) => {
 
     // Default deny for other roles (e.g., 'cliente', 'operador')
     return res.status(403).json({ error: 'No tienes permiso para eliminar este usuario.' });
-
   } catch (error) {
     console.error('Error al eliminar el usuario:', error);
     res.status(500).json({ error: 'Error interno del servidor al eliminar el usuario.' });

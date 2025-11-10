@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { db } from './src/server/database/index.ts';
@@ -10,7 +9,9 @@ const MASTER_USER_EMAIL = 'aacatalano@gmail.com'; // <-- ESTE VALOR SE REEMPLAZA
 
 const updateMasterUser = async () => {
   if (MASTER_USER_EMAIL === 'TU_EMAIL_AQUI') {
-    console.error('Error: Por favor, reemplaza TU_EMAIL_AQUI en el script con el email real del usuario master.');
+    console.error(
+      'Error: Por favor, reemplaza TU_EMAIL_AQUI en el script con el email real del usuario master.',
+    );
     return;
   }
 
@@ -40,7 +41,6 @@ const updateMasterUser = async () => {
     } else {
       console.error("Error: No se encontró ningún usuario con el rol 'master'.");
     }
-
   } catch (error) {
     console.error('Ocurrió un error durante el proceso de actualización:', error);
   } finally {

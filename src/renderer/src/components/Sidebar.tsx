@@ -1,6 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { PlusCircle, List, History, Stethoscope, FileText, LogOut, Bell, Users } from 'lucide-react';
+import {
+  PlusCircle,
+  List,
+  History,
+  Stethoscope,
+  FileText,
+  LogOut,
+  Bell,
+  Users,
+} from 'lucide-react';
 import { Notification, User } from '../../types';
 import CecatLogo from './CecatLogo';
 
@@ -11,7 +20,12 @@ interface SidebarProps {
   markNotificationsAsRead: () => Promise<void>;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notifications, markNotificationsAsRead }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  currentUser,
+  handleLogout,
+  notifications,
+  markNotificationsAsRead,
+}) => {
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
 
   const navItems = [
@@ -20,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
     { path: '/history', icon: History, label: 'Historial de Órdenes' },
     { path: '/doctors', icon: Stethoscope, label: 'Doctores' },
     { path: '/reports', icon: FileText, label: 'Reportes' },
-  ].filter(item => {
+  ].filter((item) => {
     if (item.path === '/reports' && currentUser?.role === 'operador') {
       return false;
     }
@@ -38,28 +52,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
 
       <nav className="flex-1 space-y-2">
         {navItems.map(({ path, icon: Icon, label }) => (
-          <NavLink
-            key={path}
-            to={path}
-            className={getNavLinkClass}
-            title={label}
-          >
+          <NavLink key={path} to={path} className={getNavLinkClass} title={label}>
             <Icon className="mr-3 size-5" />
             <span>{label}</span>
           </NavLink>
         ))}
 
         {currentUser && (currentUser.role === 'admin' || currentUser.role === 'master') && (
-          <NavLink
-            to="/admin/users"
-            className={getNavLinkClass}
-            title="Adm. Usuarios"
-          >
+          <NavLink to="/admin/users" className={getNavLinkClass} title="Adm. Usuarios">
             <Users className="mr-3 size-5" />
             <span>Adm. Usuarios</span>
           </NavLink>
         )}
-        
+
         <NavLink
           to="/notifications"
           onClick={() => {
@@ -70,8 +75,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
           className={getNavLinkClass}
           title="Notificaciones"
         >
-          <div className="relative mx-auto"> {/* Centering the icon */}
-            <Bell className={`size-6 ${unreadNotificationsCount > 0 ? 'animate-pulse text-red-400' : 'text-gray-400'}`} />
+          <div className="relative mx-auto">
+            {' '}
+            {/* Centering the icon */}
+            <Bell
+              className={`size-6 ${unreadNotificationsCount > 0 ? 'animate-pulse text-red-400' : 'text-gray-400'}`}
+            />
             {unreadNotificationsCount > 0 && (
               <span className="absolute -right-2 -top-1 flex size-5 items-center justify-center rounded-full border-2 border-gray-800 bg-red-600 text-xs font-bold text-white">
                 {unreadNotificationsCount}
@@ -83,7 +92,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, handleLogout, notificati
 
       <div className="mt-auto border-t border-gray-700 pt-4">
         <div className="mb-4 flex items-center px-2">
-          <span className="text-sm text-gray-400">Usuario: {currentUser ? currentUser.username : 'Invitado'}</span>
+          <span className="text-sm text-gray-400">
+            Usuario: {currentUser ? currentUser.username : 'Invitado'}
+          </span>
         </div>
         <button
           onClick={handleLogout}

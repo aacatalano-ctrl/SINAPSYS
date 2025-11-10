@@ -31,7 +31,7 @@ function App() {
             setCurrentUser(null);
           }
         } catch (e) {
-          console.error("Error verificando token:", e);
+          console.error('Error verificando token:', e);
           localStorage.removeItem('token');
           setCurrentUser(null);
         }
@@ -60,7 +60,7 @@ function App() {
         showToast(result.message || 'Error de autenticación', 'error');
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error('Error during login:', error);
       setAuthError('Error al iniciar sesión. Inténtalo de nuevo.');
       showToast('Error al iniciar sesión. Inténtalo de nuevo.', 'error');
     }
@@ -151,10 +151,7 @@ function App() {
           handleSetNewPassword={handleSetNewPassword}
         />
       ) : (
-        <MainAppWrapper
-          currentUser={currentUser}
-          authFetch={authFetch}
-        />
+        <MainAppWrapper currentUser={currentUser} authFetch={authFetch} />
       )}
     </>
   );

@@ -41,11 +41,10 @@ const createTestUser = async () => {
 
     await newUser.save();
     console.log('-----------------------------------');
-    console.log('User \'testuser\' created successfully!');
+    console.log("User 'testuser' created successfully!");
     console.log('Username: testuser');
     console.log('Password: password123');
     console.log('-----------------------------------');
-
   } catch (error) {
     console.error('Error creating test user:', error);
   } finally {

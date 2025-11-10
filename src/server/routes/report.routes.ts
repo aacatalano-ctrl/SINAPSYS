@@ -14,12 +14,12 @@ router.get('/income-breakdown', async (req, res) => {
           totalIncome: { $sum: '$cost' },
           totalPaid: { $sum: { $sum: '$payments.amount' } },
           totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
-        $sort: { _id: 1 }
-      }
+        $sort: { _id: 1 },
+      },
     ]);
     res.json(incomeBreakdown);
   } catch (error) {
@@ -37,14 +37,14 @@ router.get('/doctor-performance', async (req, res) => {
           from: 'doctors',
           localField: 'doctorId',
           foreignField: '_id',
-          as: 'doctorInfo'
-        }
+          as: 'doctorInfo',
+        },
       },
       {
         $unwind: {
           path: '$doctorInfo',
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $group: {
@@ -54,19 +54,19 @@ router.get('/doctor-performance', async (req, res) => {
               $cond: {
                 if: { $and: ['$doctorInfo.firstName', '$doctorInfo.lastName'] },
                 then: { $concat: ['$doctorInfo.firstName', ' ', '$doctorInfo.lastName'] },
-                else: 'N/A'
-              }
-            }
+                else: 'N/A',
+              },
+            },
           },
           totalOrders: { $sum: 1 },
           totalIncome: { $sum: '$cost' },
           totalPaid: { $sum: { $sum: '$payments.amount' } },
-          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-        }
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+        },
       },
       {
-        $sort: { '_id.doctorName': 1 }
-      }
+        $sort: { '_id.doctorName': 1 },
+      },
     ]);
     res.json(doctorPerformance);
   } catch (error) {
@@ -85,12 +85,12 @@ router.get('/order-status', async (req, res) => {
           count: { $sum: 1 },
           totalIncome: { $sum: '$cost' },
           totalPaid: { $sum: { $sum: '$payments.amount' } },
-          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-        }
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+        },
       },
       {
-        $sort: { _id: 1 }
-      }
+        $sort: { _id: 1 },
+      },
     ]);
     res.json(orderStatus);
   } catch (error) {
@@ -109,12 +109,12 @@ router.get('/daily-summary', async (req, res) => {
           totalOrders: { $sum: 1 },
           totalIncome: { $sum: '$cost' },
           totalPaid: { $sum: { $sum: '$payments.amount' } },
-          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-        }
+          totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+        },
       },
       {
-        $sort: { _id: 1 }
-      }
+        $sort: { _id: 1 },
+      },
     ]);
     res.json(dailySummary);
   } catch (error) {
@@ -147,10 +147,10 @@ router.get('/pdf/:reportType', async (req, res) => {
               totalIncome: { $sum: '$cost' },
               totalPaid: { $sum: { $sum: '$payments.amount' } },
               totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
-              count: { $sum: 1 }
-            }
+              count: { $sum: 1 },
+            },
           },
-          { $sort: { _id: 1 } }
+          { $sort: { _id: 1 } },
         ]);
         title = 'Reporte de Desglose de Ingresos';
         break;
@@ -161,14 +161,14 @@ router.get('/pdf/:reportType', async (req, res) => {
               from: 'doctors',
               localField: 'doctorId',
               foreignField: '_id',
-              as: 'doctorInfo'
-            }
+              as: 'doctorInfo',
+            },
           },
           {
             $unwind: {
               path: '$doctorInfo',
-              preserveNullAndEmptyArrays: true
-            }
+              preserveNullAndEmptyArrays: true,
+            },
           },
           {
             $group: {
@@ -178,17 +178,17 @@ router.get('/pdf/:reportType', async (req, res) => {
                   $cond: {
                     if: { $and: ['$doctorInfo.firstName', '$doctorInfo.lastName'] },
                     then: { $concat: ['$doctorInfo.firstName', ' ', '$doctorInfo.lastName'] },
-                    else: 'N/A'
-                  }
-                }
+                    else: 'N/A',
+                  },
+                },
               },
               totalOrders: { $sum: 1 },
               totalIncome: { $sum: '$cost' },
               totalPaid: { $sum: { $sum: '$payments.amount' } },
-              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-            }
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+            },
           },
-          { $sort: { '_id.doctorName': 1 } }
+          { $sort: { '_id.doctorName': 1 } },
         ]);
         title = 'Reporte de Rendimiento de Doctores';
         break;
@@ -200,10 +200,10 @@ router.get('/pdf/:reportType', async (req, res) => {
               count: { $sum: 1 },
               totalIncome: { $sum: '$cost' },
               totalPaid: { $sum: { $sum: '$payments.amount' } },
-              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-            }
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+            },
           },
-          { $sort: { _id: 1 } }
+          { $sort: { _id: 1 } },
         ]);
         title = 'Reporte de Estado de Órdenes';
         break;
@@ -215,10 +215,10 @@ router.get('/pdf/:reportType', async (req, res) => {
               totalOrders: { $sum: 1 },
               totalIncome: { $sum: '$cost' },
               totalPaid: { $sum: { $sum: '$payments.amount' } },
-              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } }
-            }
+              totalBalance: { $sum: { $subtract: ['$cost', { $sum: '$payments.amount' }] } },
+            },
           },
-          { $sort: { _id: 1 } }
+          { $sort: { _id: 1 } },
         ]);
         title = 'Reporte de Resumen Diario';
         break;
@@ -236,7 +236,9 @@ router.get('/pdf/:reportType', async (req, res) => {
     doc.moveDown();
 
     data.forEach((item: ReportItem) => {
-      doc.fontSize(12).text(`ID: ${typeof item._id === 'string' ? item._id : item._id?.doctorName || 'N/A'}`);
+      doc
+        .fontSize(12)
+        .text(`ID: ${typeof item._id === 'string' ? item._id : item._id?.doctorName || 'N/A'}`);
       doc.text(`Total Órdenes: ${item.totalOrders || item.count || 0}`);
       doc.text(`Ingresos Totales: ${item.totalIncome?.toFixed(2) || '0.00'}`);
       doc.text(`Pagado Total: ${item.totalPaid?.toFixed(2) || '0.00'}`);
@@ -245,7 +247,6 @@ router.get('/pdf/:reportType', async (req, res) => {
     });
 
     doc.end();
-
   } catch (error) {
     console.error(`Error al generar el PDF del reporte ${reportType}:`, error);
     res.status(500).json({ error: `Error al generar el PDF del reporte ${reportType}.` });

@@ -4,13 +4,17 @@ import PDFDocument from 'pdfkit';
 import { db } from '../database/index.js';
 import { jobTypePrefixMap } from '../database/constants.js';
 import { createNotification } from '../database/notifications.js';
-import { createOrderSchema, updateOrderSchema, paymentSchema, noteSchema, updateNoteSchema } from '../schemas/order.schemas.js';
+import {
+  createOrderSchema,
+  updateOrderSchema,
+  paymentSchema,
+  noteSchema,
+  updateNoteSchema,
+} from '../schemas/order.schemas.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import type { Payment, Note } from '../../types.js';
 import logger from '../utils/logger.js';
 import { getErrorMessage, getErrorStack } from '../utils/errorUtils.js';
-
-
 
 const router = Router();
 router.use(authMiddleware);
@@ -21,7 +25,10 @@ router.get('/', async (req, res) => {
     const orders = await db.orders.find({}).populate('doctorId', 'firstName lastName');
     res.json(orders);
   } catch (error) {
-    logger.error('Error al obtener las órdenes:', { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error('Error al obtener las órdenes:', {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error al obtener las órdenes.' });
   }
 });
@@ -34,7 +41,10 @@ router.get('/:id', async (req, res) => {
     }
     res.json(order);
   } catch (error) {
-    logger.error(`Error al obtener la orden con ID ${req.params.id}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(`Error al obtener la orden con ID ${req.params.id}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error al obtener la orden.' });
   }
 });
@@ -55,7 +65,7 @@ router.post('/', async (req, res) => {
     const counter = await db.sequences.findOneAndUpdate(
       { _id: counterId },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
 
     const sequencePadded = counter.seq.toString().padStart(4, '0');
@@ -68,15 +78,25 @@ router.post('/', async (req, res) => {
 
     await newOrder.save();
 
-    const populatedOrder = await db.orders.findById(newOrder._id).populate('doctorId', 'firstName lastName');
+    const populatedOrder = await db.orders
+      .findById(newOrder._id)
+      .populate('doctorId', 'firstName lastName');
 
     res.status(201).json(populatedOrder);
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      logger.error("Error de clave duplicada al crear la orden:", { error: getErrorMessage(error), stack: getErrorStack(error) });
-      return res.status(500).json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
+      logger.error('Error de clave duplicada al crear la orden:', {
+        error: getErrorMessage(error),
+        stack: getErrorStack(error),
+      });
+      return res
+        .status(500)
+        .json({ error: 'Error crítico de numeración de orden. Por favor, contacte a soporte.' });
     }
-    logger.error("Error creating order:", { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error('Error creating order:', {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error interno del servidor al crear la orden.' });
   }
 });
@@ -88,12 +108,16 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updatedOrder = await db.orders.findByIdAndUpdate(req.params.id, validation.data, { new: true }).populate('doctorId', 'firstName lastName');
+    const updatedOrder = await db.orders
+      .findByIdAndUpdate(req.params.id, validation.data, { new: true })
+      .populate('doctorId', 'firstName lastName');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const currentBalance = updatedOrder.cost - (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
+    const currentBalance =
+      updatedOrder.cost -
+      (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
     if (validation.data.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
       createNotification(updatedOrder._id.toString(), message).catch(console.error);
@@ -101,14 +125,19 @@ router.put('/:id', async (req, res) => {
 
     res.json(updatedOrder);
   } catch (error) {
-    logger.error('Error al actualizar la orden:', { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error('Error al actualizar la orden:', {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error interno del servidor al actualizar la orden.' });
   }
 });
 
 router.delete('/:id', authMiddleware, async (req, res) => {
   if (req.user && req.user.role === 'operador') {
-    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar órdenes.' });
+    return res
+      .status(403)
+      .json({ error: 'Los operadores no tienen permiso para eliminar órdenes.' });
   }
   try {
     const deletedOrder = await db.orders.findByIdAndDelete(req.params.id);
@@ -117,7 +146,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
     res.status(204).send();
   } catch (error) {
-    logger.error(`Error al eliminar la orden con ID ${req.params.id}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(`Error al eliminar la orden con ID ${req.params.id}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error al eliminar la orden.' });
   }
 });
@@ -150,7 +182,10 @@ router.post('/:orderId/payments', async (req, res) => {
 
     res.status(201).json(order);
   } catch (error) {
-    logger.error(`Error al agregar pago a la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(`Error al agregar pago a la orden ${req.params.orderId}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error interno del servidor al agregar pago.' });
   }
 });
@@ -181,14 +216,19 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(
+      `Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`,
+      { error: getErrorMessage(error), stack: getErrorStack(error) },
+    );
     res.status(500).json({ error: 'Error interno del servidor al actualizar el pago.' });
   }
 });
 
 router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) => {
   if (req.user && req.user.role === 'operador') {
-    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar abonos.' });
+    return res
+      .status(403)
+      .json({ error: 'Los operadores no tienen permiso para eliminar abonos.' });
   }
   try {
     const { orderId, paymentId } = req.params;
@@ -198,7 +238,7 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const paymentIndex = order.payments.findIndex(p => p._id?.toString() === paymentId);
+    const paymentIndex = order.payments.findIndex((p) => p._id?.toString() === paymentId);
     if (paymentIndex === -1) {
       return res.status(404).json({ error: 'Pago no encontrado.' });
     }
@@ -208,7 +248,10 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
     await order.save();
     res.status(200).json(order);
   } catch (error) {
-    logger.error(`Error al eliminar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(
+      `Error al eliminar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`,
+      { error: getErrorMessage(error), stack: getErrorStack(error) },
+    );
     res.status(500).json({ error: 'Error al eliminar pago.' });
   }
 });
@@ -236,7 +279,10 @@ router.post('/:orderId/notes', async (req, res) => {
     await order.save();
     res.status(201).json(order);
   } catch (error) {
-    logger.error(`Error al agregar nota a la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(`Error al agregar nota a la orden ${req.params.orderId}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error interno del servidor al agregar nota.' });
   }
 });
@@ -266,7 +312,10 @@ router.put('/:orderId/notes/:noteId', async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al actualizar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(
+      `Error al actualizar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`,
+      { error: getErrorMessage(error), stack: getErrorStack(error) },
+    );
     res.status(500).json({ error: 'Error interno del servidor al actualizar la nota.' });
   }
 });
@@ -283,12 +332,15 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    order.notes = order.notes.filter(note => note._id?.toString() !== noteId);
+    order.notes = order.notes.filter((note) => note._id?.toString() !== noteId);
 
     await order.save();
     res.json(order);
   } catch (error) {
-    logger.error(`Error al eliminar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(
+      `Error al eliminar la nota ${req.params.noteId} de la orden ${req.params.orderId}:`,
+      { error: getErrorMessage(error), stack: getErrorStack(error) },
+    );
     res.status(500).json({ error: 'Error al eliminar la nota.' });
   }
 });
@@ -297,7 +349,9 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
 router.post('/:orderId/receipt', async (req, res) => {
   try {
     const { currentUser } = req.body;
-    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
+    const order = await db.orders
+      .findById(req.params.orderId)
+      .populate('doctorId', 'firstName lastName');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
@@ -317,10 +371,12 @@ router.post('/:orderId/receipt', async (req, res) => {
 
     // Order Info
     doc.fontSize(14).text(`Orden: ${order.orderNumber}`, { continued: true });
-    doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
+    doc
+      .fontSize(12)
+      .text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
     doc.moveDown();
     doc.text(`Paciente: ${order.patientName}`);
-    
+
     let doctorName = 'N/A';
     if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
       doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
@@ -347,7 +403,7 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.moveDown();
     const headerY = doc.y;
     doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
-    
+
     // Table Rows for Payments
     let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
@@ -360,10 +416,10 @@ router.post('/:orderId/receipt', async (req, res) => {
         doc.moveDown();
       });
     } else {
-        doc.text('No hay pagos registrados.', itemX, doc.y);
-        doc.moveDown();
+      doc.text('No hay pagos registrados.', itemX, doc.y);
+      doc.moveDown();
     }
-    
+
     const tableBottomY = doc.y;
     doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
     doc.moveDown();
@@ -387,9 +443,11 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
 
     doc.end();
-
   } catch (error) {
-    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error al generar el recibo.' });
   }
 });
@@ -397,7 +455,9 @@ router.post('/:orderId/receipt', async (req, res) => {
 router.post('/:orderId/payment-history-pdf', async (req, res) => {
   try {
     const { currentUser } = req.body;
-    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
+    const order = await db.orders
+      .findById(req.params.orderId)
+      .populate('doctorId', 'firstName lastName');
 
     if (!order || !currentUser) {
       return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
@@ -406,7 +466,10 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=historial-pagos-${order.orderNumber}.pdf`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=historial-pagos-${order.orderNumber}.pdf`,
+    );
 
     doc.pipe(res);
 
@@ -417,7 +480,9 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
 
     // Order Info
     doc.fontSize(14).text(`Orden: ${order.orderNumber}`, { continued: true });
-    doc.fontSize(12).text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
+    doc
+      .fontSize(12)
+      .text(` - Fecha: ${new Date(order.creationDate).toLocaleDateString()}`, { align: 'right' });
     doc.moveDown();
     doc.text(`Paciente: ${order.patientName}`);
     let doctorName = 'N/A';
@@ -446,7 +511,7 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.moveDown();
     const headerY = doc.y;
     doc.lineCap('butt').moveTo(itemX, headerY).lineTo(550, headerY).stroke();
-    
+
     // Table Rows for Payments
     let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
@@ -459,10 +524,10 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
         doc.moveDown();
       });
     } else {
-        doc.text('No hay pagos registrados.', itemX, doc.y);
-        doc.moveDown();
+      doc.text('No hay pagos registrados.', itemX, doc.y);
+      doc.moveDown();
     }
-    
+
     const tableBottomY = doc.y;
     doc.lineCap('butt').moveTo(itemX, tableBottomY).lineTo(550, tableBottomY).stroke();
     doc.moveDown();
@@ -480,9 +545,11 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, { align: 'center' });
 
     doc.end();
-
   } catch (error) {
-    logger.error(`Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`, { error: getErrorMessage(error), stack: getErrorStack(error) });
+    logger.error(
+      `Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`,
+      { error: getErrorMessage(error), stack: getErrorStack(error) },
+    );
     res.status(500).json({ error: 'Error al generar el historial de pagos.' });
   }
 });

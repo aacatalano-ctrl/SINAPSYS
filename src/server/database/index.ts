@@ -60,15 +60,18 @@ const userSchema = new mongoose.Schema<User>({
   lastActiveAt: { type: Date, default: Date.now },
 });
 
-const notificationSchema = new mongoose.Schema<Notification>({
-  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
-  message: { type: String, required: true },
-  read: { type: Boolean, default: false },
-}, { timestamps: true });
+const notificationSchema = new mongoose.Schema<Notification>(
+  {
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true },
+);
 
 const SequenceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  seq: { type: Number, default: 0 }
+  seq: { type: Number, default: 0 },
 });
 
 // 2. Create Mongoose Models
@@ -106,7 +109,10 @@ const connectDB = async () => {
   const connectWithRetry = async () => {
     attempts++;
     try {
-      console.log(`Attempting to connect to MongoDB (attempt ${attempts}/${MAX_RETRIES}) at:`, MONGODB_URI);
+      console.log(
+        `Attempting to connect to MongoDB (attempt ${attempts}/${MAX_RETRIES}) at:`,
+        MONGODB_URI,
+      );
       await mongoose.connect(MONGODB_URI);
       console.log('MongoDB connected successfully!');
       isDatabaseConnected = true;
@@ -135,12 +141,7 @@ const initializeDb = async (): Promise<void> => {
   }
 };
 
-export {
-  db,
-  initializeDb,
-  connectDB,
-  isDatabaseConnected
-};
+export { db, initializeDb, connectDB, isDatabaseConnected };
 
 // Call connectDB when the module is loaded, but don't initializeDb here
 // initializeDb will be called after successful connection in server.ts

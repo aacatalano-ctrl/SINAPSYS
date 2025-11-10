@@ -10,21 +10,26 @@ interface NotificationsViewProps {
   currentUser: User | null;
 }
 
-const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, onNotificationClick, onClearNotifications, onDeleteNotification, currentUser }) => {
-
+const NotificationsView: React.FC<NotificationsViewProps> = ({
+  notifications,
+  onNotificationClick,
+  onClearNotifications,
+  onDeleteNotification,
+  currentUser,
+}) => {
   const timeSince = (date: string) => {
     const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
     let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " años";
+    if (interval > 1) return Math.floor(interval) + ' años';
     interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " meses";
+    if (interval > 1) return Math.floor(interval) + ' meses';
     interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " días";
+    if (interval > 1) return Math.floor(interval) + ' días';
     interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " horas";
+    if (interval > 1) return Math.floor(interval) + ' horas';
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutos";
-    return Math.floor(seconds) + " segundos";
+    if (interval > 1) return Math.floor(interval) + ' minutos';
+    return Math.floor(seconds) + ' segundos';
   };
 
   return (
@@ -32,7 +37,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Notificaciones</h1>
         {notifications.length > 0 && currentUser?.role !== 'operador' && (
-          <button 
+          <button
             onClick={onClearNotifications}
             className="rounded-lg bg-red-500 px-4 py-2 font-bold text-white transition-colors duration-200 hover:bg-red-600"
           >
@@ -48,16 +53,26 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ notifications, on
         </div>
       ) : (
         <ul className="space-y-4">
-          {notifications.map(notification => (
-            <li 
+          {notifications.map((notification) => (
+            <li
               key={notification._id} // Use _id for the key
               onClick={() => onNotificationClick(notification)}
-              className={`flex cursor-pointer items-start space-x-4 rounded-lg p-4 shadow transition-all duration-300 ${notification.read ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'}`}>
-              <div className={`mt-1 rounded-full p-2 ${notification.read ? 'bg-gray-300' : 'bg-blue-500'}`}>
-                <Bell size={20} className={`${notification.read ? 'text-gray-600' : 'text-white'}`} />
+              className={`flex cursor-pointer items-start space-x-4 rounded-lg p-4 shadow transition-all duration-300 ${notification.read ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-100 hover:bg-blue-200'}`}
+            >
+              <div
+                className={`mt-1 rounded-full p-2 ${notification.read ? 'bg-gray-300' : 'bg-blue-500'}`}
+              >
+                <Bell
+                  size={20}
+                  className={`${notification.read ? 'text-gray-600' : 'text-white'}`}
+                />
               </div>
               <div className="grow">
-                <p className={`font-semibold ${notification.read ? 'text-gray-700' : 'text-gray-900'}`}>{notification.message}</p>
+                <p
+                  className={`font-semibold ${notification.read ? 'text-gray-700' : 'text-gray-900'}`}
+                >
+                  {notification.message}
+                </p>
                 <div className="mt-1 flex items-center text-sm text-gray-500">
                   <Clock size={14} className="mr-1.5" />
                   <span>Hace {timeSince(notification.createdAt)}</span>

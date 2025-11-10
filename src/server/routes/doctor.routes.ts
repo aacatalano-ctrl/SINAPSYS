@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
     await newDoctor.save();
     res.status(201).json(newDoctor);
   } catch (error) {
-    console.error("Error al agregar doctor:", error);
+    console.error('Error al agregar doctor:', error);
     res.status(500).json({ error: 'Error interno del servidor al agregar el doctor.' });
   }
 });
@@ -42,7 +42,9 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, validation.data, { new: true });
+    const updatedDoctor = await db.doctors.findByIdAndUpdate(req.params.id, validation.data, {
+      new: true,
+    });
     if (!updatedDoctor) {
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
@@ -56,7 +58,9 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/doctors/:id
 router.delete('/:id', authMiddleware, async (req, res) => {
   if (req.user && req.user.role === 'operador') {
-    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar doctores.' });
+    return res
+      .status(403)
+      .json({ error: 'Los operadores no tienen permiso para eliminar doctores.' });
   }
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -72,13 +76,12 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       session.endSession();
       return res.status(404).json({ error: 'Doctor no encontrado.' });
     }
-    
+
     await session.commitTransaction();
     session.endSession();
 
     console.log(`Doctor with ID ${doctorId} and all their associated orders have been deleted.`);
     res.status(204).send();
-
   } catch (error) {
     await session.abortTransaction();
     session.endSession();

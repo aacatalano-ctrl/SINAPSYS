@@ -5,13 +5,18 @@ import DoctorCombobox from './DoctorCombobox';
 import { Doctor, Order, JobCategory } from '../../types';
 
 interface CreateOrderViewProps {
-    doctors: Doctor[];
-    jobCategories: JobCategory[];
-    jobTypeCosts: { [key: string]: number };
-    onAddDoctor: () => Promise<string | null>;
+  doctors: Doctor[];
+  jobCategories: JobCategory[];
+  jobTypeCosts: { [key: string]: number };
+  onAddDoctor: () => Promise<string | null>;
 }
 
-function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: CreateOrderViewProps) {
+function CreateOrderView({
+  doctors,
+  jobCategories,
+  jobTypeCosts,
+  onAddDoctor,
+}: CreateOrderViewProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [cost, setCost] = useState<number>(0);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
@@ -22,7 +27,7 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
 
   useEffect(() => {
     if (newlyAddedDoctorId) {
-      const foundDoctor = doctors.find(doc => doc._id === newlyAddedDoctorId);
+      const foundDoctor = doctors.find((doc) => doc._id === newlyAddedDoctorId);
       if (foundDoctor) {
         setSelectedDoctor(foundDoctor);
         setNewlyAddedDoctorId(null); // Clear temporary state
@@ -84,7 +89,7 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
       setSelectedDoctor(null); // <-- AÑADIR ESTA LÍNEA
       showNotification(`Orden ${addedOrder.orderNumber} creada con éxito.`);
     } catch (error: Error) {
-      console.error("Error creating order:", error);
+      console.error('Error creating order:', error);
       showNotification('Error al crear orden.', 'error');
     }
   };
@@ -92,21 +97,34 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
   return (
     <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
       <h2 className="mb-6 text-3xl font-bold text-gray-800">Crear Nueva Orden Dental</h2>
-      <form onSubmit={handleCreateOrder} className="grid grid-cols-1 gap-6 md:grid-cols-2" ref={formRef} noValidate>
+      <form
+        onSubmit={handleCreateOrder}
+        className="grid grid-cols-1 gap-6 md:grid-cols-2"
+        ref={formRef}
+        noValidate
+      >
         <div>
-          <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">Doctor:</label>
+          <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">
+            Doctor:
+          </label>
           <DoctorCombobox
             doctors={doctors}
             selectedDoctor={selectedDoctor}
             onSelectDoctor={setSelectedDoctor}
           />
-          <input type="hidden" id="doctor" name="doctor" value={selectedDoctor?._id || ''} required />
+          <input
+            type="hidden"
+            id="doctor"
+            name="doctor"
+            value={selectedDoctor?._id || ''}
+            required
+          />
           <button
             type="button"
             onClick={async () => {
               const newDoctorId = await onAddDoctor();
               if (newDoctorId) {
-                const foundDoctor = doctors.find(doc => doc._id === newDoctorId);
+                const foundDoctor = doctors.find((doc) => doc._id === newDoctorId);
                 if (foundDoctor) {
                   setSelectedDoctor(foundDoctor);
                 }
@@ -119,7 +137,9 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
         </div>
 
         <div>
-          <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre del Paciente:</label>
+          <label htmlFor="patientName" className="mb-2 block text-sm font-semibold text-gray-700">
+            Nombre del Paciente:
+          </label>
           <input
             type="text"
             id="patientName"
@@ -130,7 +150,9 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
         </div>
 
         <div>
-          <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">Categoría de Trabajo:</label>
+          <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">
+            Categoría de Trabajo:
+          </label>
           <select
             id="jobCategory"
             name="jobCategory"
@@ -143,8 +165,10 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
             }}
             required
           >
-            <option key="create-order-select-category" value="">Selecciona una categoría</option>
-            {jobCategories.map(category => (
+            <option key="create-order-select-category" value="">
+              Selecciona una categoría
+            </option>
+            {jobCategories.map((category) => (
               <option key={category.category} value={category.category}>
                 {category.category}
               </option>
@@ -153,7 +177,9 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
         </div>
 
         <div>
-          <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">Tipo de Trabajo:</label>
+          <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">
+            Tipo de Trabajo:
+          </label>
           <select
             id="jobType"
             name="jobType"
@@ -163,20 +189,32 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
             value={selectedJobType} // <--- Add this
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               setSelectedJobType(e.target.value);
-              setCost(jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0);
+              setCost(
+                jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0,
+              );
             }}
           >
-            <option key="create-order-select-job-type" value="">Selecciona tipo de trabajo</option>
-            {selectedCategory && jobCategories.find(cat => cat.category === selectedCategory)?.services.map(service => (
-              <option key={`${selectedCategory} - ${service.name}`} value={`${selectedCategory} - ${service.name}`}>
-                {service.name}
-              </option>
-            ))}
+            <option key="create-order-select-job-type" value="">
+              Selecciona tipo de trabajo
+            </option>
+            {selectedCategory &&
+              jobCategories
+                .find((cat) => cat.category === selectedCategory)
+                ?.services.map((service) => (
+                  <option
+                    key={`${selectedCategory} - ${service.name}`}
+                    value={`${selectedCategory} - ${service.name}`}
+                  >
+                    {service.name}
+                  </option>
+                ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">Costo ($):</label>
+          <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">
+            Costo ($):
+          </label>
           <input
             type="number"
             id="cost"
@@ -194,7 +232,9 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
         </div>
 
         <div>
-          <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">Prioridad:</label>
+          <label htmlFor="priority" className="mb-2 block text-sm font-semibold text-gray-700">
+            Prioridad:
+          </label>
           <select
             id="priority"
             name="priority"
@@ -209,7 +249,12 @@ function CreateOrderView({ doctors, jobCategories, jobTypeCosts, onAddDoctor }: 
         </div>
 
         <div className="md:col-span-2">
-          <label htmlFor="caseDescription" className="mb-2 block text-sm font-semibold text-gray-700">Descripción del Caso:</label>
+          <label
+            htmlFor="caseDescription"
+            className="mb-2 block text-sm font-semibold text-gray-700"
+          >
+            Descripción del Caso:
+          </label>
           <textarea
             id="caseDescription"
             name="caseDescription"

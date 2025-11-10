@@ -9,7 +9,11 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { db } from './database/index.js';
 import { connectDB, initializeDb, isDatabaseConnected } from './database/index.js';
-import { purgeOldOrders, initializeCounters, cleanupStaleSessions } from './database/maintenance.js';
+import {
+  purgeOldOrders,
+  initializeCounters,
+  cleanupStaleSessions,
+} from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 
@@ -107,7 +111,6 @@ io.on('connection', (socket) => {
   });
 });
 
-
 app.use((req, res, next) => {
   console.log('Incoming request URL:', req.url, 'Path:', req.path);
   next();
@@ -155,7 +158,7 @@ async function connectToDatabase() {
     console.log('Initializing database and tasks...');
     await initializeDb();
     await initializeCounters();
-    
+
     if (!process.env.VERCEL) {
       console.log('Scheduling background tasks for local development...');
       setInterval(checkUnpaidOrders, 24 * 60 * 60 * 1000);

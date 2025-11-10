@@ -7,7 +7,7 @@ async function purgeOldOrders(): Promise<void> {
 
   const query = {
     status: 'Completado',
-    completionDate: { $lt: oneYearAgo.toISOString() }
+    completionDate: { $lt: oneYearAgo.toISOString() },
   };
 
   try {
@@ -15,16 +15,16 @@ async function purgeOldOrders(): Promise<void> {
     if (result.deletedCount > 0) {
       console.log(`Successfully purged ${result.deletedCount} old completed orders.`);
     } else {
-      console.log("No old completed orders to purge.");
+      console.log('No old completed orders to purge.');
     }
   } catch (err) {
-    console.error("Error purging old orders:", err);
+    console.error('Error purging old orders:', err);
   }
 }
 
 const initializeCounters = async () => {
   console.log('Initializing order number counters...');
-  
+
   const prefixes = Object.values(jobTypePrefixMap);
   const year = new Date().getFullYear().toString().slice(-2);
 
@@ -35,7 +35,7 @@ const initializeCounters = async () => {
     const lastOrder = await db.orders.findOne(
       { orderNumber: { $regex: new RegExp(`^${searchPrefix}`) } },
       {},
-      { sort: { orderNumber: -1 } }
+      { sort: { orderNumber: -1 } },
     );
 
     let maxSeq = 0;
@@ -49,7 +49,7 @@ const initializeCounters = async () => {
     await db.sequences.updateOne(
       { _id: counterId },
       { $setOnInsert: { seq: maxSeq } },
-      { upsert: true }
+      { upsert: true },
     );
     console.log(`Counter '${counterId}' initialized to sequence ${maxSeq}.`);
   }
@@ -60,34 +60,32 @@ async function cleanupStaleSessions(): Promise<void> {
   const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
   try {
-    const staleUsers = await db.users.find({
-      isOnline: true,
-      lastActiveAt: { $lt: sixHoursAgo }
-    }).select('_id').lean();
+    const staleUsers = await db.users
+      .find({
+        isOnline: true,
+        lastActiveAt: { $lt: sixHoursAgo },
+      })
+      .select('_id')
+      .lean();
 
     if (staleUsers.length === 0) {
-      console.log("No stale user sessions to clean up.");
+      console.log('No stale user sessions to clean up.');
       return;
     }
 
-    const userIds = staleUsers.map(user => user._id);
+    const userIds = staleUsers.map((user) => user._id);
 
     const result = await db.users.updateMany(
       { _id: { $in: userIds } },
-      { $set: { isOnline: false, socketId: undefined } }
+      { $set: { isOnline: false, socketId: undefined } },
     );
 
     if (result.modifiedCount > 0) {
       console.log(`Successfully cleaned up ${result.modifiedCount} stale user sessions.`);
     }
-
   } catch (err) {
-    console.error("Error cleaning up stale user sessions:", err);
+    console.error('Error cleaning up stale user sessions:', err);
   }
 }
 
-export {
-  purgeOldOrders,
-  initializeCounters,
-  cleanupStaleSessions,
-};
+export { purgeOldOrders, initializeCounters, cleanupStaleSessions };

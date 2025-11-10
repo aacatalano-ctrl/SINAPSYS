@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUI } from './UIContext';
 import { useDoctors } from './DoctorContext';
@@ -8,15 +9,25 @@ interface OrderContextType {
   isDataLoaded: boolean;
   showNotification: (message: string, type?: string) => void;
   currentUser: User | null;
-  handleOrderCreated: (newOrder: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>) => Promise<Order | undefined>;
+  handleOrderCreated: (
+    newOrder: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
+  ) => Promise<Order | undefined>;
   calculateBalance: (order: Order) => number;
   addPaymentToOrder: (orderId: string, amount: number, description: string) => Promise<void>;
-  updatePaymentInOrder: (orderId: string, paymentId: string, paymentData: Partial<Payment>) => Promise<void>;
+  updatePaymentInOrder: (
+    orderId: string,
+    paymentId: string,
+    paymentData: Partial<Payment>,
+  ) => Promise<void>;
   deletePaymentFromOrder: (orderId: string, paymentId: string) => Promise<void>;
   handleSaveNote: (orderId: string, noteText: string) => Promise<void>;
   handleUpdateNote: (orderId: string, noteId: string, newText: string) => Promise<void>;
   handleDeleteNote: (orderId: string, noteId: string) => Promise<void>;
-  handleUpdateOrderStatus: (orderId: string, newStatus: 'Pendiente' | 'Procesando' | 'Completado', completionDate?: string | null) => Promise<void>;
+  handleUpdateOrderStatus: (
+    orderId: string,
+    newStatus: 'Pendiente' | 'Procesando' | 'Completado',
+    completionDate?: string | null,
+  ) => Promise<void>;
   handleDeleteOrder: (id: string) => Promise<string | void>;
   handleUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
   generateReceiptPDF: (order: Order, currentUser: User) => Promise<void>;
@@ -32,7 +43,11 @@ interface OrderProviderProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentUser, authFetch }) => {
+export const OrderProvider: React.FC<OrderProviderProps> = ({
+  children,
+  currentUser,
+  authFetch,
+}) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast, fetchNotifications } = useUI();
@@ -40,24 +55,19 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
 
   const API_URL = '/api';
 
-  const fetchOrders = useCallback(
-    async () => {
-      try {
-        const response = await authFetch(`${API_URL}/orders`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const loadedOrders = await response.json();
-        setOrders(loadedOrders.filter(Boolean));
-        setIsDataLoaded(true);
-      } catch (error) {
-        console.error("Error loading orders from web server:", error);
-        showToast('Error al cargar órdenes.', 'error');
-      }
-    },
-    [showToast, authFetch]
-  );
+  const fetchOrders = useCallback(async () => {
+    try {
+      const response = await authFetch(`${API_URL}/orders`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const loadedOrders = await response.json();
+      setOrders(loadedOrders.filter(Boolean));
+      setIsDataLoaded(true);
+    } catch (error) {
+      console.error('Error loading orders from web server:', error);
+      showToast('Error al cargar órdenes.', 'error');
+    }
+  }, [showToast, authFetch]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isDoctorsLoaded) {
       fetchOrders();
@@ -70,33 +80,38 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
     return order.cost - totalDeposited;
   };
 
-  const handleUpdateOrder = useCallback(async (id: string, updatedFields: Partial<Order>) => {
-    try {
-      const response = await authFetch(`${API_URL}/orders/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedFields),
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
-      await response.json();
-      
-      // setOrders(prevOrders => 
-      //   prevOrders.map(order => 
-      //     order._id === id ? updatedOrder : order
-      //   )
-      // );
-      await fetchOrders(); // Re-fetch all orders to ensure consistency
+  const handleUpdateOrder = useCallback(
+    async (id: string, updatedFields: Partial<Order>) => {
+      try {
+        const response = await authFetch(`${API_URL}/orders/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedFields),
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      showToast('Orden actualizada con éxito.');
-    } catch (error) {
-      console.error("Error updating order:", error);
-      showToast('Error al actualizar la orden.', 'error');
-      throw error;
-    }
-  }, [showToast, authFetch]);
+        await response.json();
 
-  const handleOrderCreated = async (orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>): Promise<Order | undefined> => {
+        // setOrders(prevOrders =>
+        //   prevOrders.map(order =>
+        //     order._id === id ? updatedOrder : order
+        //   )
+        // );
+        await fetchOrders(); // Re-fetch all orders to ensure consistency
+
+        showToast('Orden actualizada con éxito.');
+      } catch (error) {
+        console.error('Error updating order:', error);
+        showToast('Error al actualizar la orden.', 'error');
+        throw error;
+      }
+    },
+    [showToast, authFetch],
+  );
+
+  const handleOrderCreated = async (
+    orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
+  ): Promise<Order | undefined> => {
     try {
       const response = await authFetch(`${API_URL}/orders`, {
         method: 'POST',
@@ -109,13 +124,17 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       return addedOrder;
     } catch (error) {
-      console.error("Error creating order:", error);
+      console.error('Error creating order:', error);
       showToast(`Error al crear la orden: ${error}`, 'error');
       throw error;
     }
   };
 
-  const addPaymentToOrder = async (orderId: string, amount: number, description: string): Promise<void> => {
+  const addPaymentToOrder = async (
+    orderId: string,
+    amount: number,
+    description: string,
+  ): Promise<void> => {
     const newPayment: Omit<Payment, '_id'> = {
       amount: parseFloat(String(amount)),
       date: new Date().toISOString(),
@@ -128,11 +147,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(newPayment),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+
       await response.json();
 
-      // setOrders(prevOrders => 
-      //   prevOrders.map(order => 
+      // setOrders(prevOrders =>
+      //   prevOrders.map(order =>
       //     order._id === orderId ? updatedOrder : order
       //   )
       // );
@@ -141,13 +160,17 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       showToast('Pago añadido con éxito.', 'success');
       fetchNotifications();
     } catch (error) {
-      console.error("Failed to add payment:", error);
+      console.error('Failed to add payment:', error);
       showToast('Error al añadir pago.', 'error');
       throw error;
     }
   };
 
-  const updatePaymentInOrder = async (orderId: string, paymentId: string, paymentData: Partial<Payment>): Promise<void> => {
+  const updatePaymentInOrder = async (
+    orderId: string,
+    paymentId: string,
+    paymentData: Partial<Payment>,
+  ): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${orderId}/payments/${paymentId}`, {
         method: 'PUT',
@@ -155,17 +178,17 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         body: JSON.stringify(paymentData),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+
       await response.json();
-      // setOrders(prevOrders => 
-      //   prevOrders.map(order => 
+      // setOrders(prevOrders =>
+      //   prevOrders.map(order =>
       //     order._id === orderId ? updatedOrder : order
       //   )
       // );
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Abono actualizado con éxito.', 'success');
     } catch (error) {
-      console.error("Failed to update payment:", error);
+      console.error('Failed to update payment:', error);
       showToast('Error al actualizar el abono.', 'error');
       throw error;
     }
@@ -179,15 +202,15 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await response.json();
-        // setOrders(prevOrders => 
-        //   prevOrders.map(order => 
+        // setOrders(prevOrders =>
+        //   prevOrders.map(order =>
         //     order._id === orderId ? updatedOrder : order
         //   )
         // );
         await fetchOrders(); // Re-fetch all orders to ensure consistency
         showToast('Abono eliminado con éxito.', 'success');
       } catch (error) {
-        console.error("Failed to delete payment:", error);
+        console.error('Failed to delete payment:', error);
         showToast('Error al eliminar el abono.', 'error');
         throw error;
       }
@@ -195,7 +218,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   };
 
   const handleSaveNote = async (orderId: string, noteText: string): Promise<void> => {
-    const order = orders.find(o => o._id === orderId);
+    const order = orders.find((o) => o._id === orderId);
     if (!order) return;
     const newNote: Omit<Note, '_id'> = {
       text: noteText,
@@ -214,13 +237,17 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota añadida con éxito.', 'success');
     } catch (error) {
-      console.error("Failed to save note:", error);
+      console.error('Failed to save note:', error);
       showToast('Error al añadir nota.', 'error');
       throw error;
     }
   };
 
-  const handleUpdateNote = async (orderId: string, noteId: string, newText: string): Promise<void> => {
+  const handleUpdateNote = async (
+    orderId: string,
+    noteId: string,
+    newText: string,
+  ): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${orderId}/notes/${noteId}`, {
         method: 'PUT',
@@ -233,7 +260,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       await fetchOrders(); // Re-fetch all orders to ensure consistency
       showToast('Nota actualizada con éxito.', 'success');
     } catch (error) {
-      console.error("Failed to update note:", error);
+      console.error('Failed to update note:', error);
       showToast('Error al actualizar la nota.', 'error');
       throw error;
     }
@@ -251,14 +278,18 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         await fetchOrders(); // Re-fetch all orders to ensure consistency
         showToast('Nota eliminada con éxito.', 'success');
       } catch (error) {
-        console.error("Failed to delete note:", error);
+        console.error('Failed to delete note:', error);
         showToast('Error al eliminar la nota.', 'error');
         throw error;
       }
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status'], completionDate: string | null = null): Promise<void> => {
+  const handleUpdateOrderStatus = async (
+    orderId: string,
+    newStatus: Order['status'],
+    completionDate: string | null = null,
+  ): Promise<void> => {
     const updateFields: Partial<Order> = { status: newStatus };
     if (newStatus === 'Completado') {
       updateFields.completionDate = completionDate || new Date().toISOString();
@@ -268,14 +299,18 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
   };
 
   const handleDeleteOrder = async (id: string): Promise<string | void> => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar esta orden? Esta acción es irreversible.',
+      )
+    ) {
       try {
         const response = await authFetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         await fetchOrders();
         return id;
       } catch (error) {
-        console.error("Error deleting order:", error);
+        console.error('Error deleting order:', error);
         showToast('Error al eliminar la orden.', 'error');
       }
     }
@@ -300,7 +335,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       window.URL.revokeObjectURL(url);
       showToast('Recibo descargado.');
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error('Error generating PDF:', error);
       showToast('Error al generar el recibo PDF.', 'error');
     }
   };
@@ -324,7 +359,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
       window.URL.revokeObjectURL(url);
       showToast('Historial de pagos descargado.');
     } catch (error) {
-      console.error("Error generating payment history PDF:", error);
+      console.error('Error generating payment history PDF:', error);
       showToast('Error al generar el historial de pagos PDF.', 'error');
     }
   };
@@ -343,33 +378,35 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children, currentU
         showToast('Orden completada y pagada.', 'success');
       }
     } catch (error) {
-      console.error("Error confirming completion:", error);
+      console.error('Error confirming completion:', error);
       showToast('Error al confirmar la finalización.', 'error');
     }
   };
 
   return (
-    <OrderContext.Provider value={{
-      orders,
-      fetchOrders,
-      isDataLoaded,
-      showNotification: showToast,
-      currentUser,
-      handleOrderCreated,
-      calculateBalance,
-      addPaymentToOrder,
-      updatePaymentInOrder,
-      deletePaymentFromOrder,
-      handleSaveNote,
-      handleUpdateNote,
-      handleDeleteNote,
-      handleUpdateOrderStatus,
-      handleDeleteOrder,
-      handleUpdateOrder,
-      generateReceiptPDF,
-      generatePaymentHistoryPDF,
-      confirmCompletion,
-    }}>
+    <OrderContext.Provider
+      value={{
+        orders,
+        fetchOrders,
+        isDataLoaded,
+        showNotification: showToast,
+        currentUser,
+        handleOrderCreated,
+        calculateBalance,
+        addPaymentToOrder,
+        updatePaymentInOrder,
+        deletePaymentFromOrder,
+        handleSaveNote,
+        handleUpdateNote,
+        handleDeleteNote,
+        handleUpdateOrderStatus,
+        handleDeleteOrder,
+        handleUpdateOrder,
+        generateReceiptPDF,
+        generatePaymentHistoryPDF,
+        confirmCompletion,
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );

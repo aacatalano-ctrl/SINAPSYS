@@ -2,14 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Order, Note } from '../../types';
 
 interface AddNoteModalProps {
-    order: Order;
-    onClose: () => void;
-    onSaveNote: (noteText: string) => Promise<void>;
-    onUpdateNote: (noteId: string, newText: string) => Promise<void>;
-    noteToEdit?: Note | null;
+  order: Order;
+  onClose: () => void;
+  onSaveNote: (noteText: string) => Promise<void>;
+  onUpdateNote: (noteId: string, newText: string) => Promise<void>;
+  noteToEdit?: Note | null;
 }
 
-const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote, onUpdateNote, noteToEdit }) => {
+const AddNoteModal: React.FC<AddNoteModalProps> = ({
+  order,
+  onClose,
+  onSaveNote,
+  onUpdateNote,
+  noteToEdit,
+}) => {
   const [noteText, setNoteText] = useState('');
   const isEditMode = !!noteToEdit;
 
@@ -35,7 +41,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote,
     } finally {
       onClose();
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50">
@@ -45,7 +51,9 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({ order, onClose, onSaveNote,
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">Nota:</label>
+            <label htmlFor="noteText" className="mb-2 block text-sm font-semibold text-gray-700">
+              Nota:
+            </label>
             <textarea
               id="noteText"
               className="h-32 w-full resize-none appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"

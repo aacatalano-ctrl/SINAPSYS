@@ -4,7 +4,10 @@
 // The frontend will need to be updated to fetch this data from an API endpoint.
 
 // Función para generar el código de caso único
-export const generateCaseCode = (jobType: string, jobTypePrefixMap: { [key: string]: string }): string => {
+export const generateCaseCode = (
+  jobType: string,
+  jobTypePrefixMap: { [key: string]: string },
+): string => {
   const category = jobType.split(' - ')[0].trim();
   const prefix = jobTypePrefixMap[category] || 'CAS';
   const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -12,16 +15,19 @@ export const generateCaseCode = (jobType: string, jobTypePrefixMap: { [key: stri
 };
 
 // Función para formatear fechas a un formato legible (solo fecha)
-export const formatDate = (dateString: string): string => { // Add type for dateString
+export const formatDate = (dateString: string): string => {
+  // Add type for dateString
   if (!dateString) return 'N/A';
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }; // Explicitly type options
   return new Date(dateString).toLocaleDateString('es-ES', options);
 };
 
 // Función para formatear fechas a un formato legible (fecha y hora)
-export const formatDateTime = (dateString: string): string => { // Add type for dateString
+export const formatDateTime = (dateString: string): string => {
+  // Add type for dateString
   if (!dateString) return 'N/A';
-  const options: Intl.DateTimeFormatOptions = { // Explicitly type options
+  const options: Intl.DateTimeFormatOptions = {
+    // Explicitly type options
     year: 'numeric',
     month: 'long',
     day: 'numeric',

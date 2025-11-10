@@ -2,7 +2,15 @@
 
 import React, { useRef } from 'react';
 
-const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => void; onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>; showToast: (message: string, type?: string) => void; }) => {
+const AddDoctorModal = ({
+  onClose,
+  onAddDoctor,
+  showToast,
+}: {
+  onClose: () => void;
+  onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>;
+  showToast: (message: string, type?: string) => void;
+}) => {
   const newDoctorFormRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -27,10 +35,12 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
       onClose();
       if (addedDoctor) {
         newDoctorFormRef.current?.reset();
-        showToast(`Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`);
+        showToast(
+          `Doctor ${addedDoctor.title} ${addedDoctor.firstName} ${addedDoctor.lastName} añadido con éxito.`,
+        );
       }
     } catch (error) {
-      console.error("Error adding doctor:", error);
+      console.error('Error adding doctor:', error);
       showToast('Error al añadir doctor.', 'error');
     }
   };
@@ -41,7 +51,9 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
         <h3 className="mb-6 text-2xl font-bold text-gray-800">Añadir Nuevo Doctor</h3>
         <form onSubmit={handleSubmit} ref={newDoctorFormRef}>
           <div className="mb-4">
-            <label htmlFor="doctorTitle" className="mb-2 block text-sm font-semibold text-gray-700">Título:</label>
+            <label htmlFor="doctorTitle" className="mb-2 block text-sm font-semibold text-gray-700">
+              Título:
+            </label>
             <select
               name="doctorTitle"
               id="doctorTitle"
@@ -55,15 +67,34 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorName" className="mb-2 block text-sm font-semibold text-gray-700">Nombre Completo:</label>
-            <input type="text" name="doctorName" id="doctorName" placeholder="Juan Pérez" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label htmlFor="doctorName" className="mb-2 block text-sm font-semibold text-gray-700">
+              Nombre Completo:
+            </label>
+            <input
+              type="text"
+              name="doctorName"
+              id="doctorName"
+              placeholder="Juan Pérez"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">Email (Opcional):</label>
-            <input type="email" name="doctorEmail" id="doctorEmail" placeholder="juan.perez@example.com" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label htmlFor="doctorEmail" className="mb-2 block text-sm font-semibold text-gray-700">
+              Email (Opcional):
+            </label>
+            <input
+              type="email"
+              name="doctorEmail"
+              id="doctorEmail"
+              placeholder="juan.perez@example.com"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
           <div className="mb-4">
-            <label htmlFor="doctorPhone" className="mb-2 block text-sm font-semibold text-gray-700">Teléfono:</label>
+            <label htmlFor="doctorPhone" className="mb-2 block text-sm font-semibold text-gray-700">
+              Teléfono:
+            </label>
             <input
               type="tel"
               name="doctorPhone"
@@ -76,12 +107,34 @@ const AddDoctorModal = ({ onClose, onAddDoctor, showToast }: { onClose: () => vo
             />
           </div>
           <div className="mb-6">
-            <label htmlFor="doctorAddress" className="mb-2 block text-sm font-semibold text-gray-700">Dirección:</label>
-            <input type="text" name="doctorAddress" id="doctorAddress" placeholder="Calle Falsa 123" className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label
+              htmlFor="doctorAddress"
+              className="mb-2 block text-sm font-semibold text-gray-700"
+            >
+              Dirección:
+            </label>
+            <input
+              type="text"
+              name="doctorAddress"
+              id="doctorAddress"
+              placeholder="Calle Falsa 123"
+              className="w-full appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={onClose} className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400">Cancelar</button>
-            <button type="submit" className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700">Añadir Doctor</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg bg-gray-300 px-6 py-2 font-bold text-gray-800 transition-colors duration-200 hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-blue-600 px-6 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
+            >
+              Añadir Doctor
+            </button>
           </div>
         </form>
       </div>

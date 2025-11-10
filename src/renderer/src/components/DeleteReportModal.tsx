@@ -10,7 +10,12 @@ interface DeleteReportModalProps {
   showNotification: (message: string, type?: 'success' | 'error' | 'info') => void; // Assuming showNotification has an optional type
 }
 
-const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, loadData, showNotification }) => {
+const DeleteReportModal: React.FC<DeleteReportModalProps> = ({
+  isOpen,
+  onClose,
+  loadData,
+  showNotification,
+}) => {
   const [deleteType, setDeleteType] = useState<'week' | 'month'>('week'); // 'week' or 'month'
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
@@ -31,22 +36,27 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
       endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
-    } else { // month
+    } else {
+      // month
       startDate = new Date(selectedYear, selectedMonth - 1, 1);
       startDate.setHours(0, 0, 0, 0);
       endDate = new Date(selectedYear, selectedMonth, 0);
       endDate.setHours(23, 59, 59, 999);
     }
 
-    if (window.confirm(`¿Estás seguro de que quieres borrar los reportes para el período seleccionado? Esta acción es irreversible.`)) {
+    if (
+      window.confirm(
+        `¿Estás seguro de que quieres borrar los reportes para el período seleccionado? Esta acción es irreversible.`,
+      )
+    ) {
       try {
         const response = await fetch(`${API_URL}/orders/by-date`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             startDate: startDate.toISOString(),
-            endDate: endDate.toISOString()
-          })
+            endDate: endDate.toISOString(),
+          }),
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -58,8 +68,11 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
         await loadData();
         onClose();
       } catch (error: Error) {
-        console.error("Error deleting reports:", error);
-        showNotification(`Error al eliminar los reportes: ${error.message || 'Unknown error'}`, 'error');
+        console.error('Error deleting reports:', error);
+        showNotification(
+          `Error al eliminar los reportes: ${error.message || 'Unknown error'}`,
+          'error',
+        );
       }
     }
   };
@@ -93,7 +106,9 @@ const DeleteReportModal: React.FC<DeleteReportModalProps> = ({ isOpen, onClose, 
 
         {deleteType === 'week' && (
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">Selecciona una fecha en la semana que deseas borrar:</label>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Selecciona una fecha en la semana que deseas borrar:
+            </label>
             <input
               type="date"
               value={selectedDate}

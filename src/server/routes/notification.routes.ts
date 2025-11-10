@@ -22,7 +22,7 @@ router.put('/:id/read', async (req, res) => {
     const updatedNotification = await db.notifications.findByIdAndUpdate(
       id,
       { read: true },
-      { new: true }
+      { new: true },
     );
     if (!updatedNotification) {
       return res.status(404).json({ error: 'Notificación no encontrada.' });
@@ -48,7 +48,9 @@ router.put('/mark-all-read', async (req, res) => {
 // DELETE /api/notifications/:id
 router.delete('/:id', authMiddleware, async (req, res) => {
   if (req.user && req.user.role === 'operador') {
-    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
+    return res
+      .status(403)
+      .json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
   }
   try {
     const { id } = req.params;
@@ -66,7 +68,9 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // DELETE /api/notifications
 router.delete('/', authMiddleware, async (req, res) => {
   if (req.user && req.user.role === 'operador') {
-    return res.status(403).json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
+    return res
+      .status(403)
+      .json({ error: 'Los operadores no tienen permiso para eliminar notificaciones.' });
   }
   try {
     await db.notifications.deleteMany({});

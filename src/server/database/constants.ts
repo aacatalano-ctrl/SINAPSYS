@@ -69,15 +69,15 @@ export const jobCategories = [
 export const jobTypePrefixMap: { [key: string]: string } = {
   'PRÓTESIS FIJA': 'PTF',
   'DPR METAL ACRÍLICO': 'DMA',
-  'ACRÍLICO': 'ACR',
-  'FLEXIBLE': 'FLX',
+  ACRÍLICO: 'ACR',
+  FLEXIBLE: 'FLX',
   'FLUJO DIGITAL': 'FLD',
 };
 
 // This map can be used by other parts of the backend if needed, or exported via an API
 export const jobTypeCosts: { [key: string]: number } = {};
-jobCategories.forEach(category => {
-  category.services.forEach(service => {
+jobCategories.forEach((category) => {
+  category.services.forEach((service) => {
     const fullServiceName = `${category.category} - ${service.name}`;
     jobTypeCosts[fullServiceName] = service.price;
   });
