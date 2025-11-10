@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io/dist/index';
+import { Server, type Socket } from 'socket.io';
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
