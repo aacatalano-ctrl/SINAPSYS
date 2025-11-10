@@ -60,10 +60,7 @@ function CreateOrderView({
       showNotification('Por favor, ingresa un Costo válido (mayor que 0).', 'error');
       return;
     }
-    if (!caseDescription.trim()) {
-      showNotification('Por favor, ingresa la Descripción del Caso.', 'error');
-      return;
-    }
+
 
     const newOrder: Order = {
       doctorId,
@@ -261,7 +258,6 @@ function CreateOrderView({
             rows="4"
             className="w-full resize-y appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Detalles sobre el caso dental, como material, color, etc."
-            required
           ></textarea>
         </div>
 
