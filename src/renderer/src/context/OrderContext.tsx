@@ -328,7 +328,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${order._id}-Recibo.pdf`;
+      a.download = `${order.orderNumber}-Recibo.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
