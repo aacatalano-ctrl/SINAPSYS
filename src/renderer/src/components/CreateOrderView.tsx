@@ -48,6 +48,18 @@ function CreateOrderView({
       showNotification('Por favor, selecciona un Doctor.', 'error');
       return;
     }
+    if (!patientName.trim()) {
+      showNotification('Por favor, ingresa el Nombre del Paciente.', 'error');
+      return;
+    }
+    if (!selectedCategory) {
+      showNotification('Por favor, selecciona una Categoría de Trabajo.', 'error');
+      return;
+    }
+    if (!selectedJobType) {
+      showNotification('Por favor, selecciona un Tipo de Trabajo.', 'error');
+      return;
+    }
 
 
     if (isNaN(cost) || cost <= 0) {
@@ -92,7 +104,6 @@ function CreateOrderView({
         onSubmit={handleCreateOrder}
         className="grid grid-cols-1 gap-6 md:grid-cols-2"
         ref={formRef}
-        noValidate
       >
         <div>
           <label htmlFor="doctor" className="mb-2 block text-sm font-semibold text-gray-700">
