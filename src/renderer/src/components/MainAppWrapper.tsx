@@ -76,6 +76,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     handleDeleteNotification,
     handleLogout,
     isDatabaseMaintenance,
+    isLoading: isGlobalLoading,
+    setIsLoading,
   } = useUI();
   const {
     doctors,
@@ -106,10 +108,70 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [reportTimeframe, setReportTimeframe] = useState<string>('all');
   const [jobCategories, setJobCategories] = useState([]);
   const [jobTypeCosts, setJobTypeCosts] = useState({});
-  const [jobTypePrefixMap, setJobTypePrefixMap] = useState({});
+  const [jobTypePrefixMap, setJobTypePrefixMap] = {};
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
 
-  const isLoading = !isDataLoaded || !isDoctorsLoaded;
+  const isInitialLoading = !isDataLoaded || !isDoctorsLoaded;
+
+  // --- Orchestration Functions ---
+
+  const withLoading = async (asyncFunc: () => Promise<any>) => {
+    setIsLoading(true);
+    try {
+      await asyncFunc();
+    } catch (error) {
+      // Errors are already handled in context functions, but we could add more logging here if needed.
+      console.error('An error occurred during a withLoading operation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddDoctorAndRefetch = (doctorData: Omit<Doctor, 'id'>) =>
+    withLoading(async () => {
+      await addDoctor(doctorData);
+      await fetchDoctors(); // Refetch to ensure the list is up-to-date
+    });
+
+  const handleUpdateDoctorAndRefetch = (id: string, fields: Partial<Doctor>) =>
+    withLoading(async () => {
+      await updateDoctor(id, fields);
+      await fetchDoctors();
+      await fetchOrders(); // Also refetch orders as doctor name might have changed
+    });
+
+  const handleDeleteDoctorAndRefetch = (id: string) =>
+    withLoading(async () => {
+      await deleteDoctor(id);
+      await fetchOrders(); // This is the key part of the original request
+    });
+
+  const handleCreateOrderAndRefetch = (
+    orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
+  ) =>
+    withLoading(async () => {
+      const order = await handleOrderCreated(orderData);
+      if (order) {
+        setNewlyCreatedOrderId(order._id);
+        navigate('/orders');
+      }
+    });
+
+  const handleUpdateOrderAndRefetch = (id: string, updatedFields: Partial<Order>) =>
+    withLoading(() => updateOrder(id, updatedFields));
+
+  const handleDeleteOrderAndRefetch = (id: string) => withLoading(() => handleDeleteOrder(id));
+
+  const handleAddPaymentAndRefetch = (orderId: string, amount: number, description: string) =>
+    withLoading(() => addPaymentToOrder(orderId, amount, description));
+
+  const handleSaveNoteAndRefetch = (orderId: string, noteText: string) =>
+    withLoading(() => handleSaveNote(orderId, noteText));
+
+  const handleUpdateNoteAndRefetch = (orderId: string, noteId: string, newText: string) =>
+    withLoading(() => handleUpdateNote(orderId, noteId, newText));
+
+  // --- End of Orchestration Functions ---
 
   const fetchJobCategories = useCallback(async () => {
     try {
@@ -246,10 +308,12 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   return (
     <div className="relative flex h-screen bg-gray-100">
-      {isLoading && (
+      {(isInitialLoading || isGlobalLoading) && (
         <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900/75 backdrop-blur-sm">
           <div className="size-20 animate-spin rounded-full border-y-4 border-blue-500"></div>
-          <p className="mt-4 text-lg font-semibold text-white">Conectando y cargando datos...</p>
+          <p className="mt-4 text-lg font-semibold text-white">
+            {isInitialLoading ? 'Conectando y cargando datos...' : 'Procesando...'}
+          </p>
         </div>
       )}
 
