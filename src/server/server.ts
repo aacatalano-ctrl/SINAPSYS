@@ -144,7 +144,7 @@ import statusRouter from './routes/status.routes.js';
 app.use('/api', statusRouter);
 
 // Catch 404 and forward to error handler
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
