@@ -34,7 +34,12 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
   // Effect to initialize form state when the order prop is available
   useEffect(() => {
     if (order && doctors.length > 0) {
-      const doctor = doctors.find((d) => d._id === order.doctorId) || null;
+      // Ensure order.doctorId is treated as a string for comparison
+      const currentDoctorId = typeof order.doctorId === 'object' && order.doctorId !== null
+        ? (order.doctorId as Doctor)._id // If it's a populated object
+        : order.doctorId; // If it's just the ID string
+
+      const doctor = doctors.find((d) => d._id === currentDoctorId) || null;
       setSelectedDoctor(doctor);
       setPatientName(order.patientName);
       setCost(order.cost);
@@ -49,6 +54,21 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
       }
     }
   }, [order, doctors, jobCategories]);
+
+  // Effect to handle Escape key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
