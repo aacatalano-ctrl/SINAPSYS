@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { Server as SocketIoServer, Socket } from 'socket.io';
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
@@ -41,7 +41,7 @@ subClient.on('error', (err) => console.error('Redis SubClient Error:', err));
 
 const app = express();
 const httpServer = createServer(app);
-export const io = new Server(httpServer, {
+export const io = new SocketIoServer(httpServer, {
   cors: {
     origin: '*', // En producción, deberías restringir esto a la URL de tu frontend
   },
@@ -69,10 +69,10 @@ app.use(cors());
 app.use(express.json());
 
 // --- Socket.io Logic ---
-io.on('connection', (socket) => {
+io.on('connection', (socket: Socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  socket.on('authenticate', async (token) => {
+  socket.on('authenticate', async (token: string) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
       if (decoded.userId) {
