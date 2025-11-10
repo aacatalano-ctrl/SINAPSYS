@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
-import * as SocketIO from 'socket.io';
+import { Server, Socket } from 'socket.io/dist/index';
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import jwt from 'jsonwebtoken';
@@ -58,7 +57,7 @@ console.log('Socket.io Redis adapter applied successfully.');
 // We can add a simple check for connection status if desired, but adapter handles it.
 // For example, you might want to ping Redis to ensure it's reachable.
 // pubClient.ping().then(() => console.log('Upstash Redis pubClient connected.')).catch(err => console.error('Upstash Redis pubClient connection error:', err));
-// subClient.ping().then(() => console.log('Upstash Redis subClient connected.')).catch(err => console.error('Upstash Redis subClient connection error:', err));
+// subClient.ping().then(() => console.error('Upstash Redis subClient connection error:', err));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -70,7 +69,7 @@ app.use(cors());
 app.use(express.json());
 
 // --- Socket.io Logic ---
-io.on('connection', (socket: SocketIO.Socket) => {
+io.on('connection', (socket: Socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
   socket.on('authenticate', async (token: string) => {
