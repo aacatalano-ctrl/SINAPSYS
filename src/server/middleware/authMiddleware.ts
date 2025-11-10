@@ -5,7 +5,7 @@ interface AuthenticatedRequest extends Request {
   user: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 import { db } from '../database/index.js';
 

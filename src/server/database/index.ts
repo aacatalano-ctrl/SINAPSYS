@@ -28,12 +28,12 @@ const doctorSchema = new mongoose.Schema<Doctor>({
 
 const orderSchema = new mongoose.Schema<Order>({
   orderNumber: { type: String, unique: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true, index: true },
   patientName: { type: String, required: true },
   jobType: { type: String, required: true },
   cost: { type: Number, required: true },
-  status: { type: String, required: true },
-  creationDate: { type: Date, required: true }, // Consider using Date type
+  status: { type: String, required: true, index: true },
+  creationDate: { type: Date, required: true, index: true }, // Consider using Date type
   completionDate: { type: Date }, // Consider using Date type
   priority: { type: String },
   caseDescription: { type: String },
