@@ -106,10 +106,26 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
           ...options?.headers,
         };
         const response = await fetch(url, { ...options, headers });
-        if (response.status === 401) {
-          // Unauthorized (e.g., bad token)
-          clientSideLogout();
-          showToast('Sesión expirada. Por favor, inicia sesión de nuevo.', 'error');
+
+        if (!response.ok) {
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (jsonError) {
+            // If response is not JSON, use generic message
+            console.error('Failed to parse error response:', jsonError);
+          }
+
+          if (response.status === 401) {
+            clientSideLogout();
+            showToast('Sesión expirada. Por favor, inicia sesión de nuevo.', 'error');
+          } else {
+            showToast(errorMessage, 'error');
+          }
+          throw new Error(errorMessage);
         }
         return response;
       } finally {

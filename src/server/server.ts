@@ -16,6 +16,7 @@ import {
 } from './database/maintenance.js';
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
+import errorHandler, { AppError } from './middleware/errorHandler.js';
 
 // Cargar variables de entorno desde .env
 dotenv.config();
@@ -141,6 +142,14 @@ app.use('/api/notifications', notificationRouter);
 
 import statusRouter from './routes/status.routes.js';
 app.use('/api', statusRouter);
+
+// Catch 404 and forward to error handler
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// Global error handling middleware
+app.use(errorHandler);
 
 // --- SERVER INITIALIZATION ---
 let isInitialized = false;
