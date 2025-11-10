@@ -48,14 +48,8 @@ function CreateOrderView({
       showNotification('Por favor, selecciona un Doctor.', 'error');
       return;
     }
-    if (!patientName.trim()) {
-      showNotification('Por favor, ingresa el Nombre del Paciente.', 'error');
-      return;
-    }
-    if (!jobType) {
-      showNotification('Por favor, selecciona un Tipo de Trabajo.', 'error');
-      return;
-    }
+
+
     if (isNaN(cost) || cost <= 0) {
       showNotification('Por favor, ingresa un Costo válido (mayor que 0).', 'error');
       return;
