@@ -76,8 +76,6 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
     handleDeleteNotification,
     handleLogout,
     isDatabaseMaintenance,
-    isLoading: isGlobalLoading,
-    setIsLoading,
   } = useUI();
   const {
     doctors,
@@ -111,127 +109,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   const [jobTypePrefixMap, setJobTypePrefixMap] = useState({});
   const resolveAddDoctorPromise = useRef<((id: string | null) => void) | null>(null);
 
-  const isInitialLoading = !isDataLoaded || !isDoctorsLoaded;
-
-  // --- Orchestration Functions ---
-
-  const withLoading = useCallback(async <T,>(asyncFunc: () => Promise<T>): Promise<T | undefined> => {
-    setIsLoading(true);
-    try {
-      return await asyncFunc();
-    } catch (error) {
-      console.error('An error occurred during a withLoading operation:', error);
-      showToast('Ocurrió un error. Por favor, intente de nuevo.', 'error');
-      return undefined;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setIsLoading, showToast]);
-
-  const handleAddDoctorAndRefetch = useCallback(
-    async (doctorData: Omit<Doctor, 'id'>) => {
-      const newDoctor = await withLoading(async () => {
-        const addedDoctor = await addDoctor(doctorData);
-        await fetchDoctors(); // Refetch to ensure the list is up-to-date
-        return addedDoctor;
-      });
-      return newDoctor;
-    },
-    [addDoctor, fetchDoctors, withLoading],
-  );
-
-  const handleUpdateDoctorAndRefetch = useCallback(
-    async (id: string, fields: Partial<Doctor>) => {
-      await withLoading(async () => {
-        await updateDoctor(id, fields);
-        await fetchDoctors();
-        await fetchOrders(); // Also refetch orders as doctor name might have changed
-      });
-    },
-    [updateDoctor, fetchDoctors, fetchOrders, withLoading],
-  );
-
-  const handleDeleteDoctorAndRefetch = useCallback(
-    async (id: string) => {
-      await withLoading(async () => {
-        await deleteDoctor(id);
-        await fetchOrders(); // This is the key part of the original request
-      });
-    },
-    [deleteDoctor, fetchOrders, withLoading],
-  );
-
-  const handleCreateOrderAndRefetch = useCallback(
-    async (
-      orderData: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
-    ) => {
-      const order = await withLoading(async () => {
-        const createdOrder = await handleOrderCreated(orderData);
-        if (createdOrder) {
-          setNewlyCreatedOrderId(createdOrder._id);
-          navigate('/orders');
-        }
-        return createdOrder;
-      });
-      return order;
-    },
-    [handleOrderCreated, navigate, withLoading],
-  );
-
-  const handleUpdateOrderAndRefetch = useCallback(
-    async (id: string, updatedFields: Partial<Order>) => {
-      await withLoading(() => updateOrder(id, updatedFields));
-    },
-    [updateOrder, withLoading],
-  );
-
-  const handleDeleteOrderAndRefetch = useCallback(
-    async (id: string) => {
-      await withLoading(() => handleDeleteOrder(id));
-    },
-    [handleDeleteOrder, withLoading],
-  );
-
-  const handleAddPaymentAndRefetch = useCallback(
-    async (orderId: string, amount: number, description: string) => {
-      await withLoading(() => addPaymentToOrder(orderId, amount, description));
-    },
-    [addPaymentToOrder, withLoading],
-  );
-
-  const handleSaveNoteAndRefetch = useCallback(
-    async (orderId: string, noteText: string) => {
-      await withLoading(() => handleSaveNote(orderId, noteText));
-    },
-    [handleSaveNote, withLoading],
-  );
-
-  const handleUpdateNoteAndRefetch = useCallback(
-    async (orderId: string, noteId: string, newText: string) => {
-      await withLoading(() => handleUpdateNote(orderId, noteId, newText));
-    },
-    [handleUpdateNote, withLoading],
-  );
-
-  const handleUpdateOrderStatusAndRefetch = useCallback(
-    async (
-      orderId: string,
-      newStatus: 'Pendiente' | 'Procesando' | 'Completado',
-      completionDate: string | null = null,
-    ) => {
-      await withLoading(() => handleUpdateOrderStatus(orderId, newStatus, completionDate));
-    },
-    [handleUpdateOrderStatus, withLoading],
-  );
-
-  const confirmCompletionAndRefetch = useCallback(
-    async (order: Order, paymentAmount: number) => {
-      await withLoading(() => confirmCompletion(order, paymentAmount));
-    },
-    [confirmCompletion, withLoading],
-  );
-
-  // --- End of Orchestration Functions ---
+  const isLoading = !isDataLoaded || !isDoctorsLoaded;
 
   const fetchJobCategories = useCallback(async () => {
     try {
@@ -368,12 +246,10 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   return (
     <div className="relative flex h-screen bg-gray-100">
-      {(isInitialLoading || isGlobalLoading) && (
+      {isLoading && (
         <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900/75 backdrop-blur-sm">
           <div className="size-20 animate-spin rounded-full border-y-4 border-blue-500"></div>
-          <p className="mt-4 text-lg font-semibold text-white">
-            {isInitialLoading ? 'Conectando y cargando datos...' : 'Procesando...'}
-          </p>
+          <p className="mt-4 text-lg font-semibold text-white">Conectando y cargando datos...</p>
         </div>
       )}
 
@@ -425,7 +301,13 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
                     doctors={doctors}
                     jobCategories={jobCategories}
                     jobTypeCosts={jobTypeCosts}
-                    onOrderCreated={handleCreateOrderAndRefetch}
+                    onOrderCreated={async (newOrder) => {
+                      const order = await handleOrderCreated(newOrder);
+                      if (order) {
+                        setNewlyCreatedOrderId(order._id);
+                        navigate('/orders');
+                      }
+                    }}
                     onAddDoctor={openAddDoctorModal}
                   />
                 }
@@ -450,7 +332,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
                     }}
                     onAddNote={handleOpenAddNoteModal}
                     getDoctorFullNameById={getDoctorFullNameById}
-                    onDeleteOrder={handleDeleteOrderAndRefetch}
+                    onDeleteOrder={handleDeleteOrder}
                   />
                 }
               />
@@ -471,7 +353,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
                     sortOrdersDirection={sortOrdersDirection}
                     handleSortOrders={handleSortOrders}
                     calculateBalance={calculateBalance}
-                    handleDeleteOrder={handleDeleteOrderAndRefetch}
+                    handleDeleteOrder={handleDeleteOrder}
                   />
                 }
               />
@@ -482,8 +364,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
                     doctors={doctors}
                     editingDoctor={editingDoctor}
                     setEditingDoctor={setEditingDoctor}
-                    handleEditDoctor={handleUpdateDoctorAndRefetch}
-                    handleDeleteDoctor={handleDeleteDoctorAndRefetch}
+                    handleEditDoctor={updateDoctor}
+                    handleDeleteDoctor={deleteDoctor}
                     searchDoctorTerm={searchDoctorTerm}
                     setSearchDoctorTerm={setSearchDoctorTerm}
                     prefixFilter={prefixFilter}
@@ -652,8 +534,10 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
         <AddDoctorModal
           isOpen={isAddDoctorModalOpen}
           onClose={closeAddDoctorModal}
-          onAddDoctor={handleAddDoctorAndRefetch}
-          onEditDoctor={handleUpdateDoctorAndRefetch}
+          onAddDoctor={async (doctorData) => {
+            await addDoctor(doctorData);
+          }}
+          onEditDoctor={updateDoctor}
           doctorToEdit={editingDoctor}
           showToast={showToast}
         />
@@ -663,7 +547,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
           isOpen={isEditOrderModalOpen}
           onClose={closeEditOrderModal}
           order={selectedOrder}
-          onUpdateOrder={handleUpdateOrderAndRefetch}
+          onUpdateOrder={updateOrder}
           doctors={doctors}
           jobCategories={jobCategories}
           jobTypePrefixMap={jobTypePrefixMap}
@@ -677,10 +561,8 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
             closeAddNoteModal();
             setNoteToEdit(null);
           }}
-          onSaveNote={(noteText) => handleSaveNoteAndRefetch(selectedOrder._id, noteText)}
-          onUpdateNote={(noteId, newText) =>
-            handleUpdateNoteAndRefetch(selectedOrder._id, noteId, newText)
-          }
+          onSaveNote={(noteText) => handleSaveNote(selectedOrder._id, noteText)}
+          onUpdateNote={(noteId, newText) => handleUpdateNote(selectedOrder._id, noteId, newText)}
           noteToEdit={noteToEdit}
         />
       )}
@@ -690,7 +572,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
           onClose={closeAddPaymentModal}
           order={selectedOrderForPayment}
           onAddPayment={(amount, description) =>
-            handleAddPaymentAndRefetch(selectedOrderForPayment._id, amount, description)
+            addPaymentToOrder(selectedOrderForPayment._id, amount, description)
           }
         />
       )}
