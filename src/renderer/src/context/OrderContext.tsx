@@ -30,8 +30,8 @@ interface OrderContextType {
   ) => Promise<void>;
   handleDeleteOrder: (id: string) => Promise<string | void>;
   handleUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
-  generateReceiptPDF: (order: Order, currentUser: User) => Promise<void>;
-  generatePaymentHistoryPDF: (order: Order, currentUser: User) => Promise<void>;
+  generateReceiptPDF: (order: Order) => Promise<void>;
+  generatePaymentHistoryPDF: (order: Order) => Promise<void>;
   confirmCompletion: (order: Order, paymentAmount: number) => Promise<void>;
 }
 
@@ -316,12 +316,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
     }
   };
 
-  const generateReceiptPDF = async (order: Order, currentUser: User): Promise<void> => {
+  const generateReceiptPDF = async (order: Order): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${order._id}/receipt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order, currentUser }),
+        method: 'GET',
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const blob = await response.blob();
@@ -340,12 +338,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
     }
   };
 
-  const generatePaymentHistoryPDF = async (order: Order, currentUser: User): Promise<void> => {
+  const generatePaymentHistoryPDF = async (order: Order): Promise<void> => {
     try {
       const response = await authFetch(`${API_URL}/orders/${order._id}/payment-history-pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentUser }),
+        method: 'GET',
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const blob = await response.blob();

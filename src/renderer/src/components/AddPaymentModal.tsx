@@ -50,6 +50,27 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
     setAmount(e.target.value);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+
+    e.preventDefault();
+
+    const currentVal = parseFloat(amount) || 0;
+    let nextVal: number;
+
+    if (e.key === 'ArrowUp') {
+      // Ensure the next value does not exceed the available balance
+      nextVal = Math.min(currentVal + 10, balance);
+    } else {
+      // ArrowDown
+      // Ensure the next value is not less than 0
+      nextVal = Math.max(currentVal - 10, 0);
+    }
+
+    // Update the state with the new value, formatted to a max of 2 decimal places if not an integer
+    setAmount(String(Number.isInteger(nextVal) ? nextVal : nextVal.toFixed(2)));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -120,9 +141,10 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
                 className="grow px-1 py-2 leading-tight text-gray-700 focus:outline-none"
                 value={amount}
                 onChange={handleAmountChange}
+                onKeyDown={handleKeyDown}
                 min="0"
                 max={balance.toFixed(2)}
-                step="10"
+                step="0.01"
                 required
                 autoFocus
               />

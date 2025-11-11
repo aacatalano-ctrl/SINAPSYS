@@ -346,23 +346,20 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
 });
 
 // --- PDF ---
-router.post('/:orderId/receipt', async (req, res) => {
-  try {
-    const { currentUser } = req.body;
-    const order = await db.orders
-      .findById(req.params.orderId)
-      .populate('doctorId', 'firstName lastName');
 
-    if (!order || !currentUser) {
-      return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
-    }
-
+/**
+ * Generates a receipt PDF for a given order.
+ * @param order The order object, populated with doctor details.
+ * @param userName The name of the user generating the receipt.
+ * @returns A Promise that resolves with the PDF buffer.
+ */
+const generateReceiptPDF = (order: any, userName: string): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=recibo-${order.orderNumber}.pdf`);
-
-    doc.pipe(res);
+    const buffers: Buffer[] = [];
+    doc.on('data', (chunk) => buffers.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
 
     // Header
     doc.fontSize(24).font('Helvetica-Bold').text('RECIBO DE PAGO', { align: 'center' });
@@ -371,28 +368,20 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.moveDown(1);
 
     // Order Info
-    doc.fontSize(12).font('Helvetica-Bold').text(`Orden:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.orderNumber}`, 100, doc.y);
-    doc.moveDown(0.5);
+    const doctorName =
+      order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId
+        ? `${order.doctorId.firstName} ${order.doctorId.lastName}`
+        : 'N/A';
 
-    doc.font('Helvetica-Bold').text(`Fecha de Creación:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${new Date(order.creationDate).toLocaleDateString()}`, 160, doc.y);
+    doc.fontSize(12).font('Helvetica-Bold').text('Orden:', { continued: true }).font('Helvetica').text(` ${order.orderNumber}`);
     doc.moveDown(0.5);
-
-    doc.font('Helvetica-Bold').text(`Paciente:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.patientName}`, 110, doc.y);
+    doc.font('Helvetica-Bold').text('Fecha de Creación:', { continued: true }).font('Helvetica').text(` ${new Date(order.creationDate).toLocaleDateString()}`);
     doc.moveDown(0.5);
-
-    let doctorName = 'N/A';
-    if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
-      doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
-    }
-    doc.font('Helvetica-Bold').text(`Doctor:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${doctorName}`, 105, doc.y);
+    doc.font('Helvetica-Bold').text('Paciente:', { continued: true }).font('Helvetica').text(` ${order.patientName}`);
     doc.moveDown(0.5);
-
-    doc.font('Helvetica-Bold').text(`Trabajo:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.jobType}`, 110, doc.y);
+    doc.font('Helvetica-Bold').text('Doctor:', { continued: true }).font('Helvetica').text(` ${doctorName}`);
+    doc.moveDown(0.5);
+    doc.font('Helvetica-Bold').text('Trabajo:', { continued: true }).font('Helvetica').text(` ${order.jobType}`);
     doc.moveDown(2);
 
     // Financials
@@ -416,11 +405,11 @@ router.post('/:orderId/receipt', async (req, res) => {
     let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
       order.payments.forEach((payment: Payment) => {
-        const y = doc.y;
         totalPaid += payment.amount;
+        const y = doc.y;
         doc.text(new Date(payment.date).toLocaleDateString(), itemX, y);
         doc.text(payment.description || '', descriptionX, y, { width: 300 });
-        doc.text(`${payment.amount.toFixed(2)}`, amountX, y, { align: 'right' });
+        doc.text(payment.amount.toFixed(2), amountX, y, { align: 'right' });
         doc.moveDown();
       });
     } else {
@@ -430,51 +419,39 @@ router.post('/:orderId/receipt', async (req, res) => {
     doc.moveDown();
 
     // Totals
-    doc.fontSize(12).font('Helvetica-Bold'); // Smaller font for totals labels
-    const totalsY = doc.y;
-    doc.text('Costo Total:', descriptionX, totalsY, { align: 'right', width: 200 });
-    doc.text(`${order.cost.toFixed(2)}`, amountX, totalsY, { align: 'right' });
-    doc.moveDown(0.5); // Reduced spacing
-    doc.text('Total Pagado:', descriptionX, doc.y, { align: 'right', width: 200 });
+    doc.fontSize(12).font('Helvetica-Bold');
+    const totalsX = descriptionX + 200;
+    doc.text('Costo Total:', totalsX, doc.y, { align: 'right' });
+    doc.text(`${order.cost.toFixed(2)}`, amountX, doc.y, { align: 'right' });
+    doc.moveDown(0.5);
+    doc.text('Total Pagado:', totalsX, doc.y, { align: 'right' });
     doc.text(`${totalPaid.toFixed(2)}`, amountX, doc.y, { align: 'right' });
-    doc.moveDown(0.5); // Reduced spacing
-    doc.text('Saldo Pendiente:', descriptionX, doc.y, { align: 'right', width: 200 });
+    doc.moveDown(0.5);
+    doc.text('Saldo Pendiente:', totalsX, doc.y, { align: 'right' });
     doc.text(`${(order.cost - totalPaid).toFixed(2)}`, amountX, doc.y, { align: 'right' });
     doc.font('Helvetica');
     doc.moveDown(3);
 
-
+    // Signature
+    doc.fontSize(10).font('Helvetica').text(`Generado por: ${userName}`, 50, doc.y, { align: 'left' });
 
     doc.end();
-  } catch (error) {
-    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, {
-      error: getErrorMessage(error),
-      stack: getErrorStack(error),
-    });
-    res.status(500).json({ error: 'Error al generar el recibo.' });
-  }
-});
+  });
+};
 
-router.post('/:orderId/payment-history-pdf', async (req, res) => {
-  try {
-    const { currentUser } = req.body;
-    const order = await db.orders
-      .findById(req.params.orderId)
-      .populate('doctorId', 'firstName lastName');
-
-    if (!order || !currentUser) {
-      return res.status(400).json({ error: 'Faltan datos de la orden o del usuario.' });
-    }
-
+/**
+ * Generates a payment history PDF for a given order.
+ * @param order The order object, populated with doctor details.
+ * @param userName The name of the user generating the history.
+ * @returns A Promise that resolves with the PDF buffer.
+ */
+const generatePaymentHistoryPDF = (order: any, userName: string): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=historial-pagos-${order.orderNumber}.pdf`,
-    );
-
-    doc.pipe(res);
+    const buffers: Buffer[] = [];
+    doc.on('data', (chunk) => buffers.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
 
     // Header
     doc.fontSize(24).font('Helvetica-Bold').text('HISTORIAL DE PAGOS', { align: 'center' });
@@ -483,31 +460,23 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.moveDown(1);
 
     // Order Info
-    doc.fontSize(12).font('Helvetica-Bold').text(`Orden:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.orderNumber}`, 100, doc.y);
+    const doctorName =
+      order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId
+        ? `${order.doctorId.firstName} ${order.doctorId.lastName}`
+        : 'N/A';
+        
+    doc.fontSize(12).font('Helvetica-Bold').text('Orden:', { continued: true }).font('Helvetica').text(` ${order.orderNumber}`);
     doc.moveDown(0.5);
-
-    doc.font('Helvetica-Bold').text(`Fecha de Creación:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${new Date(order.creationDate).toLocaleDateString()}`, 160, doc.y);
+    doc.font('Helvetica-Bold').text('Fecha de Creación:', { continued: true }).font('Helvetica').text(` ${new Date(order.creationDate).toLocaleDateString()}`);
     doc.moveDown(0.5);
-
-    doc.font('Helvetica-Bold').text(`Paciente:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.patientName}`, 110, doc.y);
+    doc.font('Helvetica-Bold').text('Paciente:', { continued: true }).font('Helvetica').text(` ${order.patientName}`);
     doc.moveDown(0.5);
-
-    let doctorName = 'N/A';
-    if (order.doctorId && typeof order.doctorId === 'object' && 'firstName' in order.doctorId) {
-      doctorName = `${order.doctorId.firstName} ${order.doctorId.lastName}`;
-    }
-    doc.font('Helvetica-Bold').text(`Doctor:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${doctorName}`, 105, doc.y);
+    doc.font('Helvetica-Bold').text('Doctor:', { continued: true }).font('Helvetica').text(` ${doctorName}`);
     doc.moveDown(0.5);
-
-    doc.font('Helvetica-Bold').text(`Trabajo:`, 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`${order.jobType}`, 110, doc.y);
+    doc.font('Helvetica-Bold').text('Trabajo:', { continued: true }).font('Helvetica').text(` ${order.jobType}`);
     doc.moveDown(2);
 
-    // Financials
+    // Financials Table
     doc.fontSize(16).text('Historial de Pagos', { underline: true });
     doc.moveDown();
     doc.fontSize(12);
@@ -525,33 +494,71 @@ router.post('/:orderId/payment-history-pdf', async (req, res) => {
     doc.moveDown();
 
     // Table Rows for Payments
-    let totalPaid = 0;
     if (order.payments && order.payments.length > 0) {
       order.payments.forEach((payment: Payment) => {
         const y = doc.y;
-        totalPaid += payment.amount;
         doc.text(new Date(payment.date).toLocaleDateString(), itemX, y);
         doc.text(payment.description || '', descriptionX, y, { width: 300 });
-        doc.text(`${payment.amount.toFixed(2)}`, amountX, y, { align: 'right' });
+        doc.text(payment.amount.toFixed(2), amountX, y, { align: 'right' });
         doc.moveDown();
       });
     } else {
       doc.text('No hay pagos registrados.', itemX, doc.y);
       doc.moveDown();
     }
-    doc.moveDown();
+    doc.moveDown(3);
 
-    // Totals
-    doc.fontSize(12).font('Helvetica-Bold'); // Smaller font for totals labels
-    const totalsY = doc.y;
-
+    // Signature
+    doc.fontSize(10).font('Helvetica').text(`Generado por: ${userName}`, 50, doc.y, { align: 'left' });
 
     doc.end();
+  });
+};
+
+router.get('/:orderId/receipt', async (req, res) => {
+  try {
+    if (!req.user?.name) {
+      return res.status(401).json({ error: 'Usuario no autenticado.' });
+    }
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    const pdfBuffer = await generateReceiptPDF(order, req.user.name);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=recibo-${order.orderNumber}.pdf`);
+    res.send(pdfBuffer);
   } catch (error) {
-    logger.error(
-      `Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`,
-      { error: getErrorMessage(error), stack: getErrorStack(error) },
-    );
+    logger.error(`Error al generar el recibo PDF para la orden ${req.params.orderId}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
+    res.status(500).json({ error: 'Error al generar el recibo.' });
+  }
+});
+
+router.get('/:orderId/payment-history-pdf', async (req, res) => {
+  try {
+    if (!req.user?.name) {
+      return res.status(401).json({ error: 'Usuario no autenticado.' });
+    }
+    const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada.' });
+    }
+
+    const pdfBuffer = await generatePaymentHistoryPDF(order, req.user.name);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=historial-pagos-${order.orderNumber}.pdf`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    logger.error(`Error al generar el PDF de historial de pagos para la orden ${req.params.orderId}:`, {
+      error: getErrorMessage(error),
+      stack: getErrorStack(error),
+    });
     res.status(500).json({ error: 'Error al generar el historial de pagos.' });
   }
 });
