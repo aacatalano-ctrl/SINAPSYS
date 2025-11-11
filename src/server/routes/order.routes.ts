@@ -517,7 +517,7 @@ const generatePaymentHistoryPDF = (order: any, userName: string): Promise<Buffer
 
 router.get('/:orderId/receipt', async (req, res) => {
   try {
-    if (!req.user?.name) {
+    if (!req.user?.nombre) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
     const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
@@ -525,7 +525,7 @@ router.get('/:orderId/receipt', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const pdfBuffer = await generateReceiptPDF(order, req.user.name);
+    const pdfBuffer = await generateReceiptPDF(order, req.user.nombre);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=recibo-${order.orderNumber}.pdf`);
@@ -541,7 +541,7 @@ router.get('/:orderId/receipt', async (req, res) => {
 
 router.get('/:orderId/payment-history-pdf', async (req, res) => {
   try {
-    if (!req.user?.name) {
+    if (!req.user?.nombre) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
     const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
@@ -549,7 +549,7 @@ router.get('/:orderId/payment-history-pdf', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const pdfBuffer = await generatePaymentHistoryPDF(order, req.user.name);
+    const pdfBuffer = await generatePaymentHistoryPDF(order, req.user.nombre);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=historial-pagos-${order.orderNumber}.pdf`);

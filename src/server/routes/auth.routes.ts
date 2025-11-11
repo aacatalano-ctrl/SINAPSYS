@@ -49,11 +49,11 @@ router.post('/login', async (req, res) => {
     // --- END OF ATOMIC UPDATE ---
 
     const token = jwt.sign(
-      { userId: user._id, username: user.username, role: user.role },
+      { userId: user._id, username: user.username, nombre: user.nombre, role: user.role },
       JWT_SECRET!,
       { expiresIn: '1h' },
     );
-    res.json({ success: true, user: { username: user.username, role: user.role }, token });
+    res.json({ success: true, user: { username: user.username, nombre: user.nombre, role: user.role }, token });
   } catch (error) {
     console.error(`Error during login for user ${username}:`, error);
     res

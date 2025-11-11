@@ -2,7 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface AuthenticatedRequest extends Request {
-  user: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
+  user: {
+    userId: string;
+    username: string;
+    nombre: string;
+    role: 'master' | 'admin' | 'cliente' | 'operador';
+  };
 }
 
 import { db } from '../database/index.js';
@@ -30,6 +35,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string;
       username: string;
+      nombre: string;
       role: 'master' | 'admin' | 'cliente' | 'operador';
     };
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
