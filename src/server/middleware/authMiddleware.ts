@@ -1,21 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    userId: string;
-    username: string;
-    nombre: string;
-    role: 'master' | 'admin' | 'cliente' | 'operador';
-  };
-}
-
 import { db } from '../database/index.js';
 
 const lastActiveUpdate: Map<string, number> = new Map();
 const DEBOUNCE_INTERVAL = 60 * 1000; // 60 seconds
 
-const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const JWT_SECRET = process.env.JWT_SECRET;
 
   if (!JWT_SECRET) {
@@ -32,12 +22,7 @@ const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunc
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      username: string;
-      nombre: string;
-      role: 'master' | 'admin' | 'cliente' | 'operador';
-    };
+    const decoded = jwt.verify(token, JWT_SECRET) as Express.Request['user'];
     req.user = decoded; // Adjuntar la información del usuario a la solicitud
 
     // Debounced update to lastActiveAt
