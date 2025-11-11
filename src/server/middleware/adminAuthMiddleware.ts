@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import authMiddleware from './authMiddleware.js';
 
-interface AuthenticatedRequest extends Request {
-  user: { userId: string; username: string; role: 'master' | 'admin' | 'cliente' | 'operador' };
-}
-
-const adminAuthMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const adminAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Primero, asegurar que el usuario esté autenticado
   authMiddleware(req, res, () => {
     if (!req.user) {
