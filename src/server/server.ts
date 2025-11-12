@@ -17,6 +17,7 @@ import {
 import { checkUnpaidOrders } from './database/notifications.js';
 import { jobCategories, jobTypeCosts, jobTypePrefixMap } from './database/constants.js';
 import errorHandler, { AppError } from './middleware/errorHandler.js';
+import cacheMiddleware from './middleware/cacheMiddleware.js'; // Import cacheMiddleware
 
 // Cargar variables de entorno desde .env
 dotenv.config();
@@ -28,7 +29,7 @@ if (!REDIS_URL) {
   process.exit(1);
 }
 
-const pubClient = new Redis(REDIS_URL, {
+export const pubClient = new Redis(REDIS_URL, {
   lazyConnect: true, // Connect only when first command is issued
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000); // Exponential backoff up to 2 seconds
@@ -117,7 +118,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/job-categories', (req, res) => {
+app.get('/api/job-categories', cacheMiddleware(3600), (req, res) => {
   res.json({ jobCategories, jobTypeCosts, jobTypePrefixMap });
 });
 
