@@ -43,7 +43,7 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
   };
 
   const handleSelect = (order: Order) => {
-    setInputValue(`${order._id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`);
+    setInputValue(`${order.patientName} (${getDoctorFullNameById(order.doctorId)}) - ${order.jobType}`);
     onSelectOrder(order);
     setIsOpen(false);
   };
@@ -107,7 +107,7 @@ const OrderSearchCombobox: React.FC<OrderSearchComboboxProps> = ({
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={`cursor-pointer px-4 py-2 hover:bg-blue-100 ${index === highlightedIndex ? 'bg-blue-100' : ''}`}
               >
-                {`${order._id} - ${order.patientName} (${getDoctorFullNameById(order.doctorId)})`}
+                {`${order.patientName} (${getDoctorFullNameById(order.doctorId)}) - ${order.jobType}`}
               </li>
             ))}
           </ul>
