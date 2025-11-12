@@ -39,7 +39,8 @@ const orderSchema = new mongoose.Schema<Order>({
   caseDescription: { type: String },
   payments: [paymentSchema],
   notes: [noteSchema],
-}, { indexes: [{ doctorId: 1, status: 1, creationDate: -1 }] }); // Compound index
+});
+orderSchema.index({ doctorId: 1, status: 1, creationDate: -1 }); // Compound index
 
 const userSchema = new mongoose.Schema<User>({
   username: { type: String, required: true, unique: true },
@@ -66,8 +67,9 @@ const notificationSchema = new mongoose.Schema<Notification>(
     message: { type: String, required: true },
     read: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true, indexes: [{ createdAt: 1 }] }, // Add index for createdAt
+  { timestamps: true },
 );
+notificationSchema.index({ createdAt: 1 }); // Add index for createdAt
 
 const SequenceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
