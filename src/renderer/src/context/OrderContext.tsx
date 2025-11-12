@@ -51,7 +51,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { showToast, fetchNotifications } = useUI();
-  const { isDoctorsLoaded } = useDoctors();
+  const { isDoctorsLoaded, doctors } = useDoctors();
 
   const API_URL = '/api';
 
@@ -72,7 +72,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
     if (isDoctorsLoaded) {
       fetchOrders();
     }
-  }, [isDoctorsLoaded, fetchOrders]);
+  }, [isDoctorsLoaded, fetchOrders, doctors]);
 
   const calculateBalance = (order: Order): number => {
     if (!order || !order.payments) return order?.cost || 0;
