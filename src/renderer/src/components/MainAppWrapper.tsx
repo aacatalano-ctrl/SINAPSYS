@@ -4,7 +4,7 @@ import { useOrders } from '../context/OrderContext';
 import { useUI } from '../context/UIContext';
 import { useDoctors } from '../context/DoctorContext';
 import Sidebar from './Sidebar';
-import UsersAdminView from './UsersAdminView';
+const UsersAdminView = lazy(() => import('./UsersAdminView'));
 const DoctorsView = lazy(() => import('./DoctorsView'));
 const ExistingOrdersView = lazy(() => import('./ExistingOrdersView'));
 const HistoryOrdersView = lazy(() => import('./HistoryOrdersView'));
