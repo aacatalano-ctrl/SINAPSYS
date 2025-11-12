@@ -350,10 +350,11 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
 /**
  * Generates a receipt PDF for a given order.
  * @param order The order object, populated with doctor details.
- * @param userName The name of the user generating the receipt.
+ * @param firstName The first name of the user generating the receipt.
+ * @param lastName The last name of the user generating the receipt.
  * @returns A Promise that resolves with the PDF buffer.
  */
-const generateReceiptPDF = (order: any, userName: string): Promise<Buffer> => {
+const generateReceiptPDF = (order: any, firstName: string, lastName: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
     const buffers: Buffer[] = [];
@@ -433,7 +434,7 @@ const generateReceiptPDF = (order: any, userName: string): Promise<Buffer> => {
     doc.moveDown(3);
 
     // Signature
-    doc.fontSize(10).font('Helvetica').text(`Generado por: ${userName}`, 50, doc.y, { align: 'left' });
+    doc.fontSize(10).font('Helvetica').text(`Generado por: ${firstName} ${lastName}`, 50, doc.y, { align: 'left' });
 
     doc.end();
   });
@@ -442,10 +443,11 @@ const generateReceiptPDF = (order: any, userName: string): Promise<Buffer> => {
 /**
  * Generates a payment history PDF for a given order.
  * @param order The order object, populated with doctor details.
- * @param userName The name of the user generating the history.
+ * @param firstName The first name of the user generating the history.
+ * @param lastName The last name of the user generating the history.
  * @returns A Promise that resolves with the PDF buffer.
  */
-const generatePaymentHistoryPDF = (order: any, userName: string): Promise<Buffer> => {
+const generatePaymentHistoryPDF = (order: any, firstName: string, lastName: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
     const buffers: Buffer[] = [];
@@ -509,7 +511,7 @@ const generatePaymentHistoryPDF = (order: any, userName: string): Promise<Buffer
     doc.moveDown(3);
 
     // Signature
-    doc.fontSize(10).font('Helvetica').text(`Generado por: ${userName}`, 50, doc.y, { align: 'left' });
+    doc.fontSize(10).font('Helvetica').text(`Generado por: ${firstName} ${lastName}`, 50, doc.y, { align: 'left' });
 
     doc.end();
   });
@@ -517,15 +519,15 @@ const generatePaymentHistoryPDF = (order: any, userName: string): Promise<Buffer
 
 router.get('/:orderId/receipt', async (req, res) => {
   try {
-    if (!req.user?.nombre) {
-      return res.status(401).json({ error: 'Usuario no autenticado.' });
+    if (!req.user?.nombre || !req.user?.apellido) {
+      return res.status(401).json({ error: 'Usuario no autenticado o nombre/apellido no disponible.' });
     }
     const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const pdfBuffer = await generateReceiptPDF(order, req.user.nombre);
+    const pdfBuffer = await generateReceiptPDF(order, req.user.nombre, req.user.apellido);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=recibo-${order.orderNumber}.pdf`);
@@ -541,15 +543,15 @@ router.get('/:orderId/receipt', async (req, res) => {
 
 router.get('/:orderId/payment-history-pdf', async (req, res) => {
   try {
-    if (!req.user?.nombre) {
-      return res.status(401).json({ error: 'Usuario no autenticado.' });
+    if (!req.user?.nombre || !req.user?.apellido) {
+      return res.status(401).json({ error: 'Usuario no autenticado o nombre/apellido no disponible.' });
     }
     const order = await db.orders.findById(req.params.orderId).populate('doctorId', 'firstName lastName');
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const pdfBuffer = await generatePaymentHistoryPDF(order, req.user.nombre);
+    const pdfBuffer = await generatePaymentHistoryPDF(order, req.user.nombre, req.user.apellido);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=historial-pagos-${order.orderNumber}.pdf`);

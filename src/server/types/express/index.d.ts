@@ -7,6 +7,7 @@ declare global {
         userId: string;
         username: string;
         nombre: string;
+        apellido: string;
         role: 'master' | 'admin' | 'cliente' | 'operador';
       };
     }
