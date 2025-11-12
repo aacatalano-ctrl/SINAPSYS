@@ -19,10 +19,10 @@ const noteSchema = new mongoose.Schema<Note>({
 
 const doctorSchema = new mongoose.Schema<Doctor>({
   title: { type: String, required: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String },
-  email: { type: String },
-  phone: { type: String },
+  firstName: { type: String, required: true, index: true },
+  lastName: { type: String, index: true },
+  email: { type: String, unique: true, sparse: true },
+  phone: { type: String, index: true },
   address: { type: String },
 });
 
@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema<Order>({
   caseDescription: { type: String },
   payments: [paymentSchema],
   notes: [noteSchema],
-});
+}, { indexes: [{ doctorId: 1, status: 1, creationDate: -1 }] }); // Compound index
 
 const userSchema = new mongoose.Schema<User>({
   username: { type: String, required: true, unique: true },
@@ -47,26 +47,26 @@ const userSchema = new mongoose.Schema<User>({
   password: { type: String, required: true },
   securityQuestion: { type: String, required: true },
   securityAnswer: { type: String, required: true },
-  nombre: { type: String, required: true },
-  apellido: { type: String, required: true },
-  cedula: { type: String, required: true },
+  nombre: { type: String, required: true, index: true },
+  apellido: { type: String, required: true, index: true },
+  cedula: { type: String, required: true, unique: true },
   direccion: { type: String, required: true },
   razonSocial: { type: String, required: true },
-  rif: { type: String, required: true },
-  role: { type: String, enum: ['master', 'admin', 'cliente', 'operador'], default: 'cliente' },
-  status: { type: String, enum: ['active', 'blocked'], default: 'active' },
-  isOnline: { type: Boolean, default: false },
+  rif: { type: String, required: true, unique: true },
+  role: { type: String, enum: ['master', 'admin', 'cliente', 'operador'], default: 'cliente', index: true },
+  status: { type: String, enum: ['active', 'blocked'], default: 'active', index: true },
+  isOnline: { type: Boolean, default: false, index: true },
   socketId: { type: String },
   lastActiveAt: { type: Date, default: Date.now },
 });
 
 const notificationSchema = new mongoose.Schema<Notification>(
   {
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true, index: true },
     message: { type: String, required: true },
-    read: { type: Boolean, default: false },
+    read: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true },
+  { timestamps: true, indexes: [{ createdAt: 1 }] }, // Add index for createdAt
 );
 
 const SequenceSchema = new mongoose.Schema({

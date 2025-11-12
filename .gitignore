@@ -24,4 +24,7 @@ dist/
 dump.rdb
 
 .vercel
-\n# Archivos de diagnóstico y temporales\ncheckDb.mjs
+# Archivos de diagnóstico y temporales
+checkDb.mjs
+69124b2c877cf33c2ced16f8-Recibo.pdf
+DMA-25-0072-HistorialDePagos-2.pdf
