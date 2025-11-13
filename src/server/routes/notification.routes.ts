@@ -4,6 +4,9 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
 
+// Protect all notification routes
+router.use(authMiddleware);
+
 // GET /api/notifications
 router.get('/', async (req, res) => {
   try {
@@ -46,7 +49,7 @@ router.put('/mark-all-read', async (req, res) => {
 });
 
 // DELETE /api/notifications/:id
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   if (req.user && req.user.role === 'operador') {
     return res
       .status(403)
@@ -66,7 +69,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // DELETE /api/notifications
-router.delete('/', authMiddleware, async (req, res) => {
+router.delete('/', async (req, res) => {
   if (req.user && req.user.role === 'operador') {
     return res
       .status(403)

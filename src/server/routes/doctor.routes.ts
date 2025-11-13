@@ -6,6 +6,9 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
 
+// Protect all doctor routes
+router.use(authMiddleware);
+
 // GET /api/doctors
 router.get('/', async (req, res) => {
   try {
@@ -56,7 +59,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/doctors/:id
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   if (req.user && req.user.role === 'operador') {
     return res
       .status(403)

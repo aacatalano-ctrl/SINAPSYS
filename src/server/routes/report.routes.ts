@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import PDFDocument from 'pdfkit';
 import { db } from '../database/index.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
+
+// Protect all report routes
+router.use(authMiddleware);
 
 // GET /api/reports/income-breakdown
 router.get('/income-breakdown', async (req, res) => {
