@@ -125,7 +125,7 @@ const DoctorsView: React.FC<DoctorsViewProps> = ({
                 onClick={onExportDoctors}
                 className="flex items-center rounded-lg bg-green-600 px-5 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-green-700"
               >
-                <Download className="mr-2" /> Exportar a CSV
+                <Download className="mr-2" /> Tabla EXCEL
               </button>
               <button
                 onClick={() => openAddDoctorModal()}

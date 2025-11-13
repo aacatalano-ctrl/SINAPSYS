@@ -36,8 +36,23 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     }
 
     next();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      try {
+        // Decode the expired token to get the user ID
+        const decoded = jwt.decode(token) as { userId: string } | null;
+        if (decoded && decoded.userId) {
+          // Fire-and-forget update to set user as offline
+          db.users
+            .updateOne({ _id: decoded.userId }, { $set: { isOnline: false, socketId: undefined } })
+            .exec();
+          console.log(`Set user ${decoded.userId} to offline due to expired token.`);
+        }
+      } catch (decodeError) {
+        console.error('Error decoding expired token:', decodeError);
+      }
+    }
+    // For all auth errors (expired or invalid), send the same response
     return res.status(403).json({ message: 'No autorizado: Token inválido o expirado.' });
   }
 };
