@@ -142,7 +142,9 @@ import notificationRouter from './routes/notification.routes.js';
 app.use('/api/notifications', notificationRouter);
 
 import statusRouter from './routes/status.routes.js';
+import exportRouter from './routes/export.routes.js';
 app.use('/api', statusRouter);
+app.use('/api/export', exportRouter);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
