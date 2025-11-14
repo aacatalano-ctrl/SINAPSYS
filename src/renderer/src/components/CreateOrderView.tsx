@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { Plus } from 'lucide-react';
 import DoctorCombobox from './DoctorCombobox';
-import { Doctor, Order, JobCategory } from '../../types';
+import { Doctor, Order, JobCategory, JobItem } from '../../types';
 
 interface CreateOrderViewProps {
   doctors: Doctor[];
@@ -17,8 +17,8 @@ function CreateOrderView({
   jobTypeCosts,
   onAddDoctor,
 }: CreateOrderViewProps) {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [cost, setCost] = useState<number>(0);
+  const [jobItems, setJobItems] = useState<JobItem[]>([{ jobCategory: '', jobType: '', cost: 0 }]);
+  const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [newlyAddedDoctorId, setNewlyAddedDoctorId] = useState<string | null>(null);
   const [selectedJobType, setSelectedJobType] = useState<string>('');
@@ -40,39 +40,48 @@ function CreateOrderView({
     const formData = new FormData(e.currentTarget);
     const doctorId = selectedDoctor?._id;
     const patientName = formData.get('patientName') as string;
-    const jobType = selectedJobType;
     const priority = formData.get('priority') as string;
     const caseDescription = formData.get('caseDescription') as string;
 
+    // Client-side validation for jobItems
+    const errors: string[] = [];
+    if (jobItems.length === 0) {
+      errors.push('Debe añadir al menos un tipo de trabajo.');
+    } else {
+      jobItems.forEach((item, index) => {
+        if (!item.jobCategory.trim()) {
+          errors.push(`La categoría de trabajo para el ítem ${index + 1} es requerida.`);
+        }
+        if (!item.jobType.trim()) {
+          errors.push(`El tipo de trabajo para el ítem ${index + 1} es requerido.`);
+        }
+        if (isNaN(item.cost) || item.cost <= 0) {
+          errors.push(`El costo para el ítem ${index + 1} debe ser un número positivo.`);
+        }
+      });
+    }
+
     if (!selectedDoctor) {
-      showNotification('Por favor, selecciona un Doctor.', 'error');
-      return;
+      errors.push('Por favor, selecciona un Doctor.');
     }
     if (!patientName.trim()) {
-      showNotification('Por favor, ingresa el Nombre del Paciente.', 'error');
-      return;
-    }
-    if (!selectedCategory) {
-      showNotification('Por favor, selecciona una Categoría de Trabajo.', 'error');
-      return;
-    }
-    if (!selectedJobType) {
-      showNotification('Por favor, selecciona un Tipo de Trabajo.', 'error');
-      return;
+      errors.push('Por favor, ingresa el Nombre del Paciente.');
     }
 
-
-    if (isNaN(cost) || cost <= 0) {
-      showNotification('Por favor, ingresa un Costo válido (mayor que 0).', 'error');
+    if (errors.length > 0) {
+      errors.forEach((msg) => showNotification(msg, 'error'));
+      setJobItemsErrors(errors);
       return;
     }
+    setJobItemsErrors([]); // Clear previous errors
 
+    const totalCost = jobItems.reduce((sum, item) => sum + item.cost, 0);
 
     const newOrder: Order = {
       doctorId,
       patientName,
-      jobType,
-      cost,
+      jobItems,
+      cost: totalCost, // This will be overwritten by backend calculation, but good for type consistency
       status: 'Pendiente',
       creationDate: new Date().toISOString(),
       priority: priority as 'Baja' | 'Normal' | 'Alta' | 'Urgente',
@@ -86,10 +95,8 @@ function CreateOrderView({
       if (formRef.current) {
         formRef.current.reset();
       }
-      setSelectedCategory('');
-      setSelectedJobType(''); // <--- Add this
-      setCost(0);
-      setSelectedDoctor(null); // <-- AÑADIR ESTA LÍNEA
+      setJobItems([{ jobCategory: '', jobType: '', cost: 0 }]); // Reset job items
+      setSelectedDoctor(null);
       showNotification(`Orden ${addedOrder.orderNumber} creada con éxito.`);
     } catch (error: Error) {
       console.error('Error creating order:', error);
@@ -151,86 +158,133 @@ function CreateOrderView({
           />
         </div>
 
-        <div>
-          <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">
-            Categoría de Trabajo:
-          </label>
-          <select
-            id="jobCategory"
-            name="jobCategory"
-            className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={selectedCategory}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setSelectedCategory(e.target.value);
-              setSelectedJobType(''); // Reset selectedJobType when category changes
-              setCost(0);
-            }}
-            required
-          >
-            <option key="create-order-select-category" value="">
-              Selecciona una categoría
-            </option>
-            {jobCategories.map((category) => (
-              <option key={category.category} value={category.category}>
-                {category.category}
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="md:col-span-2">
+          <h3 className="mb-4 text-lg font-bold text-gray-700">Detalles de los Trabajos (Máx. 5)</h3>
+          {jobItems.map((item, index) => (
+            <div key={index} className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-3">
+              <div>
+                <label
+                  htmlFor={`jobCategory-${index}`}
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Categoría de Trabajo:
+                </label>
+                <select
+                  id={`jobCategory-${index}`}
+                  name={`jobCategory-${index}`}
+                  className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={item.jobCategory}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const newJobItems = [...jobItems];
+                    newJobItems[index].jobCategory = e.target.value;
+                    newJobItems[index].jobType = ''; // Reset jobType when category changes
+                    newJobItems[index].cost = 0; // Reset cost when category changes
+                    setJobItems(newJobItems);
+                  }}
+                  required
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {jobCategories.map((category) => (
+                    <option key={category.category} value={category.category}>
+                      {category.category}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <div>
-          <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">
-            Tipo de Trabajo:
-          </label>
-          <select
-            id="jobType"
-            name="jobType"
-            className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            disabled={!selectedCategory} // Disable until a category is selected
-            value={selectedJobType} // <--- Add this
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setSelectedJobType(e.target.value);
-              setCost(
-                jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0,
-              );
-            }}
-          >
-            <option key="create-order-select-job-type" value="">
-              Selecciona tipo de trabajo
-            </option>
-            {selectedCategory &&
-              jobCategories
-                .find((cat) => cat.category === selectedCategory)
-                ?.services.map((service) => (
-                  <option
-                    key={`${selectedCategory} - ${service.name}`}
-                    value={`${selectedCategory} - ${service.name}`}
+              <div>
+                <label
+                  htmlFor={`jobType-${index}`}
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Tipo de Trabajo:
+                </label>
+                <select
+                  id={`jobType-${index}`}
+                  name={`jobType-${index}`}
+                  className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  disabled={!item.jobCategory}
+                  value={item.jobType}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const newJobItems = [...jobItems];
+                    newJobItems[index].jobType = e.target.value;
+                    newJobItems[index].cost =
+                      jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0;
+                    setJobItems(newJobItems);
+                  }}
+                >
+                  <option value="">Selecciona tipo de trabajo</option>
+                  {item.jobCategory &&
+                    jobCategories
+                      .find((cat) => cat.category === item.jobCategory)
+                      ?.services.map((service) => (
+                        <option
+                          key={`${item.jobCategory} - ${service.name}`}
+                          value={`${item.jobCategory} - ${service.name}`}
+                        >
+                          {service.name}
+                        </option>
+                      ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor={`cost-${index}`}
+                  className="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                  Costo ($):
+                </label>
+                <input
+                  type="number"
+                  id={`cost-${index}`}
+                  name={`cost-${index}`}
+                  className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  step="0.01"
+                  min="0"
+                  value={item.cost}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const newJobItems = [...jobItems];
+                    let value = parseFloat(e.target.value);
+                    if (isNaN(value)) value = 0;
+                    newJobItems[index].cost = value;
+                    setJobItems(newJobItems);
+                  }}
+                />
+              </div>
+              {jobItems.length > 1 && (
+                <div className="md:col-span-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newJobItems = jobItems.filter((_, i) => i !== index);
+                      setJobItems(newJobItems);
+                    }}
+                    className="text-red-600 hover:text-red-800 text-sm font-semibold"
                   >
-                    {service.name}
-                  </option>
-                ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">
-            Costo ($):
-          </label>
-          <input
-            type="number"
-            id="cost"
-            name="cost"
-            className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-            step="0.01"
-            min="0"
-            value={cost}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              let value = parseFloat(e.target.value);
-              if (isNaN(value)) value = 0;
-              setCost(value);
-            }}
-          />
+                    Eliminar Trabajo
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+          {jobItems.length < 5 && (
+            <button
+              type="button"
+              onClick={() => setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: 0 }])}
+              className="mt-2 flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
+            >
+              <Plus className="mr-1 size-4" /> Añadir Otro Trabajo
+            </button>
+          )}
+          {jobItemsErrors.length > 0 && (
+            <div className="mt-2 text-red-500">
+              {jobItemsErrors.map((error, index) => (
+                <p key={index}>{error}</p>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
