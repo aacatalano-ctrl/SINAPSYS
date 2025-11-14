@@ -41,13 +41,16 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
     const searchTerm = searchHistoryTerm.toLowerCase();
     const doctorFullName = getDoctorFullNameById(order.doctorId)?.toLowerCase() || '';
     const patientName = order.patientName?.toLowerCase() || '';
-    const jobType = order.jobType?.toLowerCase() || '';
+    const jobItemsDescription = order.jobItems
+      .map((item) => item.jobType)
+      .join(' ')
+      .toLowerCase();
     const orderId = order.orderNumber?.toLowerCase() || '';
 
     return (
       doctorFullName.includes(searchTerm) ||
       patientName.includes(searchTerm) ||
-      jobType.includes(searchTerm) ||
+      jobItemsDescription.includes(searchTerm) ||
       orderId.includes(searchTerm)
     );
   });
@@ -65,6 +68,10 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
     if (sortOrdersColumn === 'creationDate' || sortOrdersColumn === 'completionDate') {
       aValue = new Date(a.creationDate).getTime();
       bValue = new Date(b.creationDate).getTime();
+    }
+    if (sortOrdersColumn === 'jobType') {
+      aValue = a.jobItems[0]?.jobType ? getJobTypeCategory(a.jobItems[0].jobType) : '';
+      bValue = b.jobItems[0]?.jobType ? getJobTypeCategory(b.jobItems[0].jobType) : '';
     }
 
     if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -189,7 +196,7 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
                     className="cursor-pointer px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700"
                     onClick={() => handleSortOrders('jobType')}
                   >
-                    Tipo de Trabajo{' '}
+                    Tipo(s) de Trabajo{' '}
                     {sortOrdersColumn === 'jobType' &&
                       (sortOrdersDirection === 'asc' ? (
                         <ArrowUp size={16} className="ml-1 inline" />
@@ -236,7 +243,13 @@ const HistoryOrdersView: React.FC<HistoryOrdersViewProps> = ({
                       {getDoctorFullNameById(order.doctorId)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">
-                      {getJobTypeCategory(order.jobType)}
+                      {order.jobItems.length > 0
+                        ? `${order.jobItems[0].jobType}${
+                            order.jobItems.length > 1
+                              ? ` (+${order.jobItems.length - 1} más)`
+                              : ''
+                          }`
+                        : 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">
                       {formatDate(order.completionDate || '')}
