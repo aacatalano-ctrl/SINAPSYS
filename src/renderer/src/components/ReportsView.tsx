@@ -277,8 +277,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({
             </thead>
             <tbody>
               {Object.keys(jobTypePrefixMap).map((jobType) => {
-                const jobTypeOrders = filteredOrders.filter(
-                  (order) => getJobTypeCategory(order.jobType) === jobType,
+                const jobTypeOrders = filteredOrders.filter((order) =>
+                  order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
                 );
                 const totalOrdersOfType = jobTypeOrders.length;
                 const totalCostOfType = jobTypeOrders.reduce((sum, order) => sum + order.cost, 0);
