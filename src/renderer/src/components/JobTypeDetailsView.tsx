@@ -25,7 +25,9 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
   calculateBalance,
 }) => {
   const filteredOrdersByJobType = jobType
-    ? orders.filter((order: Order) => getJobTypeCategory(order.jobType) === jobType)
+    ? orders.filter((order: Order) =>
+        order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
+      )
     : [];
 
   return (
