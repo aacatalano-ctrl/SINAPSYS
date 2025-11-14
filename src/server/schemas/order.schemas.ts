@@ -29,6 +29,7 @@ export const createOrderSchema = z.object({
   }),
   patientName: z.string().min(1, 'El nombre del paciente es requerido.'),
   jobItems: z.array(jobItemSchema).min(1, 'Debe haber al menos un tipo de trabajo.'),
+  cost: z.number().positive('El costo total debe ser un número positivo.'),
   status: z.string().min(1, 'El estado de la orden es requerido.'),
   creationDate: z.coerce.date(),
   completionDate: z
@@ -50,6 +51,7 @@ export const updateOrderSchema = z.object({
     .optional(),
   patientName: z.string().min(1, 'El nombre del paciente es requerido.').optional(),
   jobItems: z.array(jobItemSchema).min(1, 'Debe haber al menos un tipo de trabajo.').optional(),
+  cost: z.number().positive('El costo total debe ser un número positivo.').optional(),
   status: z.string().min(1, 'El estado de la orden es requerido.').optional(),
   creationDate: z.coerce.date().optional(),
   completionDate: z

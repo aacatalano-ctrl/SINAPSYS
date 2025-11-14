@@ -37,6 +37,7 @@ const orderSchema = new mongoose.Schema<Order>({
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true, index: true },
   patientName: { type: String, required: true },
   jobItems: { type: [jobItemSchema], required: true }, // Array of job items
+  cost: { type: Number, required: true },
   status: { type: String, required: true, index: true },
   creationDate: { type: Date, required: true, index: true }, // Consider using Date type
   completionDate: { type: Date }, // Consider using Date type

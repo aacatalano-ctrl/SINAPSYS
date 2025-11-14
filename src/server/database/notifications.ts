@@ -28,7 +28,7 @@ async function checkUnpaidOrders(): Promise<void> {
   };
 
   try {
-    const orders = await db.orders.find(query);
+    const orders: Order[] = await db.orders.find(query);
 
     for (const order of orders) {
       const pendingBalance =

@@ -68,6 +68,7 @@ export interface Order {
   doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
   jobItems: JobItem[];
+  cost: number;
   balance: number;
   paidAmount: number;
   status: 'Pendiente' | 'Procesando' | 'Completado';
