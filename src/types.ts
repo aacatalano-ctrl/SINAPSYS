@@ -64,7 +64,7 @@ export interface JobItem {
 
 export interface Order {
   _id?: string;
-  orderNumber?: string;
+  orderNumber: string;
   doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
   jobItems: JobItem[];
