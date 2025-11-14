@@ -132,8 +132,12 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const totalPaid = updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0;
-    const currentBalance = updatedOrder.cost - totalPaid;
+    // Recalculate paidAmount and balance after update
+    updatedOrder.paidAmount = updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0;
+    updatedOrder.balance = updatedOrder.cost - updatedOrder.paidAmount;
+    await updatedOrder.save(); // Save again to persist paidAmount and balance
+
+    const currentBalance = updatedOrder.balance; // Use the newly calculated balance
 
     if (validation.data.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
@@ -187,10 +191,14 @@ router.post('/:orderId/payments', async (req, res) => {
     }
 
     order.payments.push(paymentData);
+    
+    // Recalculate paidAmount and balance
+    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.balance = order.cost - order.paidAmount;
+
     await order.save();
 
-    const totalPaid = order.payments.reduce((sum, p) => sum + p.amount, 0);
-    const balance = order.cost - totalPaid;
+    const balance = order.balance;
 
     if (balance <= 0) {
       const message = `La orden ${order.orderNumber} ha sido pagada en su totalidad.`;
@@ -230,6 +238,10 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     payment.date = date;
     payment.description = description;
 
+    // Recalculate paidAmount and balance
+    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.balance = order.cost - order.paidAmount;
+
     await order.save();
     res.json(order);
   } catch (error) {
@@ -261,6 +273,10 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
     }
 
     order.payments.splice(paymentIndex, 1);
+
+    // Recalculate paidAmount and balance
+    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.balance = order.cost - order.paidAmount;
 
     await order.save();
     res.status(200).json(order);

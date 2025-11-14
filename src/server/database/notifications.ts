@@ -1,4 +1,5 @@
 import { db } from './index.js';
+import { Order, Payment } from '../../types.js'; // Explicitly import Order and Payment
 
 // Generic function to create a notification
 async function createNotification(orderId: string, message: string): Promise<void> {
@@ -32,7 +33,7 @@ async function checkUnpaidOrders(): Promise<void> {
 
     for (const order of orders) {
       const pendingBalance =
-        order.cost - (order.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
+        order.cost - (order.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
 
       if (pendingBalance > 0) {
         // Check if a notification for this unpaid order *already exists* to avoid duplicates
