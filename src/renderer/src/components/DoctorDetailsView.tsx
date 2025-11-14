@@ -101,7 +101,7 @@ const DoctorDetailsView: React.FC<DoctorDetailsViewProps> = ({
                     Paciente
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-gray-700">
-                    Tipo de Trabajo
+                    Tipo(s) de Trabajo
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-semibold uppercase text-gray-700">
                     Costo
@@ -125,7 +125,15 @@ const DoctorDetailsView: React.FC<DoctorDetailsViewProps> = ({
                       {order.orderNumber}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-800">{order.patientName}</td>
-                    <td className="px-4 py-2 text-sm text-gray-800">{order.jobType}</td>
+                    <td className="px-4 py-2 text-sm text-gray-800">
+                      {order.jobItems.length > 0
+                        ? `${order.jobItems[0].jobType}${
+                            order.jobItems.length > 1
+                              ? ` (+${order.jobItems.length - 1} más)`
+                              : ''
+                          }`
+                        : 'N/A'}
+                    </td>
                     <td className="px-4 py-2 text-sm text-gray-800">${order.cost.toFixed(2)}</td>
                     <td className="px-4 py-2 text-sm text-gray-800">
                       <span
