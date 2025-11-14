@@ -193,7 +193,7 @@ router.post('/:orderId/payments', async (req, res) => {
     order.payments.push(paymentData);
     
     // Recalculate paidAmount and balance
-    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.paidAmount = order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
     order.balance = order.cost - order.paidAmount;
 
     await order.save();
@@ -239,7 +239,7 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     payment.description = description;
 
     // Recalculate paidAmount and balance
-    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.paidAmount = order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
     order.balance = order.cost - order.paidAmount;
 
     await order.save();
@@ -275,7 +275,7 @@ router.delete('/:orderId/payments/:paymentId', authMiddleware, async (req, res) 
     order.payments.splice(paymentIndex, 1);
 
     // Recalculate paidAmount and balance
-    order.paidAmount = order.payments.reduce((sum, p) => sum + p.amount, 0);
+    order.paidAmount = order.payments.reduce((sum: number, p: Payment) => sum + p.amount, 0);
     order.balance = order.cost - order.paidAmount;
 
     await order.save();
@@ -365,7 +365,7 @@ router.delete('/:orderId/notes/:noteId', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    order.notes = order.notes.filter((note) => note._id?.toString() !== noteId);
+    order.notes = order.notes.filter((note: Note) => note._id?.toString() !== noteId);
 
     await order.save();
     res.json(order);
