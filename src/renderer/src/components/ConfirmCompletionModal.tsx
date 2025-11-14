@@ -64,8 +64,10 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const parsedAmount = parseFloat(paymentAmount) || 0; // Ensure it's 0 if empty or NaN
+
     console.log('ConfirmCompletionModal: Submitting order completion...');
-    console.log('Order ID:', order?.id);
+    console.log('Order ID:', order?._id);
     console.log('Payment Amount:', parsedAmount);
     console.log('Current Balance:', balance);
 
