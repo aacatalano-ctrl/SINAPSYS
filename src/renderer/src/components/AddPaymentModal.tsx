@@ -82,6 +82,15 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
     const normalizedAmount = String(amount).replace(',', '.');
     const parsedAmount = parseFloat(normalizedAmount);
 
+    console.log('AddPaymentModal: Submitting payment...');
+    console.log('Order ID:', order._id);
+    console.log('Parsed Amount:', parsedAmount);
+    console.log('Description:', description);
+    console.log('Is Edit Mode:', isEditMode);
+    if (isEditMode) {
+      console.log('Payment to Edit ID:', paymentToEdit?._id);
+    }
+
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       showNotification('Por favor, ingresa un monto válido y mayor a cero.', 'error');
       return;
@@ -101,13 +110,16 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
           description,
           date: paymentToEdit.date,
         });
+        console.log('AddPaymentModal: Payment updated successfully.');
+        onClose(); // Close only on success
       } else {
         await onAddPayment(parsedAmount, description);
+        console.log('AddPaymentModal: Payment added successfully.');
+        onClose(); // Close only on success
       }
     } catch (error) {
-      console.error('Failed to save payment:', error);
-    } finally {
-      onClose();
+      console.error('AddPaymentModal: Failed to save payment:', error);
+      showNotification('Error al guardar el pago. Inténtalo de nuevo.', 'error'); // Add user feedback
     }
   };
 
