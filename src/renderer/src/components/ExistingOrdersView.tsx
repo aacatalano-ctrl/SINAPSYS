@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import OrderSearchCombobox from './OrderSearchCombobox';
 import { Order } from '../../types';
-import { formatDate, getJobTypeCategory } from '../utils/helpers';
+import { formatDate } from '../utils/helpers';
 
 interface ExistingOrdersViewProps {
   orders: Order[];
@@ -77,8 +77,8 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
         bValue = getDoctorFullNameById(b.doctorId);
         break;
       case 'jobType':
-        aValue = a.jobType;
-        bValue = b.jobType;
+        aValue = a.jobItems && a.jobItems.length > 0 ? a.jobItems[0].jobType : '';
+        bValue = b.jobItems && b.jobItems.length > 0 ? b.jobItems[0].jobType : '';
         break;
       case 'cost':
         aValue = a.cost;
@@ -226,9 +226,11 @@ const ExistingOrdersView: React.FC<ExistingOrdersViewProps> = ({
                   {getDoctorFullNameById(order.doctorId)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800">
-                  {getJobTypeCategory(order.jobType)}
+                  {order.jobItems && order.jobItems.length > 0
+                    ? `${order.jobItems[0].jobType}${order.jobItems.length > 1 ? ' (+)' : ''}`
+                    : 'N/A'}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-800">${order.cost.toFixed(2)}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">${(order.cost || 0).toFixed(2)}</td>
                 <td className="px-4 py-3 text-sm text-gray-800">
                   <span
                     className={`rounded-lg p-1 text-xs font-semibold text-white ${
