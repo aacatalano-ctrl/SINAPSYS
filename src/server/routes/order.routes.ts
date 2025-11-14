@@ -118,33 +118,44 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
+    logger.info(`PUT /api/orders/${req.params.id}: Attempting to update order.`);
+    logger.debug('Request body:', req.body);
+
     const updateData = { ...validation.data };
 
     // If jobItems are being updated, recalculate the total cost
     if (updateData.jobItems) {
       updateData.cost = calculateTotalCost(updateData.jobItems);
+      logger.debug('Recalculated cost based on jobItems:', updateData.cost);
     }
 
     const updatedOrder = await db.orders
       .findByIdAndUpdate(req.params.id, updateData, { new: true })
       .populate('doctorId', 'firstName lastName');
     if (!updatedOrder) {
+      logger.warn(`PUT /api/orders/${req.params.id}: Order not found.`);
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
+    logger.info(`PUT /api/orders/${req.params.id}: Order found and partially updated.`);
 
     // Recalculate paidAmount and balance after update
     updatedOrder.paidAmount = updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0;
     updatedOrder.balance = updatedOrder.cost - updatedOrder.paidAmount;
     await updatedOrder.save(); // Save again to persist paidAmount and balance
+    logger.info(`PUT /api/orders/${req.params.id}: Paid amount and balance recalculated and saved.`);
+    logger.debug('Updated Order details:', { paidAmount: updatedOrder.paidAmount, balance: updatedOrder.balance });
+
 
     const currentBalance = updatedOrder.balance; // Use the newly calculated balance
 
     if (validation.data.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
       createNotification(updatedOrder._id.toString(), message).catch(console.error);
+      logger.info(`PUT /api/orders/${req.params.id}: Notification created for completed order with pending balance.`);
     }
 
     res.json(updatedOrder);
+    logger.info(`PUT /api/orders/${req.params.id}: Order updated successfully.`);
   } catch (error) {
     logger.error('Error al actualizar la orden:', {
       error: getErrorMessage(error),
@@ -184,11 +195,17 @@ router.post('/:orderId/payments', async (req, res) => {
   const paymentData = validation.data;
 
   try {
+    logger.info(`POST /api/orders/${req.params.orderId}/payments: Attempting to add payment.`);
+    logger.debug('Request params:', req.params);
+    logger.debug('Payment data:', paymentData);
+
     const { orderId } = req.params;
     const order = await db.orders.findById(orderId);
     if (!order) {
+      logger.warn(`POST /api/orders/${req.params.orderId}/payments: Order not found.`);
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
+    logger.info(`POST /api/orders/${req.params.orderId}/payments: Order found.`);
 
     order.payments.push(paymentData);
     
@@ -197,15 +214,20 @@ router.post('/:orderId/payments', async (req, res) => {
     order.balance = order.cost - order.paidAmount;
 
     await order.save();
+    logger.info(`POST /api/orders/${req.params.orderId}/payments: Payment added and order saved.`);
+    logger.debug('Updated Order details:', { paidAmount: order.paidAmount, balance: order.balance });
+
 
     const balance = order.balance;
 
     if (balance <= 0) {
       const message = `La orden ${order.orderNumber} ha sido pagada en su totalidad.`;
       createNotification(order._id.toString(), message).catch(console.error);
+      logger.info(`POST /api/orders/${req.params.orderId}/payments: Notification created for fully paid order.`);
     }
 
     res.status(201).json(order);
+    logger.info(`POST /api/orders/${req.params.orderId}/payments: Payment added successfully.`);
   } catch (error) {
     logger.error(`Error al agregar pago a la orden ${req.params.orderId}:`, {
       error: getErrorMessage(error),
@@ -223,16 +245,24 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
   const { amount, date, description } = validation.data;
 
   try {
+    logger.info(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Attempting to update payment.`);
+    logger.debug('Request params:', req.params);
+    logger.debug('Payment data:', { amount, date, description });
+
     const { orderId, paymentId } = req.params;
     const order = await db.orders.findById(orderId);
     if (!order) {
+      logger.warn(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Order not found.`);
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
+    logger.info(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Order found.`);
 
     const payment = (order.payments as mongoose.Types.DocumentArray<Payment>).id(paymentId);
     if (!payment) {
+      logger.warn(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Payment not found.`);
       return res.status(404).json({ error: 'Pago no encontrado.' });
     }
+    logger.info(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Payment found.`);
 
     payment.amount = amount;
     payment.date = date;
@@ -243,7 +273,11 @@ router.put('/:orderId/payments/:paymentId', async (req, res) => {
     order.balance = order.cost - order.paidAmount;
 
     await order.save();
+    logger.info(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Payment updated and order saved.`);
+    logger.debug('Updated Order details:', { paidAmount: order.paidAmount, balance: order.balance });
+
     res.json(order);
+    logger.info(`PUT /api/orders/${req.params.orderId}/payments/${req.params.paymentId}: Payment updated successfully.`);
   } catch (error) {
     logger.error(
       `Error al actualizar el pago ${req.params.paymentId} de la orden ${req.params.orderId}:`,
