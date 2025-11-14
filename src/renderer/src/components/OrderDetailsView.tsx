@@ -137,9 +137,16 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
             <h3 className="mb-4 flex items-center text-xl font-semibold text-gray-700">
               <ClipboardList className="mr-2" /> Detalles del Trabajo
             </h3>
-            <p className="mb-2">
-              <span className="font-medium text-gray-700">Tipo de Trabajo:</span> {order.jobType}
-            </p>
+            <div className="mb-2">
+              <span className="font-medium text-gray-700">Trabajos:</span>
+              <ul className="ml-4 list-disc">
+                {order.jobItems.map((item, index) => (
+                  <li key={index}>
+                    {item.jobCategory} - {item.jobType} (${item.cost.toFixed(2)})
+                  </li>
+                ))}
+              </ul>
+            </div>
             <p className="mb-2">
               <span className="font-medium text-gray-700">Descripción del Caso:</span>{' '}
               {order.caseDescription || 'N/A'}
