@@ -62,7 +62,7 @@ export interface JobItem {
   cost: number;
 }
 
-export interface   _id: string;
+export interface Order {
   orderNumber: string;
   doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
