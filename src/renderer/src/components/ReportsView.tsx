@@ -262,16 +262,13 @@ const ReportsView: React.FC<ReportsViewProps> = ({
             <thead className="border-b border-gray-300 bg-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Tipo de Trabajo
+                  Categoría de Trabajo
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
                   Total Órdenes
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Costo Total
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Monto Total Abonado
+                  Total de Ingresos
                 </th>
               </tr>
             </thead>
@@ -304,9 +301,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                       {jobType}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">{totalOrdersOfType}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">
-                      ${totalCostOfType.toFixed(2)}
-                    </td>
                     <td className="px-4 py-3 text-sm text-gray-800">
                       ${totalDepositedOfType.toFixed(2)}
                     </td>
