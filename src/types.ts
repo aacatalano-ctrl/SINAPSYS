@@ -56,13 +56,18 @@ export interface Note {
   author: string;
 }
 
+export interface JobItem {
+  jobCategory: string;
+  jobType: string;
+  cost: number;
+}
+
 export interface Order {
   _id?: string;
   orderNumber?: string;
   doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
-  jobType: string;
-  cost: number;
+  jobItems: JobItem[];
   balance: number;
   paidAmount: number;
   status: 'Pendiente' | 'Procesando' | 'Completado';

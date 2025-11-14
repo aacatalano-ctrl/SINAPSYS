@@ -16,6 +16,10 @@ import type { Payment, Note } from '../../types.js';
 import logger from '../utils/logger.js';
 import { getErrorMessage, getErrorStack } from '../utils/errorUtils.js';
 
+const calculateTotalCost = (jobItems: { cost: number }[]): number => {
+  return jobItems.reduce((sum, item) => sum + item.cost, 0);
+};
+
 const router = Router();
 router.use(authMiddleware);
 
@@ -57,7 +61,10 @@ router.post('/', async (req, res) => {
 
   try {
     const orderData = validation.data;
-    const category = orderData.jobType.split(' - ')[0].trim();
+    const totalCost = calculateTotalCost(orderData.jobItems); // Calculate total cost from jobItems
+
+    // Use the category of the first job item for the order number prefix
+    const category = orderData.jobItems[0].jobCategory.split(' - ')[0].trim();
     const prefix = jobTypePrefixMap[category] || 'ORD';
     const year = new Date().getFullYear().toString().slice(-2);
     const counterId = `${prefix}-${year}`;
@@ -74,6 +81,9 @@ router.post('/', async (req, res) => {
     const newOrder = new db.orders({
       ...orderData,
       orderNumber: newOrderNumber,
+      cost: totalCost, // Store the calculated total cost
+      balance: totalCost, // Initial balance is the total cost
+      paidAmount: 0, // Initially no amount paid
     });
 
     await newOrder.save();
@@ -108,16 +118,23 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
+    const updateData = { ...validation.data };
+
+    // If jobItems are being updated, recalculate the total cost
+    if (updateData.jobItems) {
+      updateData.cost = calculateTotalCost(updateData.jobItems);
+    }
+
     const updatedOrder = await db.orders
-      .findByIdAndUpdate(req.params.id, validation.data, { new: true })
+      .findByIdAndUpdate(req.params.id, updateData, { new: true })
       .populate('doctorId', 'firstName lastName');
     if (!updatedOrder) {
       return res.status(404).json({ error: 'Orden no encontrada.' });
     }
 
-    const currentBalance =
-      updatedOrder.cost -
-      (updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0);
+    const totalPaid = updatedOrder.payments?.reduce((sum: number, p: Payment) => sum + p.amount, 0) || 0;
+    const currentBalance = updatedOrder.cost - totalPaid;
+
     if (validation.data.status === 'Completado' && currentBalance > 0) {
       const message = `La orden ${updatedOrder.orderNumber} fue completada con un saldo pendiente de ${currentBalance.toFixed(2)}.`;
       createNotification(updatedOrder._id.toString(), message).catch(console.error);
@@ -382,7 +399,10 @@ const generateReceiptPDF = (order: any, firstName: string, lastName: string): Pr
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').text('Doctor:', { continued: true }).font('Helvetica').text(` ${doctorName}`);
     doc.moveDown(0.5);
-    doc.font('Helvetica-Bold').text('Trabajo:', { continued: true }).font('Helvetica').text(` ${order.jobType}`);
+    doc.font('Helvetica-Bold').text('Trabajos:', { continued: false });
+    order.jobItems.forEach((item: any, index: number) => {
+      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType}: ${item.cost.toFixed(2)}`, { indent: 10 });
+    });
     doc.moveDown(2);
 
     // Financials
@@ -475,7 +495,10 @@ const generatePaymentHistoryPDF = (order: any, firstName: string, lastName: stri
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').text('Doctor:', { continued: true }).font('Helvetica').text(` ${doctorName}`);
     doc.moveDown(0.5);
-    doc.font('Helvetica-Bold').text('Trabajo:', { continued: true }).font('Helvetica').text(` ${order.jobType}`);
+    doc.font('Helvetica-Bold').text('Trabajos:', { continued: false });
+    order.jobItems.forEach((item: any, index: number) => {
+      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType}: ${item.cost.toFixed(2)}`, { indent: 10 });
+    });
     doc.moveDown(2);
 
     // Financials Table

@@ -26,12 +26,17 @@ const doctorSchema = new mongoose.Schema<Doctor>({
   address: { type: String },
 });
 
+const jobItemSchema = new mongoose.Schema({
+  jobCategory: { type: String, required: true },
+  jobType: { type: String, required: true },
+  cost: { type: Number, required: true },
+});
+
 const orderSchema = new mongoose.Schema<Order>({
   orderNumber: { type: String, unique: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true, index: true },
   patientName: { type: String, required: true },
-  jobType: { type: String, required: true },
-  cost: { type: Number, required: true },
+  jobItems: { type: [jobItemSchema], required: true }, // Array of job items
   status: { type: String, required: true, index: true },
   creationDate: { type: Date, required: true, index: true }, // Consider using Date type
   completionDate: { type: Date }, // Consider using Date type

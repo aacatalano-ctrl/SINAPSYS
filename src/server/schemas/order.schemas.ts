@@ -17,13 +17,18 @@ export const updateNoteSchema = z.object({
   text: z.string().min(1, 'El texto de la nota es requerido.'),
 });
 
+export const jobItemSchema = z.object({
+  jobCategory: z.string().min(1, 'La categoría de trabajo es requerida.'),
+  jobType: z.string().min(1, 'El tipo de trabajo es requerido.'),
+  cost: z.number().positive('El costo del trabajo debe ser un número positivo.'),
+});
+
 export const createOrderSchema = z.object({
   doctorId: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
     message: 'El ID del doctor no es válido.',
   }),
   patientName: z.string().min(1, 'El nombre del paciente es requerido.'),
-  jobType: z.string().min(1, 'El tipo de trabajo es requerido.'),
-  cost: z.number().positive('El costo debe ser un número positivo.'),
+  jobItems: z.array(jobItemSchema).min(1, 'Debe haber al menos un tipo de trabajo.'),
   status: z.string().min(1, 'El estado de la orden es requerido.'),
   creationDate: z.coerce.date(),
   completionDate: z
@@ -44,8 +49,7 @@ export const updateOrderSchema = z.object({
     })
     .optional(),
   patientName: z.string().min(1, 'El nombre del paciente es requerido.').optional(),
-  jobType: z.string().min(1, 'El tipo de trabajo es requerido.').optional(),
-  cost: z.number().positive('El costo debe ser un número positivo.').optional(),
+  jobItems: z.array(jobItemSchema).min(1, 'Debe haber al menos un tipo de trabajo.').optional(),
   status: z.string().min(1, 'El estado de la orden es requerido.').optional(),
   creationDate: z.coerce.date().optional(),
   completionDate: z
