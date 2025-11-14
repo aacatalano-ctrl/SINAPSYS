@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUI } from './UIContext';
 import { useDoctors } from './DoctorContext';
-import { Order, Payment, Note, User } from '../../types';
+import { Order, Payment, Note, User, JobItem } from '../../types';
 interface OrderContextType {
   orders: Order[];
   fetchOrders: () => Promise<void>;
@@ -10,7 +10,7 @@ interface OrderContextType {
   showNotification: (message: string, type?: string) => void;
   currentUser: User | null;
   handleOrderCreated: (
-    newOrder: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes'>,
+    newOrder: Omit<Order, 'id' | '_id' | 'status' | 'creationDate' | 'payments' | 'notes' | 'jobType' | 'cost'> & { jobItems: JobItem[] },
   ) => Promise<Order | undefined>;
   calculateBalance: (order: Order) => number;
   addPaymentToOrder: (orderId: string, amount: number, description: string) => Promise<void>;
