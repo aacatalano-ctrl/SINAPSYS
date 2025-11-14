@@ -64,7 +64,10 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(paymentAmount) || 0; // Ensure it's 0 if empty or NaN
+    console.log('ConfirmCompletionModal: Submitting order completion...');
+    console.log('Order ID:', order?.id);
+    console.log('Payment Amount:', parsedAmount);
+    console.log('Current Balance:', balance);
 
     try {
       // Only add payment if amount is positive
@@ -74,18 +77,21 @@ const ConfirmCompletionModal: React.FC<ConfirmCompletionModalProps> = ({
             `El monto no puede ser mayor al saldo pendiente de ${balance.toFixed(2)}.`,
             'error',
           );
+          console.log('ConfirmCompletionModal: Payment amount exceeds balance.');
           return;
         }
         await addPaymentToOrder(order._id, parsedAmount, 'Pago al completar');
+        console.log('ConfirmCompletionModal: Payment added successfully.');
       }
 
       // Always update status to 'Completado'
       await handleUpdateOrderStatus(order._id, 'Completado', new Date().toISOString());
+      console.log('ConfirmCompletionModal: Order status updated to Completed.');
       showNotification(`Orden ${order.orderNumber} marcada como completada.`, 'success');
-      onClose();
+      onClose(); // Close only on success
     } catch (error) {
-      console.error('Error during order completion:', error);
-      showNotification('Error al confirmar la finalización.', 'error'); // Add notification for error
+      console.error('ConfirmCompletionModal: Error during order completion:', error);
+      showNotification('Error al confirmar la finalización. Inténtalo de nuevo.', 'error'); // Add notification for error
     }
   };
 
