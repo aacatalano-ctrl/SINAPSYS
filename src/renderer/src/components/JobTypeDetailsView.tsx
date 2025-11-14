@@ -13,22 +13,55 @@ interface JobTypeDetailsViewProps {
   formatDate: (dateString: string) => string;
   onViewOrderDetails: (order: Order) => void; // Corrected prop name
   calculateBalance: (order: Order) => number;
+  selectedJobCategory: string | null; // New prop
 }
 
 const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
-  jobType,
+  jobType, // This will now represent the selected job category
   orders,
   onBack,
   getDoctorFullNameById,
   formatDate,
   onViewOrderDetails,
   calculateBalance,
+  selectedJobCategory, // New prop
 }) => {
-  const filteredOrdersByJobType = jobType
+  const filteredOrdersByJobType = selectedJobCategory
     ? orders.filter((order: Order) =>
-        order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
+        order.jobItems.some((item) => getJobTypeCategory(item.jobType) === selectedJobCategory),
       )
     : [];
+
+  const aggregatedJobTypeData = useMemo(() => {
+    const data: {
+      [jobType: string]: {
+        totalOrders: number;
+        totalCost: number;
+        totalDeposited: number;
+      };
+    } = {};
+
+    filteredOrdersByJobType.forEach((order) => {
+      order.jobItems.forEach((item) => {
+        if (getJobTypeCategory(item.jobType) === selectedJobCategory) {
+          if (!data[item.jobType]) {
+            data[item.jobType] = {
+              totalOrders: 0,
+              totalCost: 0,
+              totalDeposited: 0,
+            };
+          }
+          data[item.jobType].totalOrders++;
+          data[item.jobType].totalCost += item.cost;
+          data[item.jobType].totalDeposited += order.payments.reduce(
+            (sum, p) => sum + p.amount,
+            0,
+          );
+        }
+      });
+    });
+    return data;
+  }, [filteredOrdersByJobType, selectedJobCategory]);
 
   return (
     <div className="mb-8 rounded-lg bg-white p-8 shadow-xl">
@@ -39,79 +72,43 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
         <ArrowLeft className="mr-2" /> Volver a Reportes
       </button>
       <h2 className="mb-6 flex items-center text-3xl font-bold text-gray-800">
-        <ClipboardList className="mr-3 text-blue-600" size={30} /> Órdenes para Tipo de Trabajo:{' '}
-        {jobType}
+        <ClipboardList className="mr-3 text-blue-600" size={30} /> Desglose por Tipo de Trabajo en{' '}
+        {selectedJobCategory}
       </h2>
 
-      {filteredOrdersByJobType.length === 0 ? (
-        <p className="py-10 text-center text-gray-600">No hay órdenes para este tipo de trabajo.</p>
+      {Object.keys(aggregatedJobTypeData).length === 0 ? (
+        <p className="py-10 text-center text-gray-600">
+          No hay tipos de trabajo para esta categoría en el período seleccionado.
+        </p>
       ) : (
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-white">
             <thead className="border-b border-gray-300 bg-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Orden ID
+                  Tipo de Trabajo
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Paciente
+                  Total Órdenes
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Doctor
+                  Costo Total
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Costo
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Saldo Pendiente
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Estado
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Fecha Creación
+                  Monto Total Abonado
                 </th>
               </tr>
             </thead>
             <tbody>
-              {filteredOrdersByJobType.map((order) => (
-                <tr
-                  key={order._id}
-                  className="cursor-pointer border-b border-gray-200 hover:bg-gray-50"
-                  onClick={() => onViewOrderDetails(order)}
-                >
-                  <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                    {order.orderNumber}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{order.patientName}</td>
+              {Object.entries(aggregatedJobTypeData).map(([jobType, data]) => (
+                <tr key={jobType} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-800">{jobType}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{data.totalOrders}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">
-                    {getDoctorFullNameById(order.doctorId)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">${order.cost.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    <span
-                      className={`font-semibold ${calculateBalance(order) > 0 ? 'text-red-600' : 'text-green-600'}`}
-                    >
-                      ${calculateBalance(order).toFixed(2)}
-                    </span>
+                    ${data.totalCost.toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-800">
-                    <span
-                      className={`rounded-lg p-1 text-xs font-semibold text-white ${
-                        order.status === 'Pendiente'
-                          ? 'bg-yellow-500'
-                          : order.status === 'Procesando'
-                            ? 'bg-blue-500'
-                            : order.status === 'Completado'
-                              ? 'bg-green-500'
-                              : 'bg-gray-500'
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {formatDate(order.creationDate)}
+                    ${data.totalDeposited.toFixed(2)}
                   </td>
                 </tr>
               ))}

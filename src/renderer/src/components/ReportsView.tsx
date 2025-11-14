@@ -281,7 +281,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                   order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
                 );
                 const totalOrdersOfType = jobTypeOrders.length;
-                const totalCostOfType = jobTypeOrders.reduce((sum, order) => sum + order.cost, 0);
+                const totalCostOfType = jobTypeOrders.reduce((sum, order) => {
+                  const relevantJobItemsCost = order.jobItems.reduce((itemSum, item) => {
+                    if (getJobTypeCategory(item.jobType) === jobType) {
+                      return itemSum + item.cost;
+                    }
+                    return itemSum;
+                  }, 0);
+                  return sum + relevantJobItemsCost;
+                }, 0);
                 const totalDepositedOfType = jobTypeOrders.reduce(
                   (sum, order) => sum + order.payments.reduce((pSum, p) => pSum + p.amount, 0),
                   0,
