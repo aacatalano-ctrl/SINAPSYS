@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'; // Import mongoose
+import mongoose, { HydratedDocument } from 'mongoose'; // Import mongoose and HydratedDocument
 import { db } from './index.js';
 import { Order, Payment } from '../../types'; // Explicitly import Order and Payment
 
@@ -30,7 +30,7 @@ async function checkUnpaidOrders(): Promise<void> {
   };
 
   try {
-    const orders: Order[] = await db.orders.find(query);
+    const orders: HydratedDocument<Order>[] = await db.orders.find(query);
 
     for (const order of orders) {
       const pendingBalance =
