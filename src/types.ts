@@ -62,8 +62,7 @@ export interface JobItem {
   cost: number;
 }
 
-export interface Order {
-  _id?: string;
+export interface   _id: string;
   orderNumber: string;
   doctorId: Doctor | mongoose.Types.ObjectId | string;
   patientName: string;
@@ -81,7 +80,7 @@ export interface Order {
 }
 
 export interface Notification {
-  _id?: string;
+  _id: string;
   orderId: mongoose.Types.ObjectId | string;
   message: string;
   createdAt: string;
