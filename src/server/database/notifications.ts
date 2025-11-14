@@ -43,7 +43,9 @@ async function checkUnpaidOrders(): Promise<void> {
         });
 
         if (!existingNotification) {
-          const message = `La orden ${order.orderNumber!} para ${order.patientName!} tiene un saldo pendiente de ${pendingBalance.toFixed(2)}.`;
+          const orderNumber = order.orderNumber || 'N/A';
+          const patientName = order.patientName || 'N/A';
+          const message = `La orden ${orderNumber} para ${patientName} tiene un saldo pendiente de ${pendingBalance.toFixed(2)}.`;
           await createNotification(order._id, message);
         }
       }
