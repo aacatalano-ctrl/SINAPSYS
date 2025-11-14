@@ -21,7 +21,7 @@ const doctorSchema = new mongoose.Schema<Doctor>({
   title: { type: String, required: true },
   firstName: { type: String, required: true, index: true },
   lastName: { type: String, index: true },
-  email: { type: String, unique: true, sparse: true },
+  email: { type: String, sparse: true },
   phone: { type: String, index: true },
   address: { type: String },
 });
