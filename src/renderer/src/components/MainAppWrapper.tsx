@@ -507,7 +507,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
                 element={
                   selectedJobType ? (
                     <JobTypeDetailsView
-                      jobType={selectedJobType}
+                      selectedJobCategory={selectedJobType} // Pass as selectedJobCategory
                       orders={orders}
                       onBack={() => navigate(-1)}
                       onViewOrderDetails={(order) => {
