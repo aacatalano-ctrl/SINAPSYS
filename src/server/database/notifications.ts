@@ -1,5 +1,5 @@
 import { db } from './index.js';
-import { Order, Payment } from '../../types.js'; // Explicitly import Order and Payment
+import { Order, Payment } from '../../types'; // Explicitly import Order and Payment
 
 // Generic function to create a notification
 async function createNotification(orderId: string, message: string): Promise<void> {
