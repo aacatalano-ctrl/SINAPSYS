@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { Order, Doctor, JobCategory } from '../../types';
+import { Order, Doctor, JobCategory, JobItem } from '../../types';
 import DoctorCombobox from './DoctorCombobox';
+import { Plus, X } from 'lucide-react'; // Import icons for add/remove buttons
 
 interface EditOrderModalProps {
   order: Order;
@@ -25,35 +26,26 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
   // State for form fields
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [patientName, setPatientName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedJobType, setSelectedJobType] = useState('');
-  const [cost, setCost] = useState(0);
+  const [jobItems, setJobItems] = useState<JobItem[]>([]);
+  const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [priority, setPriority] = useState<'Baja' | 'Normal' | 'Alta' | 'Urgente'>('Normal');
   const [caseDescription, setCaseDescription] = useState('');
 
   // Effect to initialize form state when the order prop is available
   useEffect(() => {
     if (order && doctors.length > 0) {
-      // Ensure order.doctorId is treated as a string for comparison
       const currentDoctorId = typeof order.doctorId === 'object' && order.doctorId !== null
-        ? (order.doctorId as Doctor)._id // If it's a populated object
-        : order.doctorId; // If it's just the ID string
+        ? (order.doctorId as Doctor)._id
+        : order.doctorId;
 
       const doctor = doctors.find((d) => d._id === currentDoctorId) || null;
       setSelectedDoctor(doctor);
       setPatientName(order.patientName);
-      setCost(order.cost);
+      setJobItems(order.jobItems || [{ jobCategory: '', jobType: '', cost: 0 }]); // Initialize with existing jobItems or a default
       setPriority(order.priority);
       setCaseDescription(order.caseDescription);
-
-      // Initialize category and job type
-      const [category] = order.jobType.split(' - ');
-      if (category && jobCategories.some((c) => c.category === category)) {
-        setSelectedCategory(category);
-        setSelectedJobType(order.jobType);
-      }
     }
-  }, [order, doctors, jobCategories]);
+  }, [order, doctors]);
 
   // Effect to handle Escape key press
   useEffect(() => {
@@ -77,11 +69,35 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
       return;
     }
 
+    // Client-side validation for jobItems
+    const errors: string[] = [];
+    if (jobItems.length === 0) {
+      errors.push('Debe añadir al menos un tipo de trabajo.');
+    } else {
+      jobItems.forEach((item, index) => {
+        if (!item.jobCategory.trim()) {
+          errors.push(`La categoría de trabajo para el ítem ${index + 1} es requerida.`);
+        }
+        if (!item.jobType.trim()) {
+          errors.push(`El tipo de trabajo para el ítem ${index + 1} es requerido.`);
+        }
+        if (isNaN(item.cost) || item.cost <= 0) {
+          errors.push(`El costo para el ítem ${index + 1} debe ser un número positivo.`);
+        }
+      });
+    }
+
+    if (errors.length > 0) {
+      errors.forEach((msg) => showNotification(msg, 'error'));
+      setJobItemsErrors(errors);
+      return;
+    }
+    setJobItemsErrors([]); // Clear previous errors
+
     const updatedOrderData: Partial<Omit<Order, '_id'>> = {
       doctorId: selectedDoctor._id,
       patientName,
-      jobType: selectedJobType,
-      cost,
+      jobItems,
       priority,
       caseDescription,
     };
@@ -127,76 +143,132 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
           </div>
 
           <div className="mb-4">
-            <label htmlFor="jobCategory" className="mb-2 block text-sm font-semibold text-gray-700">
-              Categoría de Trabajo:
-            </label>
-            <select
-              id="jobCategory"
-              name="jobCategory"
-              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setSelectedJobType('');
-                setCost(0);
-              }}
-              required
-            >
-              <option value="">Selecciona una categoría</option>
-              {jobCategories.map((cat) => (
-                <option key={cat.category} value={cat.category}>
-                  {cat.category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="jobType" className="mb-2 block text-sm font-semibold text-gray-700">
-              Tipo de Trabajo:
-            </label>
-            <select
-              id="jobType"
-              name="jobType"
-              className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              disabled={!selectedCategory}
-              value={selectedJobType}
-              onChange={(e) => {
-                const newJobType = e.target.value;
-                setSelectedJobType(newJobType);
-                setCost(jobTypeCosts[newJobType] !== undefined ? jobTypeCosts[newJobType] : 0);
-              }}
-            >
-              <option value="">Selecciona tipo de trabajo</option>
-              {selectedCategory &&
-                jobCategories
-                  .find((cat) => cat.category === selectedCategory)
-                  ?.services.map((service) => {
-                    const fullJobName = `${selectedCategory} - ${service.name}`;
-                    return (
-                      <option key={fullJobName} value={fullJobName}>
-                        {service.name}
+            <h3 className="mb-2 text-lg font-bold text-gray-700">Detalles de los Trabajos (Máx. 5)</h3>
+            {jobItems.map((item, index) => (
+              <div key={index} className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-3">
+                <div>
+                  <label
+                    htmlFor={`jobCategory-${index}`}
+                    className="mb-2 block text-sm font-semibold text-gray-700"
+                  >
+                    Categoría de Trabajo:
+                  </label>
+                  <select
+                    id={`jobCategory-${index}`}
+                    name={`jobCategory-${index}`}
+                    className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={item.jobCategory}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      const newJobItems = [...jobItems];
+                      newJobItems[index].jobCategory = e.target.value;
+                      newJobItems[index].jobType = ''; // Reset jobType when category changes
+                      newJobItems[index].cost = 0; // Reset cost when category changes
+                      setJobItems(newJobItems);
+                    }}
+                    required
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {jobCategories.map((category) => (
+                      <option key={category.category} value={category.category}>
+                        {category.category}
                       </option>
-                    );
-                  })}
-            </select>
-          </div>
+                    ))}
+                  </select>
+                </div>
 
-          <div className="mb-4">
-            <label htmlFor="cost" className="mb-2 block text-sm font-semibold text-gray-700">
-              Costo ($):
-            </label>
-            <input
-              type="number"
-              id="cost"
-              name="cost"
-              value={cost}
-              onChange={(e) => setCost(parseFloat(e.target.value) || 0)}
-              className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="0"
-              required
-            />
+                <div>
+                  <label
+                    htmlFor={`jobType-${index}`}
+                    className="mb-2 block text-sm font-semibold text-gray-700"
+                  >
+                    Tipo de Trabajo:
+                  </label>
+                  <select
+                    id={`jobType-${index}`}
+                    name={`jobType-${index}`}
+                    className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    disabled={!item.jobCategory}
+                    value={item.jobType}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      const newJobItems = [...jobItems];
+                      newJobItems[index].jobType = e.target.value;
+                      newJobItems[index].cost =
+                        jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0;
+                      setJobItems(newJobItems);
+                    }}
+                  >
+                    <option value="">Selecciona tipo de trabajo</option>
+                    {item.jobCategory &&
+                      jobCategories
+                        .find((cat) => cat.category === item.jobCategory)
+                        ?.services.map((service) => (
+                          <option
+                            key={`${item.jobCategory} - ${service.name}`}
+                            value={`${item.jobCategory} - ${service.name}`}
+                          >
+                            {service.name}
+                          </option>
+                        ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={`cost-${index}`}
+                    className="mb-2 block text-sm font-semibold text-gray-700"
+                  >
+                    Costo ($):
+                  </label>
+                  <input
+                    type="number"
+                    id={`cost-${index}`}
+                    name={`cost-${index}`}
+                    className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    step="0.01"
+                    min="0"
+                    value={item.cost}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const newJobItems = [...jobItems];
+                      let value = parseFloat(e.target.value);
+                      if (isNaN(value)) value = 0;
+                      newJobItems[index].cost = value;
+                      setJobItems(newJobItems);
+                    }}
+                  />
+                </div>
+                {jobItems.length > 1 && (
+                  <div className="md:col-span-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newJobItems = jobItems.filter((_, i) => i !== index);
+                        setJobItems(newJobItems);
+                      }}
+                      className="text-red-600 hover:text-red-800 text-sm font-semibold"
+                    >
+                      Eliminar Trabajo
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+            {jobItems.length < 5 && (
+              <button
+                type="button"
+                onClick={() => setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: 0 }])}
+                className="mt-2 flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
+              >
+                <Plus className="mr-1 size-4" /> Añadir Otro Trabajo
+              </button>
+            )}
+            {jobItemsErrors.length > 0 && (
+              <div className="mt-2 text-red-500">
+                {jobItemsErrors.map((error, index) => (
+                  <p key={index}>{error}</p>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mb-4">
