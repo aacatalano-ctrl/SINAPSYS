@@ -1,6 +1,6 @@
 // src/components/JobTypeDetailsView.jsx
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Order } from '../../types';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
 import { getJobTypeCategory } from '../utils/helpers';
