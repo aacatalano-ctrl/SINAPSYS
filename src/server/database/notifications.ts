@@ -38,7 +38,7 @@ async function checkUnpaidOrders(): Promise<void> {
       if (pendingBalance > 0) {
         // Check if a notification for this unpaid order *already exists* to avoid duplicates
         const existingNotification = await db.notifications.findOne({
-          orderId: order._id, // Use _id from Mongoose
+          orderId: order._id as string, // Use _id from Mongoose
           message: { $regex: /saldo pendiente/ },
         });
 
@@ -46,7 +46,7 @@ async function checkUnpaidOrders(): Promise<void> {
           const orderNumber = order.orderNumber || 'N/A';
           const patientName = order.patientName || 'N/A';
           const message = `La orden ${orderNumber} para ${patientName} tiene un saldo pendiente de ${pendingBalance.toFixed(2)}.`;
-          await createNotification(order._id, message);
+          await createNotification(order._id as string, message);
         }
       }
     }
