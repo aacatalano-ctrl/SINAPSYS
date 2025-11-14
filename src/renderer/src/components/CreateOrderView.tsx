@@ -17,13 +17,15 @@ function CreateOrderView({
   jobTypeCosts,
   onAddDoctor,
 }: CreateOrderViewProps) {
-  const [jobItems, setJobItems] = useState<JobItem[]>([{ jobCategory: '', jobType: '', cost: 0 }]);
+  const [jobItems, setJobItems] = useState<JobItem[]>([{ jobCategory: '', jobType: '', cost: 0, units: 1 }]);
   const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [newlyAddedDoctorId, setNewlyAddedDoctorId] = useState<string | null>(null);
   const [selectedJobType, setSelectedJobType] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
+
+  const categoriesRequiringUnits = ['Flujo Digital', 'Prótesis Fija'];
 
   useEffect(() => {
     if (newlyAddedDoctorId) {
@@ -75,7 +77,7 @@ function CreateOrderView({
     }
     setJobItemsErrors([]); // Clear previous errors
 
-    const totalCost = jobItems.reduce((sum, item) => sum + item.cost, 0);
+    const totalCost = jobItems.reduce((sum, item) => sum + item.cost * (item.units || 1), 0);
 
     const newOrder: Order = {
       doctorId,
@@ -161,7 +163,7 @@ function CreateOrderView({
         <div className="md:col-span-2">
           <h3 className="mb-4 text-lg font-bold text-gray-700">Detalles de los Trabajos (Máx. 5)</h3>
           {jobItems.map((item, index) => (
-            <div key={index} className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-3">
+            <div key={index} className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-4">
               <div>
                 <label
                   htmlFor={`jobCategory-${index}`}
@@ -179,6 +181,7 @@ function CreateOrderView({
                     newJobItems[index].jobCategory = e.target.value;
                     newJobItems[index].jobType = ''; // Reset jobType when category changes
                     newJobItems[index].cost = 0; // Reset cost when category changes
+                    newJobItems[index].units = 1; // Reset units when category changes
                     setJobItems(newJobItems);
                   }}
                   required
@@ -228,6 +231,33 @@ function CreateOrderView({
                       ))}
                 </select>
               </div>
+
+              {/* Conditional rendering for Units field */}
+              {categoriesRequiringUnits.includes(item.jobCategory) && (
+                <div>
+                  <label
+                    htmlFor={`units-${index}`}
+                    className="mb-2 block text-sm font-semibold text-gray-700"
+                  >
+                    Unidades:
+                  </label>
+                  <input
+                    type="number"
+                    id={`units-${index}`}
+                    name={`units-${index}`}
+                    className="w-full max-w-[100px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    value={item.units || 1}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const newJobItems = [...jobItems];
+                      let value = parseInt(e.target.value);
+                      if (isNaN(value) || value < 1) value = 1;
+                      newJobItems[index].units = value;
+                      setJobItems(newJobItems);
+                    }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label
