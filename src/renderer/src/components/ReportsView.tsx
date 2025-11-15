@@ -262,7 +262,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                   Categoría de Trabajo
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Total Órdenes
+                  Total
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
                   Total de Ingresos
@@ -274,21 +274,20 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                 const jobTypeOrders = filteredOrders.filter((order) =>
                   order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
                 );
-                const totalOrdersOfType = jobTypeOrders.length;
-                const totalCostOfType = jobTypeOrders.reduce((sum, order) => {
-                  const relevantJobItemsCost = order.jobItems.reduce((itemSum, item) => {
+                const totalUnitsOfType = jobTypeOrders.reduce((unitSum, order) => {
+                  const relevantUnits = order.jobItems.reduce((itemUnitSum, item) => {
                     if (getJobTypeCategory(item.jobType) === jobType) {
-                      return itemSum + item.cost;
+                      return itemUnitSum + (item.units || 1);
                     }
-                    return itemSum;
+                    return itemUnitSum;
                   }, 0);
-                  return sum + relevantJobItemsCost;
+                  return unitSum + relevantUnits;
                 }, 0);
                 const totalDepositedOfType = jobTypeOrders.reduce(
                   (sum, order) => sum + order.payments.reduce((pSum, p) => pSum + p.amount, 0),
                   0,
                 );
-                if (totalOrdersOfType === 0) return null;
+                if (totalUnitsOfType === 0) return null;
                 return (
                   <tr key={jobType} className="border-b border-gray-200 hover:bg-gray-50">
                     <td
@@ -297,7 +296,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                     >
                       {jobType}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{totalOrdersOfType}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{totalUnitsOfType}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">
                       ${totalDepositedOfType.toFixed(2)}
                     </td>
