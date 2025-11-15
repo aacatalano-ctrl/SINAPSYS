@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
 import { Plus } from 'lucide-react';
 import DoctorCombobox from './DoctorCombobox';
-import { Doctor, Order, JobCategory, JobItem } from '../../types';
+import { Doctor, Order, JobCategory, JobItem as JobItemType } from '../../types';
 
 interface CreateOrderViewProps {
   doctors: Doctor[];
@@ -11,17 +11,26 @@ interface CreateOrderViewProps {
   onAddDoctor: () => Promise<string | null>;
 }
 
+// Local state interface for editable fields
+interface EditableJobItem {
+  jobCategory: string;
+  jobType: string;
+  cost: string;
+  units: string;
+}
+
 function CreateOrderView({
   doctors,
   jobCategories,
   jobTypeCosts,
   onAddDoctor,
 }: CreateOrderViewProps) {
-  const [jobItems, setJobItems] = useState<JobItem[]>([{ jobCategory: '', jobType: '', cost: 0, units: 1 }]);
+  const [jobItems, setJobItems] = useState<EditableJobItem[]>([
+    { jobCategory: '', jobType: '', cost: '', units: '1' },
+  ]);
   const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [newlyAddedDoctorId, setNewlyAddedDoctorId] = useState<string | null>(null);
-  const [selectedJobType, setSelectedJobType] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
 
@@ -58,12 +67,19 @@ function CreateOrderView({
     const priority = formData.get('priority') as string;
     const caseDescription = formData.get('caseDescription') as string;
 
+    const finalJobItems: JobItemType[] = jobItems.map((item) => ({
+      jobCategory: item.jobCategory,
+      jobType: item.jobType,
+      cost: parseFloat(item.cost) || 0,
+      units: parseInt(item.units, 10) || 1,
+    }));
+
     // Client-side validation for jobItems
     const errors: string[] = [];
-    if (jobItems.length === 0) {
+    if (finalJobItems.length === 0) {
       errors.push('Debe añadir al menos un tipo de trabajo.');
     } else {
-      jobItems.forEach((item, index) => {
+      finalJobItems.forEach((item, index) => {
         if (!item.jobCategory.trim()) {
           errors.push(`La categoría de trabajo para el ítem ${index + 1} es requerida.`);
         }
@@ -90,13 +106,13 @@ function CreateOrderView({
     }
     setJobItemsErrors([]); // Clear previous errors
 
-    const totalCost = jobItems.reduce((sum, item) => sum + item.cost * (item.units || 1), 0);
+    const totalCost = finalJobItems.reduce((sum, item) => sum + item.cost * (item.units || 1), 0);
 
     const newOrder: Order = {
       doctorId,
       patientName,
-      jobItems,
-      cost: totalCost, // This will be overwritten by backend calculation, but good for type consistency
+      jobItems: finalJobItems,
+      cost: totalCost,
       status: 'Pendiente',
       creationDate: new Date().toISOString(),
       priority: priority as 'Baja' | 'Normal' | 'Alta' | 'Urgente',
@@ -110,7 +126,7 @@ function CreateOrderView({
       if (formRef.current) {
         formRef.current.reset();
       }
-      setJobItems([{ jobCategory: '', jobType: '', cost: 0 }]); // Reset job items
+      setJobItems([{ jobCategory: '', jobType: '', cost: '', units: '1' }]); // Reset job items
       setSelectedDoctor(null);
       showNotification(`Orden ${addedOrder.orderNumber} creada con éxito.`);
     } catch (error: Error) {
@@ -193,8 +209,8 @@ function CreateOrderView({
                     const newJobItems = [...jobItems];
                     newJobItems[index].jobCategory = e.target.value;
                     newJobItems[index].jobType = ''; // Reset jobType when category changes
-                    newJobItems[index].cost = 0; // Reset cost when category changes
-                    newJobItems[index].units = 1; // Reset units when category changes
+                    newJobItems[index].cost = ''; // Reset cost when category changes
+                    newJobItems[index].units = '1'; // Reset units when category changes
                     setJobItems(newJobItems);
                   }}
                   required
@@ -224,9 +240,10 @@ function CreateOrderView({
                   value={item.jobType}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     const newJobItems = [...jobItems];
-                    newJobItems[index].jobType = e.target.value;
-                    newJobItems[index].cost =
-                      jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0;
+                    const newJobType = e.target.value;
+                    newJobItems[index].jobType = newJobType;
+                    const cost = jobTypeCosts[newJobType];
+                    newJobItems[index].cost = cost !== undefined ? String(cost) : '';
                     setJobItems(newJobItems);
                   }}
                 >
@@ -246,7 +263,8 @@ function CreateOrderView({
               </div>
 
               {/* Conditional rendering for Units field */}
-              {(categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
+              {(categoriesRequiringUnits.includes(item.jobCategory) ||
+                jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
                 <div>
                   <label
                     htmlFor={`units-${index}`}
@@ -260,13 +278,19 @@ function CreateOrderView({
                     name={`units-${index}`}
                     className="w-full max-w-[100px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                     min="1"
-                    value={item.units || 1}
+                    value={item.units}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newJobItems = [...jobItems];
-                      let value = parseInt(e.target.value);
-                      if (isNaN(value) || value < 1) value = 1;
-                      newJobItems[index].units = value;
+                      newJobItems[index].units = e.target.value;
                       setJobItems(newJobItems);
+                    }}
+                    onBlur={(e) => {
+                      const newJobItems = [...jobItems];
+                      const units = parseInt(e.target.value, 10);
+                      if (isNaN(units) || units < 1) {
+                        newJobItems[index].units = '1';
+                        setJobItems(newJobItems);
+                      }
                     }}
                   />
                 </div>
@@ -280,12 +304,19 @@ function CreateOrderView({
                   Costo ($):
                 </label>
                 <input
-                  type="text" // Changed to text as it's now a calculated display
+                  type="number"
                   id={`cost-${index}`}
                   name={`cost-${index}`}
-                  className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
-                  value={(item.cost * (item.units || 1)).toFixed(2)}
-                  readOnly // Make it read-only
+                  className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={item.cost}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const newJobItems = [...jobItems];
+                    newJobItems[index].cost = e.target.value;
+                    setJobItems(newJobItems);
+                  }}
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
                 />
               </div>
               {jobItems.length > 1 && (
@@ -307,7 +338,9 @@ function CreateOrderView({
           {jobItems.length < 5 && (
             <button
               type="button"
-              onClick={() => setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: 0 }])}
+              onClick={() =>
+                setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: '', units: '1' }])
+              }
               className="mt-2 flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
             >
               <Plus className="mr-1 size-4" /> Añadir Otro Trabajo

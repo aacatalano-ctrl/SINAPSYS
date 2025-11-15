@@ -61,6 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <span>
           <span className="text-4xl text-rose-400">S</span>INAPSIS
         </span>
+        <span className="ml-2 text-xs font-normal text-white">V 1.1</span>
         {/* Close button for mobile sidebar */}
         <button
           onClick={toggleSidebar}
