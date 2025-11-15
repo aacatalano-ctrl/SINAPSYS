@@ -1,22 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#FB7185" stroke="none">
-  <path d="M12 2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-4Z"/>
-  <path d="M12 14a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4Z"/>
-  <path d="M2 2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/>
-  <path d="M2 14h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Z"/>
-  <path d="M14 2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/>
-  <path d="M14 14h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Z"/>
-  <path d="M12 10v4"/>
-  <path d="M10 12h4"/>
-  <path d="M8 12h4"/>
-  <path d="M12 8v4"/>
-  <path d="M12 16v4"/>
-  <path d="M16 12h4"/>
-  <path d="M12 4v4"/>
-  <path d="M4 12h4"/>
-  <path d="M12 20v4"/>
-  <path d="M20 12h4"/>
-  <path d="M4 4v4"/>
-  <path d="M20 4v4"/>
-  <path d="M4 16v4"/>
-  <path d="M20 16v4"/>
+<svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+  
+  <path d="M22 12h-4" />
+  <path d="M22 4h-4" />
+  <path d="M22 20h-4" />
+  <path d="M12 2a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h6v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2" />
+  <path d="M16 4h-4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+  
 </svg>
