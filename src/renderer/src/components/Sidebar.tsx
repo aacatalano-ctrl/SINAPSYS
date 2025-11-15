@@ -9,6 +9,7 @@ import {
   LogOut,
   Bell,
   Users,
+  BrainCircuit,
 } from 'lucide-react';
 import { Notification, User } from '../../types';
 import CecatLogo from './CecatLogo';
@@ -55,8 +56,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         fixed inset-y-0 z-50 h-screen w-64 transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
-      <div className="mb-8 flex items-center justify-center">
-        <CecatLogo className="h-auto w-40 text-white" />
+      <div className="mb-8 flex items-center justify-center font-orbitron text-2xl font-bold tracking-wider text-blue-400">
+        <BrainCircuit className="mr-3 size-8 text-white drop-shadow-rose-glow" />
+        <span>
+          <span className="text-4xl text-rose-400">S</span>INAPSIS
+        </span>
         {/* Close button for mobile sidebar */}
         <button
           onClick={toggleSidebar}
