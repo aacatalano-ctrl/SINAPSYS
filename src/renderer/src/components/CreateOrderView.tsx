@@ -267,20 +267,12 @@ function CreateOrderView({
                   Costo ($):
                 </label>
                 <input
-                  type="number"
+                  type="text" // Changed to text as it's now a calculated display
                   id={`cost-${index}`}
                   name={`cost-${index}`}
-                  className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  step="0.01"
-                  min="0"
-                  value={item.cost}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const newJobItems = [...jobItems];
-                    let value = parseFloat(e.target.value);
-                    if (isNaN(value)) value = 0;
-                    newJobItems[index].cost = value;
-                    setJobItems(newJobItems);
-                  }}
+                  className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
+                  value={(item.cost * (item.units || 1)).toFixed(2)}
+                  readOnly // Make it read-only
                 />
               </div>
               {jobItems.length > 1 && (
