@@ -295,6 +295,21 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
       updateFields.completionDate = completionDate || new Date().toISOString();
     }
     await handleUpdateOrder(orderId, updateFields);
+
+    if (newStatus === 'Completado') {
+      try {
+        const order = orders.find(o => o._id === orderId);
+        const message = `La orden ${order?.orderNumber || orderId} para ${order?.patientName || 'un paciente'} ha sido completada.`;
+        await authFetch(`${API_URL}/notifications/order-completed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, message }),
+        });
+      } catch (error) {
+        console.error('Error creating completion notification:', error);
+        // Do not re-throw, as main status update was successful
+      }
+    }
     fetchNotifications();
   };
 

@@ -1,11 +1,35 @@
 import { Router } from 'express';
 import { db } from '../database/index.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import { createNotification } from '../database/notifications.js'; // Import createNotification
 
 const router = Router();
 
 // Protect all notification routes
 router.use(authMiddleware);
+
+// POST /api/notifications/order-completed
+router.post('/order-completed', async (req, res) => {
+  const { orderId, message } = req.body;
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'orderId es requerido.' });
+  }
+
+  try {
+    // Optionally fetch order details to create a more descriptive message
+    const order = await db.orders.findById(orderId);
+    const notificationMessage =
+      message ||
+      `La orden ${order?.orderNumber || orderId} para ${order?.patientName || 'un paciente'} ha sido completada.`;
+
+    await createNotification(orderId, notificationMessage);
+    res.status(201).json({ message: 'Notificación de orden completada creada con éxito.' });
+  } catch (error) {
+    console.error('Error creating order completed notification:', error);
+    res.status(500).json({ error: 'Error al crear la notificación de orden completada.' });
+  }
+});
 
 // GET /api/notifications
 router.get('/', async (req, res) => {

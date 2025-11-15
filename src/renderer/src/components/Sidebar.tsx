@@ -56,14 +56,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         fixed inset-y-0 z-50 h-screen w-64 transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
-      <div className="mb-8 flex items-center justify-center font-orbitron text-2xl font-bold tracking-wider text-blue-400">
-        <BrainCircuit className="mr-3 size-8 text-white drop-shadow-rose-glow" />
-        <span>
-          <span className="text-4xl text-rose-400">S</span>INAPSIS
-          <span className="ml-1 align-text-bottom text-[0.6rem] font-normal text-white">
-            <span className="text-[0.7rem]">V</span>1.1
-          </span>
-        </span>
+      <div className="mb-8 flex items-center justify-center">
+        <img src="/vite.svg" alt="SINAPSIS Logo" className="h-10 w-auto" />
         {/* Close button for mobile sidebar */}
         <button
           onClick={toggleSidebar}
