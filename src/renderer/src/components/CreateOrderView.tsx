@@ -31,6 +31,7 @@ function CreateOrderView({
   const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [newlyAddedDoctorId, setNewlyAddedDoctorId] = useState<string | null>(null);
+  const [editingCost, setEditingCost] = useState<{ index: number; value: string } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
 
@@ -61,20 +62,18 @@ function CreateOrderView({
 
   const handleCostStepper = (index: number, increment: boolean) => {
     const newJobItems = [...jobItems];
-    const currentItem = newJobItems[index];
-    let currentVal = parseFloat(currentItem.cost);
-
-    if (isNaN(currentVal)) currentVal = 0;
+    const item = newJobItems[index];
+    const units = parseInt(item.units, 10) || 1;
+    const currentBaseCost = parseFloat(item.cost) || 0;
+    let currentTotal = currentBaseCost * units;
 
     const step = 10;
-    let newValue = currentVal + (increment ? step : -step);
+    let newTotal = currentTotal + (increment ? step : -step);
+    if (newTotal < 0) newTotal = 0;
 
-    if (newValue < 0) {
-      newValue = 0;
-    }
-
-    currentItem.cost = String(newValue.toFixed(2));
+    item.cost = (newTotal / units).toFixed(2);
     setJobItems(newJobItems);
+    setEditingCost(null);
   };
 
   const handleCreateOrder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -230,6 +229,7 @@ function CreateOrderView({
                     newJobItems[index].cost = ''; // Reset cost when category changes
                     newJobItems[index].units = '1'; // Reset units when category changes
                     setJobItems(newJobItems);
+                    setEditingCost(null);
                   }}
                   required
                 >
@@ -263,6 +263,7 @@ function CreateOrderView({
                     const cost = jobTypeCosts[newJobType];
                     newJobItems[index].cost = cost !== undefined ? String(cost) : '';
                     setJobItems(newJobItems);
+                    setEditingCost(null);
                   }}
                 >
                   <option value="">Selecciona tipo de trabajo</option>
@@ -306,6 +307,7 @@ function CreateOrderView({
                         newJobItems[index].units = String(value);
                       }
                       setJobItems(newJobItems);
+                      setEditingCost(null);
                     }}
                   />
                 </div>
@@ -325,21 +327,36 @@ function CreateOrderView({
                     id={`cost-${index}`}
                     name={`cost-${index}`}
                     className="grow px-1 py-3 leading-tight text-gray-700 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    value={item.cost}
+                    value={
+                      editingCost?.index === index
+                        ? editingCost.value
+                        : (
+                            (parseFloat(item.cost) || 0) * (parseInt(item.units, 10) || 1)
+                          ).toFixed(2)
+                    }
+                    onFocus={() =>
+                      setEditingCost({
+                        index,
+                        value: (
+                          (parseFloat(item.cost) || 0) * (parseInt(item.units, 10) || 1)
+                        ).toFixed(2),
+                      })
+                    }
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const newJobItems = [...jobItems];
-                      newJobItems[index].cost = e.target.value;
-                      setJobItems(newJobItems);
+                      if (editingCost?.index === index) {
+                        setEditingCost({ ...editingCost, value: e.target.value });
+                      }
                     }}
-                    onBlur={(e) => {
-                      const newJobItems = [...jobItems];
-                      const cost = parseFloat(e.target.value);
-                      if (!isNaN(cost)) {
-                        newJobItems[index].cost = cost.toFixed(2);
+                    onBlur={() => {
+                      if (editingCost) {
+                        const newJobItems = [...jobItems];
+                        const units = parseInt(newJobItems[editingCost.index].units, 10) || 1;
+                        const newTotal = parseFloat(editingCost.value);
+                        if (!isNaN(newTotal) && newTotal >= 0) {
+                          newJobItems[editingCost.index].cost = (newTotal / units).toFixed(2);
+                        }
                         setJobItems(newJobItems);
-                      } else {
-                        newJobItems[index].cost = '';
-                        setJobItems(newJobItems);
+                        setEditingCost(null);
                       }
                     }}
                     step="0.01"
