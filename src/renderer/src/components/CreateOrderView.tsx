@@ -25,7 +25,7 @@ function CreateOrderView({
   const formRef = useRef<HTMLFormElement>(null);
   const { handleOrderCreated: onOrderCreated, showNotification } = useOrders();
 
-  const categoriesRequiringUnits = ['Flujo Digital', 'Prótesis Fija'];
+  const categoriesRequiringUnits = ['FLUJO DIGITAL', 'PRÓTESIS FIJA'];
 
   useEffect(() => {
     if (newlyAddedDoctorId) {
