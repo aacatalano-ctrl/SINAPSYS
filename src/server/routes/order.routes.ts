@@ -16,8 +16,8 @@ import type { Payment, Note } from '../../types.js';
 import logger from '../utils/logger.js';
 import { getErrorMessage, getErrorStack } from '../utils/errorUtils.js';
 
-const calculateTotalCost = (jobItems: { cost: number }[]): number => {
-  return jobItems.reduce((sum, item) => sum + item.cost, 0);
+const calculateTotalCost = (jobItems: { cost: number; units?: number }[]): number => {
+  return jobItems.reduce((sum, item) => sum + item.cost * (item.units || 1), 0);
 };
 
 const router = Router();
@@ -451,7 +451,7 @@ const generateReceiptPDF = (order: any, firstName: string, lastName: string): Pr
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').text('Trabajos:', { continued: false });
     order.jobItems.forEach((item: any, index: number) => {
-      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType}: ${item.cost.toFixed(2)}`, { indent: 10 });
+      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType} (${item.units || 1} unidad/es): $${(item.cost * (item.units || 1)).toFixed(2)}`, { indent: 10 });
     });
     doc.moveDown(2);
 
@@ -547,7 +547,7 @@ const generatePaymentHistoryPDF = (order: any, firstName: string, lastName: stri
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').text('Trabajos:', { continued: false });
     order.jobItems.forEach((item: any, index: number) => {
-      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType}: ${item.cost.toFixed(2)}`, { indent: 10 });
+      doc.font('Helvetica').text(`  - ${item.jobCategory} / ${item.jobType} (${item.units || 1} unidad/es): $${(item.cost * (item.units || 1)).toFixed(2)}`, { indent: 10 });
     });
     doc.moveDown(2);
 
