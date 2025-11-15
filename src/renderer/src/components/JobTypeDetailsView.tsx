@@ -35,7 +35,7 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
   const aggregatedJobTypeData = useMemo(() => {
     const data: {
       [jobType: string]: {
-        totalOrders: number;
+        totalUnits: number;
         totalCost: number;
         totalDeposited: number;
       };
@@ -46,13 +46,13 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
         if (getJobTypeCategory(item.jobType) === selectedJobCategory) {
           if (!data[item.jobType]) {
             data[item.jobType] = {
-              totalOrders: 0,
+              totalUnits: 0,
               totalCost: 0,
               totalDeposited: 0,
             };
           }
-          data[item.jobType].totalOrders++;
-          data[item.jobType].totalCost += item.cost;
+          data[item.jobType].totalUnits += item.units || 1;
+          data[item.jobType].totalCost += item.cost * (item.units || 1);
           data[item.jobType].totalDeposited += order.payments.reduce(
             (sum, p) => sum + p.amount,
             0,
@@ -89,7 +89,7 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
                   Tipo de Trabajo
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
-                  Total Órdenes
+                  Total
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold uppercase text-gray-700">
                   Costo Total
@@ -103,7 +103,7 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
               {Object.entries(aggregatedJobTypeData).map(([jobType, data]) => (
                 <tr key={jobType} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-medium text-gray-800">{jobType}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{data.totalOrders}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{data.totalUnits}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">
                     ${data.totalCost.toFixed(2)}
                   </td>
