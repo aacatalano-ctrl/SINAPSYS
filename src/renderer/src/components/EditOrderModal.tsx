@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext';
-import { Order, Doctor, JobCategory, JobItem } from '../../types';
+import { Order, Doctor, JobCategory, JobItem as JobItemType } from '../../types';
 import DoctorCombobox from './DoctorCombobox';
-import { Plus, X } from 'lucide-react'; // Import icons for add/remove buttons
+import { Plus, X, Minus } from 'lucide-react';
 
 interface EditOrderModalProps {
   order: Order;
@@ -11,6 +11,14 @@ interface EditOrderModalProps {
   jobTypeCosts: { [key: string]: number };
   onClose: () => void;
   onUpdateOrder: (id: string, updatedFields: Partial<Order>) => Promise<void>;
+}
+
+// Local state interface for editable fields
+interface EditableJobItem {
+  jobCategory: string;
+  jobType: string;
+  cost: string;
+  units: string;
 }
 
 const EditOrderModal: React.FC<EditOrderModalProps> = ({
@@ -38,22 +46,30 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
   // State for form fields
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [patientName, setPatientName] = useState('');
-  const [jobItems, setJobItems] = useState<JobItem[]>([]);
+  const [jobItems, setJobItems] = useState<EditableJobItem[]>([]);
   const [jobItemsErrors, setJobItemsErrors] = useState<string[]>([]);
   const [priority, setPriority] = useState<'Baja' | 'Normal' | 'Alta' | 'Urgente'>('Normal');
   const [caseDescription, setCaseDescription] = useState('');
+  const [editingCost, setEditingCost] = useState<{ index: number; value: string } | null>(null);
 
   // Effect to initialize form state when the order prop is available
   useEffect(() => {
     if (order && doctors.length > 0) {
-      const currentDoctorId = typeof order.doctorId === 'object' && order.doctorId !== null
-        ? (order.doctorId as Doctor)._id
-        : order.doctorId;
+      const currentDoctorId =
+        typeof order.doctorId === 'object' && order.doctorId !== null
+          ? (order.doctorId as Doctor)._id
+          : order.doctorId;
 
       const doctor = doctors.find((d) => d._id === currentDoctorId) || null;
       setSelectedDoctor(doctor);
       setPatientName(order.patientName);
-      setJobItems(order.jobItems.map(item => ({ ...item, units: item.units || 1 })) || [{ jobCategory: '', jobType: '', cost: 0, units: 1 }]); // Initialize with existing jobItems or a default
+      setJobItems(
+        order.jobItems.map((item) => ({
+          ...item,
+          cost: String(item.cost),
+          units: String(item.units || 1),
+        })) || [{ jobCategory: '', jobType: '', cost: '', units: '1' }],
+      );
       setPriority(order.priority);
       setCaseDescription(order.caseDescription);
     }
@@ -74,6 +90,22 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
     };
   }, [onClose]);
 
+  const handleCostStepper = (index: number, increment: boolean) => {
+    const newJobItems = [...jobItems];
+    const item = newJobItems[index];
+    const units = parseInt(item.units, 10) || 1;
+    const currentBaseCost = parseFloat(item.cost) || 0;
+    let currentTotal = currentBaseCost * units;
+
+    const step = 10;
+    let newTotal = currentTotal + (increment ? step : -step);
+    if (newTotal < 0) newTotal = 0;
+
+    item.cost = (newTotal / units).toFixed(2);
+    setJobItems(newJobItems);
+    setEditingCost(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedDoctor) {
@@ -81,12 +113,19 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
       return;
     }
 
+    const finalJobItems: JobItemType[] = jobItems.map((item) => ({
+      jobCategory: item.jobCategory,
+      jobType: item.jobType,
+      cost: parseFloat(item.cost) || 0,
+      units: parseInt(item.units, 10) || 1,
+    }));
+
     // Client-side validation for jobItems
     const errors: string[] = [];
-    if (jobItems.length === 0) {
+    if (finalJobItems.length === 0) {
       errors.push('Debe añadir al menos un tipo de trabajo.');
     } else {
-      jobItems.forEach((item, index) => {
+      finalJobItems.forEach((item, index) => {
         if (!item.jobCategory.trim()) {
           errors.push(`La categoría de trabajo para el ítem ${index + 1} es requerida.`);
         }
@@ -109,7 +148,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
     const updatedOrderData: Partial<Omit<Order, '_id'>> = {
       doctorId: selectedDoctor._id,
       patientName,
-      jobItems,
+      jobItems: finalJobItems,
       priority,
       caseDescription,
     };
@@ -160,27 +199,28 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
               <div key={index} className="mb-4 grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-4">
                 <div>
                   <label
-                    htmlFor={`jobCategory-${index}`}
+                    htmlFor={`edit-jobCategory-${index}`}
                     className="mb-2 block text-sm font-semibold text-gray-700"
                   >
-                    Categoría de Trabajo:
+                    Categoría:
                   </label>
                   <select
-                    id={`jobCategory-${index}`}
-                    name={`jobCategory-${index}`}
+                    id={`edit-jobCategory-${index}`}
+                    name={`edit-jobCategory-${index}`}
                     className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={item.jobCategory}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                       const newJobItems = [...jobItems];
                       newJobItems[index].jobCategory = e.target.value;
                       newJobItems[index].jobType = ''; // Reset jobType when category changes
-                      newJobItems[index].cost = 0; // Reset cost when category changes
-                      newJobItems[index].units = 1; // Reset units when category changes
+                      newJobItems[index].cost = ''; // Reset cost when category changes
+                      newJobItems[index].units = '1'; // Reset units when category changes
                       setJobItems(newJobItems);
+                      setEditingCost(null);
                     }}
                     required
                   >
-                    <option value="">Selecciona una categoría</option>
+                    <option value="">Selecciona</option>
                     {jobCategories.map((category) => (
                       <option key={category.category} value={category.category}>
                         {category.category}
@@ -191,27 +231,29 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
                 <div>
                   <label
-                    htmlFor={`jobType-${index}`}
+                    htmlFor={`edit-jobType-${index}`}
                     className="mb-2 block text-sm font-semibold text-gray-700"
                   >
-                    Tipo de Trabajo:
+                    Tipo:
                   </label>
                   <select
-                    id={`jobType-${index}`}
-                    name={`jobType-${index}`}
+                    id={`edit-jobType-${index}`}
+                    name={`edit-jobType-${index}`}
                     className="w-full rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                     disabled={!item.jobCategory}
                     value={item.jobType}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                       const newJobItems = [...jobItems];
-                      newJobItems[index].jobType = e.target.value;
-                      newJobItems[index].cost =
-                        jobTypeCosts[e.target.value] !== undefined ? jobTypeCosts[e.target.value] : 0;
+                      const newJobType = e.target.value;
+                      newJobItems[index].jobType = newJobType;
+                      const cost = jobTypeCosts[newJobType];
+                      newJobItems[index].cost = cost !== undefined ? String(cost) : '';
                       setJobItems(newJobItems);
+                      setEditingCost(null);
                     }}
                   >
-                    <option value="">Selecciona tipo de trabajo</option>
+                    <option value="">Selecciona</option>
                     {item.jobCategory &&
                       jobCategories
                         .find((cat) => cat.category === item.jobCategory)
@@ -226,29 +268,32 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                   </select>
                 </div>
 
-                {/* Conditional rendering for Units field */}
-                {console.log(`Checking units for: ${item.jobCategory} - ${item.jobType}. Condition: ${categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)}`)}
-                {(categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
+                {(categoriesRequiringUnits.includes(item.jobCategory) ||
+                  jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
                   <div>
                     <label
-                      htmlFor={`units-${index}`}
+                      htmlFor={`edit-units-${index}`}
                       className="mb-2 block text-sm font-semibold text-gray-700"
                     >
                       Unidades:
                     </label>
                     <input
                       type="number"
-                      id={`units-${index}`}
-                      name={`units-${index}`}
+                      id={`edit-units-${index}`}
+                      name={`edit-units-${index}`}
                       className="w-full max-w-[100px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                       min="1"
-                      value={item.units || 1}
+                      value={item.units}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const newJobItems = [...jobItems];
-                        let value = parseInt(e.target.value);
-                        if (isNaN(value) || value < 1) value = 1;
-                        newJobItems[index].units = value;
+                        const value = parseInt(e.target.value, 10);
+                        if (isNaN(value) || value < 1) {
+                          newJobItems[index].units = '1';
+                        } else {
+                          newJobItems[index].units = String(value);
+                        }
                         setJobItems(newJobItems);
+                        setEditingCost(null);
                       }}
                     />
                   </div>
@@ -256,19 +301,73 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
                 <div>
                   <label
-                    htmlFor={`cost-${index}`}
+                    htmlFor={`edit-cost-${index}`}
                     className="mb-2 block text-sm font-semibold text-gray-700"
                   >
-                    Costo Total ($):
+                    Costo ($):
                   </label>
-                  <input
-                    type="text" // Changed to text as it's now a calculated display
-                    id={`cost-${index}`}
-                    name={`cost-${index}`}
-                    className="w-full max-w-[120px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
-                    value={(item.cost * (item.units || 1)).toFixed(2)}
-                    readOnly // Make it read-only
-                  />
+                  <div className="flex w-full max-w-[160px] items-center overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+                    <span className="pl-3 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      id={`edit-cost-${index}`}
+                      name={`edit-cost-${index}`}
+                      className="grow px-1 py-3 leading-tight text-gray-700 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      value={
+                        editingCost?.index === index
+                          ? editingCost.value
+                          : (
+                              (parseFloat(item.cost) || 0) * (parseInt(item.units, 10) || 1)
+                            ).toFixed(2)
+                      }
+                      onFocus={() =>
+                        setEditingCost({
+                          index,
+                          value: (
+                            (parseFloat(item.cost) || 0) * (parseInt(item.units, 10) || 1)
+                          ).toFixed(2),
+                        })
+                      }
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        if (editingCost?.index === index) {
+                          setEditingCost({ ...editingCost, value: e.target.value });
+                        }
+                      }}
+                      onBlur={() => {
+                        if (editingCost) {
+                          const newJobItems = [...jobItems];
+                          const units = parseInt(newJobItems[editingCost.index].units, 10) || 1;
+                          const newTotal = parseFloat(editingCost.value);
+                          if (!isNaN(newTotal) && newTotal >= 0) {
+                            newJobItems[editingCost.index].cost = (newTotal / units).toFixed(2);
+                          }
+                          setJobItems(newJobItems);
+                          setEditingCost(null);
+                        }
+                      }}
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                    />
+                    <div className="flex flex-col border-l border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => handleCostStepper(index, true)}
+                        className="flex h-1/2 w-8 items-center justify-center rounded-tr-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
+                        title="Incrementar en $10"
+                      >
+                        <Plus size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCostStepper(index, false)}
+                        className="flex h-1/2 w-8 items-center justify-center rounded-br-lg border-t border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
+                        title="Decrementar en $10"
+                      >
+                        <Minus size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 {jobItems.length > 1 && (
                   <div className="md:col-span-3 flex justify-end">
@@ -280,7 +379,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                       }}
                       className="text-red-600 hover:text-red-800 text-sm font-semibold"
                     >
-                      Eliminar Trabajo
+                      <X className="mr-1 size-4" /> Eliminar
                     </button>
                   </div>
                 )}
@@ -289,10 +388,12 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
             {jobItems.length < 5 && (
               <button
                 type="button"
-                onClick={() => setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: 0 }])}
+                onClick={() =>
+                  setJobItems([...jobItems, { jobCategory: '', jobType: '', cost: '', units: '1' }])
+                }
                 className="mt-2 flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800"
               >
-                <Plus className="mr-1 size-4" /> Añadir Otro Trabajo
+                <Plus className="mr-1 size-4" /> Añadir Trabajo
               </button>
             )}
             {jobItemsErrors.length > 0 && (

@@ -60,8 +60,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         <BrainCircuit className="mr-3 size-8 text-white drop-shadow-rose-glow" />
         <span>
           <span className="text-4xl text-rose-400">S</span>INAPSIS
+          <span className="ml-1 align-text-bottom text-[0.6rem] font-normal text-white">
+            <span className="text-[0.7rem]">V</span>1.1
+          </span>
         </span>
-        <span className="ml-2 text-xs font-normal text-white">V 1.1</span>
         {/* Close button for mobile sidebar */}
         <button
           onClick={toggleSidebar}
