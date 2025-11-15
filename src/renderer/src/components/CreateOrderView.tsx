@@ -210,6 +210,8 @@ function CreateOrderView({
                   disabled={!item.jobCategory}
                   value={item.jobType}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    console.log(`[JobType Change] Item ${index} - Current jobCategory: "${item.jobCategory}"`);
+                    console.log(`[JobType Change] Item ${index} - Selected jobType: "${e.target.value}"`);
                     const newJobItems = [...jobItems];
                     newJobItems[index].jobType = e.target.value;
                     newJobItems[index].cost =
