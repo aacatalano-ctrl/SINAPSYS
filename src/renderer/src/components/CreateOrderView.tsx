@@ -35,6 +35,9 @@ function CreateOrderView({
     'ACRÍLICO - ACRÍLICO - Rejilla Prefabricada',
     'ACRÍLICO - ACRÍLICO - Prótesis Totales',
     'ACRÍLICO - ACRÍLICO - Rebase Acrílico',
+    'ACRÍLICO - ACRÍLICO - Gancho Colado',
+    'ACRÍLICO - ACRÍLICO - Rejilla Fundida',
+    'ACRÍLICO - ACRÍLICO - Gancho Contorneado',
   ]);
 
   useEffect(() => {
