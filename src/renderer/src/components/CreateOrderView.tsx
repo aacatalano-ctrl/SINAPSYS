@@ -28,13 +28,13 @@ function CreateOrderView({
   const categoriesRequiringUnits = ['FLUJO DIGITAL', 'PRÓTESIS FIJA'];
 
   const jobTypesRequiringUnits = new Set([
-    'DPR METAL ACRILICO - Respaldo Metalico',
-    'ACRILICO - Ganchos Esteticos',
-    'ACRILICO - Ganchos Metalicos',
-    'ACRILICO - Rejilla Colada',
-    'ACRILICO - Rejilla Prefabricada',
-    'ACRILICO - Protesis Total',
-    'ACRILICO - Rebase Acrilico',
+    'DPR METAL ACRÍLICO - Respaldo Metálico',
+    'ACRÍLICO - Ganchos Estéticos',
+    'ACRÍLICO - Ganchos Metálicos',
+    'ACRÍLICO - Rejilla Colada',
+    'ACRÍLICO - Rejilla Prefabricada',
+    'ACRÍLICO - Prótesis Total',
+    'ACRÍLICO - Rebase Acrílico',
   ]);
 
   useEffect(() => {
