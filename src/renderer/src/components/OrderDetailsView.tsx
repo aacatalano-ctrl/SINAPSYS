@@ -142,7 +142,8 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
               <ul className="ml-4 list-disc">
                 {order.jobItems.map((item, index) => (
                   <li key={index}>
-                    {item.jobCategory} - {item.jobType} (${item.cost.toFixed(2)})
+                    {item.jobCategory} - {item.jobType} ({item.units || 1} unidad/es) - $
+                    {(item.cost * (item.units || 1)).toFixed(2)}
                   </li>
                 ))}
               </ul>
