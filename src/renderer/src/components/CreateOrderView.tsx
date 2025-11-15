@@ -27,6 +27,16 @@ function CreateOrderView({
 
   const categoriesRequiringUnits = ['FLUJO DIGITAL', 'PRÓTESIS FIJA'];
 
+  const jobTypesRequiringUnits = new Set([
+    'DPR METAL ACRILICO - Respaldo Metalico',
+    'ACRILICO - Ganchos Esteticos',
+    'ACRILICO - Ganchos Metalicos',
+    'ACRILICO - Rejilla Colada',
+    'ACRILICO - Rejilla Prefabricada',
+    'ACRILICO - Protesis Total',
+    'ACRILICO - Rebase Acrilico',
+  ]);
+
   useEffect(() => {
     if (newlyAddedDoctorId) {
       const foundDoctor = doctors.find((doc) => doc._id === newlyAddedDoctorId);
@@ -233,7 +243,7 @@ function CreateOrderView({
               </div>
 
               {/* Conditional rendering for Units field */}
-              {categoriesRequiringUnits.includes(item.jobCategory) && (
+              {(categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
                 <div>
                   <label
                     htmlFor={`units-${index}`}
