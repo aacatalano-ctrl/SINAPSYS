@@ -78,9 +78,6 @@ const ReportsView: React.FC<ReportsViewProps> = ({
   );
 
   useEffect(() => {
-    console.log('ReportsView - orders:', orders);
-    console.log('ReportsView - doctors:', doctors);
-    console.log('ReportsView - filteredOrders:', filteredOrders);
   }, [orders, doctors, filteredOrders]);
 
   return (

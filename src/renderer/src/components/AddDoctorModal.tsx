@@ -29,7 +29,6 @@ const AddDoctorModal = ({
       phone: (formData.get('doctorPhone') as string).trim(),
       address: (formData.get('doctorAddress') as string).trim(),
     };
-    console.log('New Doctor object being sent:', newDoctorData);
     try {
       const addedDoctor = await onAddDoctor(newDoctorData);
       onClose();
