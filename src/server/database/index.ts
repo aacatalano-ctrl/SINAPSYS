@@ -30,6 +30,7 @@ const jobItemSchema = new mongoose.Schema({
   jobCategory: { type: String, required: true },
   jobType: { type: String, required: true },
   cost: { type: Number, required: true },
+  units: { type: Number, required: true, default: 1 }, // Added units field
 });
 
 const orderSchema = new mongoose.Schema<Order>({
