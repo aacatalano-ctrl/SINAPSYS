@@ -21,6 +21,7 @@ export const jobItemSchema = z.object({
   jobCategory: z.string().min(1, 'La categoría de trabajo es requerida.'),
   jobType: z.string().min(1, 'El tipo de trabajo es requerido.'),
   cost: z.number().positive('El costo del trabajo debe ser un número positivo.'),
+  units: z.number().min(1, 'Las unidades deben ser al menos 1.').default(1), // Added units field
 });
 
 export const createOrderSchema = z.object({
