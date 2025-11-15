@@ -106,6 +106,7 @@ const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
         });
         onClose(); // Close only on success
       } else {
+        await onAddPayment(parsedAmount, description);
         onClose(); // Close only on success
       }
     } catch (error) {
