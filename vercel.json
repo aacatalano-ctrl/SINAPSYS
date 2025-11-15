@@ -15,5 +15,11 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/src/server/server.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-notifications",
+      "schedule": "0 0 * * *"
+    }
   ]
 }

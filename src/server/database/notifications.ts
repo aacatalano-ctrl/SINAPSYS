@@ -56,4 +56,18 @@ async function checkUnpaidOrders(): Promise<void> {
   }
 }
 
-export { createNotification, checkUnpaidOrders };
+async function cleanupOldNotifications(): Promise<void> {
+  try {
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    const result = await db.notifications.deleteMany({
+      createdAt: { $lt: sixtyDaysAgo.toISOString() },
+    });
+    console.log(`Cleanup: Deleted ${result.deletedCount} old notifications.`);
+  } catch (err) {
+    console.error('Error during notification cleanup:', err);
+  }
+}
+
+export { createNotification, checkUnpaidOrders, cleanupOldNotifications };
