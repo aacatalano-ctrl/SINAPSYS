@@ -59,30 +59,21 @@ function CreateOrderView({
     }
   }, [doctors, newlyAddedDoctorId, setSelectedDoctor]);
 
-  const handleNumericStepper = (
-    index: number,
-    field: 'cost' | 'units',
-    increment: boolean,
-    step: number,
-  ) => {
+  const handleCostStepper = (index: number, increment: boolean) => {
     const newJobItems = [...jobItems];
     const currentItem = newJobItems[index];
-    let currentVal = field === 'cost' ? parseFloat(currentItem.cost) : parseInt(currentItem.units, 10);
+    let currentVal = parseFloat(currentItem.cost);
 
     if (isNaN(currentVal)) currentVal = 0;
 
+    const step = 10;
     let newValue = currentVal + (increment ? step : -step);
 
     if (newValue < 0) {
       newValue = 0;
     }
 
-    if (field === 'cost') {
-      currentItem.cost = String(newValue.toFixed(2));
-    } else {
-      currentItem.units = String(Math.round(newValue));
-    }
-
+    currentItem.cost = String(newValue.toFixed(2));
     setJobItems(newJobItems);
   };
 
@@ -299,47 +290,24 @@ function CreateOrderView({
                   >
                     Unidades:
                   </label>
-                  <div className="flex w-full max-w-[120px] items-center overflow-hidden rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
-                    <input
-                      type="number"
-                      id={`units-${index}`}
-                      name={`units-${index}`}
-                      className="grow px-2 py-3 text-center leading-tight text-gray-700 [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      min="1"
-                      value={item.units}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const newJobItems = [...jobItems];
-                        newJobItems[index].units = e.target.value;
-                        setJobItems(newJobItems);
-                      }}
-                      onBlur={(e) => {
-                        const newJobItems = [...jobItems];
-                        const units = parseInt(e.target.value, 10);
-                        if (isNaN(units) || units < 1) {
-                          newJobItems[index].units = '1';
-                          setJobItems(newJobItems);
-                        }
-                      }}
-                    />
-                    <div className="flex flex-col border-l border-gray-200">
-                      <button
-                        type="button"
-                        onClick={() => handleNumericStepper(index, 'units', true, 1)}
-                        className="flex h-1/2 w-8 items-center justify-center rounded-tr-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
-                        title="Incrementar en 1"
-                      >
-                        <Plus size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleNumericStepper(index, 'units', false, 1)}
-                        className="flex h-1/2 w-8 items-center justify-center rounded-br-lg border-t border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
-                        title="Decrementar en 1"
-                      >
-                        <Minus size={16} />
-                      </button>
-                    </div>
-                  </div>
+                  <input
+                    type="number"
+                    id={`units-${index}`}
+                    name={`units-${index}`}
+                    className="w-full max-w-[100px] appearance-none rounded-lg border px-4 py-3 leading-tight text-gray-700 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    value={item.units}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const newJobItems = [...jobItems];
+                      const value = parseInt(e.target.value, 10);
+                      if (isNaN(value) || value < 1) {
+                        newJobItems[index].units = '1';
+                      } else {
+                        newJobItems[index].units = String(value);
+                      }
+                      setJobItems(newJobItems);
+                    }}
+                  />
                 </div>
               )}
 
@@ -381,7 +349,7 @@ function CreateOrderView({
                   <div className="flex flex-col border-l border-gray-200">
                     <button
                       type="button"
-                      onClick={() => handleNumericStepper(index, 'cost', true, 10)}
+                      onClick={() => handleCostStepper(index, true)}
                       className="flex h-1/2 w-8 items-center justify-center rounded-tr-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
                       title="Incrementar en $10"
                     >
@@ -389,7 +357,7 @@ function CreateOrderView({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleNumericStepper(index, 'cost', false, 10)}
+                      onClick={() => handleCostStepper(index, false)}
                       className="flex h-1/2 w-8 items-center justify-center rounded-br-lg border-t border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none"
                       title="Decrementar en $10"
                     >
