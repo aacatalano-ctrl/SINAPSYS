@@ -42,6 +42,7 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
     } = {};
 
     filteredOrdersByJobType.forEach((order) => {
+      const orderTotalDeposited = order.payments.reduce((sum, p) => sum + p.amount, 0); // Calculate once per order
       order.jobItems.forEach((item) => {
         if (getJobTypeCategory(item.jobType) === selectedJobCategory) {
           if (!data[item.jobType]) {
@@ -53,10 +54,7 @@ const JobTypeDetailsView: React.FC<JobTypeDetailsViewProps> = ({
           }
           data[item.jobType].totalUnits += item.units || 1;
           data[item.jobType].totalCost += item.cost * (item.units || 1);
-          data[item.jobType].totalDeposited += order.payments.reduce(
-            (sum, p) => sum + p.amount,
-            0,
-          );
+          data[item.jobType].totalDeposited += orderTotalDeposited; // Add the order's total payments
         }
       });
     });

@@ -275,10 +275,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                   order.jobItems.some((item) => getJobTypeCategory(item.jobType) === jobType),
                 );
                 const totalOrdersOfType = jobTypeOrders.length;
-                const totalDepositedOfType = jobTypeOrders.reduce(
-                  (sum, order) => sum + order.payments.reduce((pSum, p) => pSum + p.amount, 0),
-                  0,
-                );
+                const totalIncomeOfType = jobTypeOrders.reduce((sum, order) => {
+                  const relevantJobItemsCost = order.jobItems.reduce((itemSum, item) => {
+                    if (getJobTypeCategory(item.jobType) === jobType) {
+                      return itemSum + (item.cost * (item.units || 1));
+                    }
+                    return itemSum;
+                  }, 0);
+                  return sum + relevantJobItemsCost;
+                }, 0);
                 if (totalOrdersOfType === 0) return null;
                 return (
                   <tr key={jobType} className="border-b border-gray-200 hover:bg-gray-50">
@@ -290,7 +295,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800">{totalOrdersOfType}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">
-                      ${totalDepositedOfType.toFixed(2)}
+                      ${totalIncomeOfType.toFixed(2)}
                     </td>
                   </tr>
                 );
