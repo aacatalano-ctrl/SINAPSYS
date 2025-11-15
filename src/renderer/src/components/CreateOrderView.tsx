@@ -243,7 +243,6 @@ function CreateOrderView({
               </div>
 
               {/* Conditional rendering for Units field */}
-              {console.log(`Checking units for: ${item.jobCategory} - ${item.jobType}. Condition: ${categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)}`)}
               {(categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
                 <div>
                   <label
