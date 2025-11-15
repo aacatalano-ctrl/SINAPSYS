@@ -25,6 +25,16 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
   const categoriesRequiringUnits = ['FLUJO DIGITAL', 'PRÓTESIS FIJA'];
 
+  const jobTypesRequiringUnits = new Set([
+    'DPR METAL ACRILICO - Respaldo Metalico',
+    'ACRILICO - Ganchos Esteticos',
+    'ACRILICO - Ganchos Metalicos',
+    'ACRILICO - Rejilla Colada',
+    'ACRILICO - Rejilla Prefabricada',
+    'ACRILICO - Protesis Total',
+    'ACRILICO - Rebase Acrilico',
+  ]);
+
   // State for form fields
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [patientName, setPatientName] = useState('');
@@ -217,7 +227,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                 </div>
 
                 {/* Conditional rendering for Units field */}
-                {categoriesRequiringUnits.includes(item.jobCategory) && (
+                {(categoriesRequiringUnits.includes(item.jobCategory) || jobTypesRequiringUnits.has(`${item.jobCategory} - ${item.jobType}`)) && (
                   <div>
                     <label
                       htmlFor={`units-${index}`}
