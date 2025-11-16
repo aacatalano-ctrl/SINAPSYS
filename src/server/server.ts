@@ -1,3 +1,4 @@
+import helmet from 'helmet';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server, type Socket } from 'socket.io';
@@ -23,9 +24,15 @@ import cacheMiddleware from './middleware/cacheMiddleware.js'; // Import cacheMi
 dotenv.config();
 
 const REDIS_URL = process.env.UPSTASH_REDIS_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 if (!REDIS_URL) {
   console.error('FATAL ERROR: UPSTASH_REDIS_URL is not defined.');
+  process.exit(1);
+}
+
+if (!FRONTEND_URL) {
+  console.error('FATAL ERROR: FRONTEND_URL is not defined. Please set this environment variable.');
   process.exit(1);
 }
 
@@ -45,7 +52,7 @@ const app = express();
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
   cors: {
-    origin: '*', // En producción, deberías restringir esto a la URL de tu frontend
+    origin: FRONTEND_URL, // Restringido a la URL de tu frontend
   },
   pingInterval: 1000,
   pingTimeout: 3000,
@@ -67,7 +74,8 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-app.use(cors());
+app.use(helmet()); // Añadir Helmet.js para seguridad
+app.use(cors({ origin: FRONTEND_URL })); // Restringir CORS al origen del frontend
 app.use(express.json());
 
 // --- Socket.io Logic ---
