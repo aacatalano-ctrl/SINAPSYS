@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 import { User } from '../../types';
 
@@ -15,6 +16,7 @@ interface UIContextType {
   setCurrentUser: (user: User | null) => void;
   handleLogout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  startSessionTimer: (token: string) => void;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -76,6 +78,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDatabaseMaintenance, setIsDatabaseMaintenance] = React.useState(false); // New state
   const [isLoading, setIsLoading] = React.useState(false); // Initialize new loading state
   const [sessionExpired, setSessionExpired] = React.useState(false); // New state for session expiration
+  const sessionTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const API_URL = '/api';
 
@@ -93,15 +96,48 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     [hideToast],
   );
 
+  const clearSessionTimer = React.useCallback(() => {
+    if (sessionTimeoutRef.current) {
+      clearTimeout(sessionTimeoutRef.current);
+      sessionTimeoutRef.current = null;
+    }
+  }, []);
+
   const clientSideLogout = React.useCallback(() => {
     setCurrentUser(null);
     localStorage.removeItem('token');
-  }, [setCurrentUser]);
+    clearSessionTimer();
+  }, [setCurrentUser, clearSessionTimer]);
 
   const handleSessionExpired = React.useCallback(() => {
     clientSideLogout();
     setSessionExpired(true);
   }, [clientSideLogout]);
+
+  const startSessionTimer = React.useCallback(
+    (token: string) => {
+      clearSessionTimer();
+      try {
+        const decodedToken = jwtDecode<{ exp: number }>(token);
+        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+        const currentTime = Date.now();
+        const timeUntilExpiration = expirationTime - currentTime;
+
+        if (timeUntilExpiration > 0) {
+          sessionTimeoutRef.current = setTimeout(() => {
+            handleSessionExpired();
+          }, timeUntilExpiration);
+        } else {
+          // Token is already expired
+          handleSessionExpired();
+        }
+      } catch (error) {
+        console.error('Failed to decode JWT or set session timer:', error);
+        handleSessionExpired(); // Log out if token is invalid
+      }
+    },
+    [clearSessionTimer, handleSessionExpired],
+  );
 
   const resetSessionExpired = React.useCallback(() => {
     setSessionExpired(false);
@@ -132,7 +168,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
             console.error('Failed to parse error response:', jsonError);
           }
 
-          if (response.status === 401) {
+          if (response.status === 401 && !sessionExpired) {
             handleSessionExpired();
           } else {
             showToast(errorMessage, 'error');
@@ -144,7 +180,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
         setIsLoading(false); // Set loading to false after fetch (success or error)
       }
     },
-    [showToast, handleSessionExpired],
+    [showToast, handleSessionExpired, sessionExpired],
   );
 
   const checkDatabaseStatus = React.useCallback(async () => {
@@ -169,12 +205,13 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 
   const handleLogout = React.useCallback(async () => {
     try {
+      // We attempt the API logout, but don't let it block the client-side logout
       await authFetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('Error during API logout:', error);
     } finally {
       clientSideLogout();
-      showToast('Sesión cerrada.', 'info'); // Changed type to 'info' for consistency
+      showToast('Sesión cerrada.', 'info');
     }
   }, [clientSideLogout, showToast, authFetch]);
 
@@ -302,6 +339,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     setCurrentUser,
     handleLogout,
     authFetch,
+    startSessionTimer,
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,
