@@ -33,18 +33,24 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Contraseña incorrecta.' });
     }
 
-    // --- ATOMIC UPDATE TO PREVENT RACE CONDITION ---
+    // --- ATOMIC UPDATE TO PREVENT RACE CONDITION AND HANDLE STALE SESSIONS ---
+    const sessionTimeout = 3 * 60 * 1000; // 3 minutes
+    const staleTime = new Date(Date.now() - sessionTimeout);
+
     const updatedUser = await db.users.findOneAndUpdate(
-      { _id: user._id, isOnline: { $ne: true } }, // Condition: Find user only if they are not already online
+      {
+        _id: user._id,
+        $or: [{ isOnline: false }, { isOnline: true, lastActiveAt: { $lt: staleTime } }],
+      },
       { $set: { isOnline: true, lastActiveAt: new Date() } }, // Action: Set them to online
       { new: true }, // Options: Return the document *after* the update
     );
 
     if (!updatedUser) {
-      // If updatedUser is null, it means the condition failed - the user was already online.
+      // If updatedUser is null, it means the condition failed - the user is genuinely online with an active session.
       return res
         .status(403)
-        .json({ success: false, message: 'El usuario ya tiene una sesión activa.' });
+        .json({ success: false, message: 'El usuario ya tiene una sesión activa en otro dispositivo.' });
     }
     // --- END OF ATOMIC UPDATE ---
 

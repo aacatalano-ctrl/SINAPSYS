@@ -110,6 +110,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   }, [setCurrentUser, clearSessionTimer]);
 
   const handleSessionExpired = React.useCallback(() => {
+    console.log('Session expired, showing modal.');
     clientSideLogout();
     setSessionExpired(true);
   }, [clientSideLogout]);
