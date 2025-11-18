@@ -31,6 +31,8 @@ interface UIContextType {
   toast: ToastState;
   isDatabaseMaintenance: boolean;
   isLoading: boolean; // New state for global loading indicator
+  sessionExpired: boolean; // New state for session expiration
+  resetSessionExpired: () => void; // New function to reset session expiration
   openAddDoctorModal: () => void;
   closeAddDoctorModal: () => void;
   openAddNoteModal: () => void;
@@ -73,6 +75,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [isDatabaseMaintenance, setIsDatabaseMaintenance] = React.useState(false); // New state
   const [isLoading, setIsLoading] = React.useState(false); // Initialize new loading state
+  const [sessionExpired, setSessionExpired] = React.useState(false); // New state for session expiration
 
   const API_URL = '/api';
 
@@ -94,6 +97,16 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     setCurrentUser(null);
     localStorage.removeItem('token');
   }, [setCurrentUser]);
+
+  const handleSessionExpired = React.useCallback(() => {
+    clientSideLogout();
+    setSessionExpired(true);
+  }, [clientSideLogout]);
+
+  const resetSessionExpired = React.useCallback(() => {
+    setSessionExpired(false);
+    window.location.reload();
+  }, []);
 
   const authFetch = React.useCallback(
     async (url: string, options?: RequestInit) => {
@@ -120,8 +133,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
           }
 
           if (response.status === 401) {
-            clientSideLogout();
-            showToast('Sesión expirada. Por favor, inicia sesión de nuevo.', 'error');
+            handleSessionExpired();
           } else {
             showToast(errorMessage, 'error');
           }
@@ -132,7 +144,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
         setIsLoading(false); // Set loading to false after fetch (success or error)
       }
     },
-    [showToast, clientSideLogout],
+    [showToast, handleSessionExpired],
   );
 
   const checkDatabaseStatus = React.useCallback(async () => {
@@ -306,6 +318,8 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     handleDeleteNotification,
     isDatabaseMaintenance,
     isLoading, // Include new loading state
+    sessionExpired, // New state for session expiration
+    resetSessionExpired, // New function to reset session expiration
     openAddDoctorModal,
     closeAddDoctorModal,
     openAddNoteModal,

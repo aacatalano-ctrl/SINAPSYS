@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
 import { useUI } from './context/UIContext';
+import SessionExpiredModal from './components/SessionExpiredModal.tsx'; // Import the new modal
 
 import { User } from '../types';
 
 function App() {
-  const { currentUser, setCurrentUser, authFetch, showToast } = useUI();
+  const { currentUser, setCurrentUser, authFetch, showToast, sessionExpired } = useUI(); // Get sessionExpired state
 
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
@@ -134,6 +135,7 @@ function App() {
 
   return (
     <>
+      {sessionExpired && <SessionExpiredModal />}
       {!currentUser ? (
         <AuthModal
           onLogin={handleLogin}
