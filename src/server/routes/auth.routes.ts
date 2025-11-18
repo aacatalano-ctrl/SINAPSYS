@@ -34,7 +34,7 @@ router.post('/login', async (req, res) => {
     }
 
     // --- ATOMIC UPDATE TO PREVENT RACE CONDITION AND HANDLE STALE SESSIONS ---
-    const sessionTimeout = 3 * 60 * 1000; // 3 minutes
+    const sessionTimeout = 15 * 60 * 1000; // 15 minutes
     const staleTime = new Date(Date.now() - sessionTimeout);
 
     const updatedUser = await db.users.findOneAndUpdate(
@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, username: user.username, nombre: user.nombre, apellido: user.apellido, role: user.role },
       JWT_SECRET!,
-      { expiresIn: '3m' },
+      { expiresIn: '15m' },
     );
     res.json({ success: true, user: { username: user.username, nombre: user.nombre, role: user.role }, token });
   } catch (error) {
