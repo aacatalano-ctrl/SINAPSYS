@@ -18,6 +18,9 @@ function App() {
   const API_URL = '/api';
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const verifyToken = async () => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -25,7 +28,7 @@ function App() {
           // The new logic relies on authFetch to handle expiration.
           // A request to /me will validate the token. If it fails, authFetch will
           // trigger the session expired flow.
-          const response = await authFetch(`${API_URL}/auth/me`);
+          const response = await authFetch(`${API_URL}/auth/me`, { signal });
           if (response.ok) {
             const result = await response.json();
             setCurrentUser(result.user as User);
@@ -33,16 +36,23 @@ function App() {
             // Token is invalid or expired, clientSideLogout is called by authFetch's handler
             setCurrentUser(null);
           }
-        } catch (e) {
-          console.error('Error verificando token:', e);
-          // clientSideLogout is likely already called by a failed authFetch
-          setCurrentUser(null);
+        } catch (e: any) {
+          if (e.name !== 'AbortError') {
+            console.error('Error verificando token:', e);
+            // clientSideLogout is likely already called by a failed authFetch
+            setCurrentUser(null);
+          }
         }
       } else {
         setCurrentUser(null);
       }
     };
+
     verifyToken();
+
+    return () => {
+      controller.abort();
+    };
     // We only want this to run once on mount.
     // Let's trust that authFetch and setCurrentUser are memoized correctly in the context.
   }, [setCurrentUser, authFetch]);

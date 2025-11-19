@@ -5,7 +5,7 @@ import { useDoctors } from './DoctorContext';
 import { Order, Payment, Note, User, JobItem } from '../../types';
 interface OrderContextType {
   orders: Order[];
-  fetchOrders: () => Promise<void>;
+  fetchOrders: (signal?: AbortSignal) => Promise<void>;
   isDataLoaded: boolean;
   showNotification: (message: string, type?: string) => void;
   currentUser: User | null;
@@ -40,7 +40,7 @@ const OrderContext = createContext<OrderContextType | null>(null);
 interface OrderProviderProps {
   children: React.ReactNode;
   currentUser: User | null;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response | void>;
 }
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({
@@ -55,22 +55,30 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
 
   const API_URL = '/api';
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      const response = await authFetch(`${API_URL}/orders`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const loadedOrders = await response.json();
-      setOrders(loadedOrders.filter(Boolean));
-      setIsDataLoaded(true);
-    } catch (error) {
-      console.error('Error loading orders from web server:', error);
-      showToast('Error al cargar órdenes.', 'error');
-    }
-  }, [showToast, authFetch]);
+  const fetchOrders = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await authFetch(`${API_URL}/orders`, { signal });
+        if (response) {
+          const loadedOrders = await response.json();
+          setOrders(loadedOrders.filter(Boolean));
+          setIsDataLoaded(true);
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Error loading orders from web server:', error);
+          showToast('Error al cargar órdenes.', 'error');
+        }
+      }
+    },
+    [showToast, authFetch],
+  );
 
   useEffect(() => {
     if (isDoctorsLoaded) {
-      fetchOrders();
+      const controller = new AbortController();
+      fetchOrders(controller.signal);
+      return () => controller.abort();
     }
   }, [isDoctorsLoaded, fetchOrders, doctors]);
 

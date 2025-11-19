@@ -114,21 +114,25 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   const isLoading = !isDataLoaded || !isDoctorsLoaded;
 
-  const fetchJobCategories = useCallback(async () => {
-    try {
-      const response = await authFetch(`${API_URL}/job-categories`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch job categories');
+  const fetchJobCategories = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await authFetch(`${API_URL}/job-categories`, { signal });
+        if (response) {
+          const data = await response.json();
+          setJobCategories(data.jobCategories || []);
+          setJobTypeCosts(data.jobTypeCosts || {});
+          setJobTypePrefixMap(data.jobTypePrefixMap || {});
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error(error);
+          showToast('Error al cargar las categorías de trabajo.', 'error');
+        }
       }
-      const data = await response.json();
-      setJobCategories(data.jobCategories || []);
-      setJobTypeCosts(data.jobTypeCosts || {});
-      setJobTypePrefixMap(data.jobTypePrefixMap || {});
-    } catch (error) {
-      console.error(error);
-      showToast('Error al cargar las categorías de trabajo.', 'error');
-    }
-  }, [authFetch, showToast]);
+    },
+    [authFetch, showToast],
+  );
 
   const openAddDoctorModal = useCallback(() => {
     return new Promise<string | null>((resolve) => {
@@ -154,10 +158,17 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
   };
 
   useEffect(() => {
-    fetchDoctors();
-    fetchNotifications();
-    fetchOrders();
-    fetchJobCategories();
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    fetchDoctors(signal);
+    fetchNotifications(signal);
+    fetchOrders(signal);
+    fetchJobCategories(signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchDoctors, fetchNotifications, fetchOrders, fetchJobCategories]);
 
   useEffect(() => {

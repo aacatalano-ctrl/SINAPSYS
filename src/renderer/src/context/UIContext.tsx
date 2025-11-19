@@ -24,7 +24,7 @@ interface UIContextType {
   isEmailDraftModalOpen: boolean;
   isDeleteReportModalOpen: boolean;
   notifications: Notification[];
-  fetchNotifications: () => Promise<void>;
+  fetchNotifications: (signal?: AbortSignal) => Promise<void>;
   handleMarkNotificationsAsRead: () => Promise<void>;
   handleClearAllNotifications: () => Promise<void>;
   handleDeleteNotification: (id: string) => Promise<void>;
@@ -122,6 +122,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
           ...(token && { Authorization: `Bearer ${token}` }),
           ...options?.headers,
         };
+        // Pass the signal from options to the fetch call
         const response = await fetch(url, { ...options, headers });
 
         if (!response.ok) {
@@ -144,6 +145,14 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
           throw new Error(errorMessage);
         }
         return response;
+      } catch (error: any) {
+        // Don't show an error toast if the request was intentionally aborted
+        if (error.name === 'AbortError') {
+          console.log('Fetch aborted:', url);
+        } else {
+          // Re-throw other errors to be handled by the calling function's catch block
+          throw error;
+        }
       } finally {
         setIsLoading(false);
       }
@@ -182,14 +191,22 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     }
   }, [clientSideLogout, showToast, authFetch]);
 
-  const fetchNotifications = React.useCallback(async () => {
-    try {
-      const fetchedNotifications = await authFetch(`/api/notifications`).then((res) => res.json());
-      setNotifications(fetchedNotifications);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
-  }, [authFetch]);
+  const fetchNotifications = React.useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await authFetch(`/api/notifications`, { signal });
+        if (response) {
+          const fetchedNotifications = await response.json();
+          setNotifications(fetchedNotifications);
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Failed to fetch notifications:', error);
+        }
+      }
+    },
+    [authFetch],
+  );
 
   const handleMarkNotificationsAsRead = React.useCallback(async () => {
     try {

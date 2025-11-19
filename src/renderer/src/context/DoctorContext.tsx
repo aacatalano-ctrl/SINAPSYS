@@ -8,7 +8,7 @@ interface DoctorContextType {
   isDoctorsLoaded: boolean;
   editingDoctor: Doctor | null;
   setEditingDoctor: React.Dispatch<React.SetStateAction<Doctor | null>>;
-  fetchDoctors: () => Promise<void>;
+  fetchDoctors: (signal?: AbortSignal) => Promise<void>;
   addDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<Doctor>;
   updateDoctor: (id: string, fields: Partial<Doctor>) => Promise<void>;
   deleteDoctor: (id: string) => Promise<string | void>;
@@ -19,7 +19,7 @@ const DoctorContext = createContext<DoctorContextType | undefined>(undefined);
 
 interface DoctorProviderProps {
   children: ReactNode;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response | void>;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
@@ -32,21 +32,25 @@ export const DoctorProvider: React.FC<DoctorProviderProps> = ({
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [isDoctorsLoaded, setIsDoctorsLoaded] = useState(false);
 
-  const fetchDoctors = useCallback(async () => {
-    setIsDoctorsLoaded(false);
-    try {
-      const response = await authFetch(`${API_URL}/doctors`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const fetchedDoctors = await response.json();
-      setDoctors(fetchedDoctors);
-      setIsDoctorsLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch doctors from web server:', error);
+  const fetchDoctors = useCallback(
+    async (signal?: AbortSignal) => {
       setIsDoctorsLoaded(false);
-    }
-  }, [authFetch]);
+      try {
+        const response = await authFetch(`${API_URL}/doctors`, { signal });
+        if (response) {
+          const fetchedDoctors = await response.json();
+          setDoctors(fetchedDoctors);
+          setIsDoctorsLoaded(true);
+        }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Failed to fetch doctors from web server:', error);
+          setIsDoctorsLoaded(false);
+        }
+      }
+    },
+    [authFetch],
+  );
 
   const addDoctor = useCallback(
     async (doctor: Omit<Doctor, 'id'>) => {
