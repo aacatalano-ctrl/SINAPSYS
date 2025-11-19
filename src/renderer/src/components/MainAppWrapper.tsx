@@ -211,7 +211,19 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
 
   useEffect(() => {
     if (newlyCreatedOrderId && orders.find((o) => o._id === newlyCreatedOrderId)) {
-      showToast('Orden creada exitosamente.', 'success');
+      const createdOrder = orders.find((o) => o._id === newlyCreatedOrderId);
+      if (createdOrder) {
+        showToast(
+          <>
+            Orden {createdOrder.orderNumber}
+            <br />
+            creada con éxito.
+          </>,
+          'success'
+        );
+      } else {
+        showToast('Orden creada con éxito.', 'success'); // Fallback if order not found
+      }
       setNewlyCreatedOrderId(null);
     }
   }, [orders, newlyCreatedOrderId, showToast]);
