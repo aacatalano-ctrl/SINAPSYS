@@ -621,7 +621,7 @@ const MainAppWrapper: React.FC<MainAppWrapperProps> = ({ currentUser, authFetch 
         />
       )}
 
-      {toast.show && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+      {toast.show && <Toast message={toast.message} type={toast.type} onClose={hideToast} show={toast.show} />}
     </div>
   );
 };
