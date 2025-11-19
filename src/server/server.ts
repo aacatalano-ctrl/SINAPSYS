@@ -167,15 +167,12 @@ app.use(errorHandler);
 // --- SERVER INITIALIZATION ---
 let isInitialized = false;
 
-async function connectToDatabase() {
-  if (mongoose.connection.readyState === 1) {
-    console.log('Using cached database connection.');
-    return;
-  }
+// Export a handler function for Vercel
+export default async (req: Request, res: Response) => {
+  console.log('Serverless handler invoked.');
+  await connectDB(); // Directly call the imported, cached function
 
-  console.log('Attempting to connect to MongoDB...');
-  await connectDB(); // connectDB now handles retries and sets isDatabaseConnected
-
+  // Run initialization logic only once after a successful connection
   if (!isInitialized && isDatabaseConnected) {
     console.log('Initializing database and tasks...');
     await initializeDb();
@@ -189,12 +186,7 @@ async function connectToDatabase() {
     }
     isInitialized = true;
   }
-}
 
-// Export a handler function for Vercel
-export default async (req: Request, res: Response) => {
-  console.log('Serverless handler invoked.');
-  await connectToDatabase();
   // Attach server to the handler, ensuring it's listening
   // This is a workaround for serverless environments
   if (!httpServer.listening) {

@@ -107,37 +107,36 @@ const db: AppDatabase = {
   sequences: SequenceModel,
 };
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5000; // 5 seconds
-
 let isDatabaseConnected = false; // New flag to track connection status
+
+const MONGOOSE_OPTIONS = {
+  serverSelectionTimeoutMS: 30000, // Increased timeout for server selection
+  maxPoolSize: 5, // Maintain a small pool of connections
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+};
 
 // 3. Connect to MongoDB
 const connectDB = async () => {
-  let attempts = 0;
-  const connectWithRetry = async () => {
-    attempts++;
-    try {
-      console.log(
-        `Attempting to connect to MongoDB (attempt ${attempts}/${MAX_RETRIES}) at:`,
-        MONGODB_URI,
-      );
-      await mongoose.connect(MONGODB_URI);
-      console.log('MongoDB connected successfully!');
+  // If a connection is already established, do nothing.
+  if (mongoose.connection.readyState === 1) {
+    if (!isDatabaseConnected) {
+      console.log('Using cached database connection.');
       isDatabaseConnected = true;
-    } catch (err) {
-      console.error(`MongoDB connection error (attempt ${attempts}):`, err);
-      if (attempts < MAX_RETRIES) {
-        console.log(`Retrying MongoDB connection in ${RETRY_DELAY_MS / 1000} seconds...`);
-        setTimeout(connectWithRetry, RETRY_DELAY_MS);
-      } else {
-        console.error('Max MongoDB connection retries reached. Database is unavailable.');
-        isDatabaseConnected = false; // Database remains disconnected
-        // Do NOT call process.exit(1) here. The server will continue to run.
-      }
     }
-  };
-  connectWithRetry();
+    return;
+  }
+
+  try {
+    console.log('No existing connection. Attempting to connect to MongoDB...');
+    await mongoose.connect(MONGODB_URI, MONGOOSE_OPTIONS);
+    console.log('MongoDB connected successfully!');
+    isDatabaseConnected = true;
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    isDatabaseConnected = false; // Ensure flag is false on error
+    // We don't re-throw or process.exit here. The app will continue to run,
+    // and subsequent API calls will try to connect again.
+  }
 };
 
 // 4. Function to initialize data if the database is empty
@@ -152,5 +151,4 @@ const initializeDb = async (): Promise<void> => {
 
 export { db, initializeDb, connectDB, isDatabaseConnected };
 
-// Call connectDB when the module is loaded, but don't initializeDb here
-// initializeDb will be called after successful connection in server.ts
+// Do not call connectDB here. It will be called on-demand by the serverless function.
