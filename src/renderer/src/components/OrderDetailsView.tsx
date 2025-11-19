@@ -245,7 +245,6 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
 
             <button
               onClick={() => generateReceiptPDF(order, currentUser)}
-              disabled={pendingBalance > 0}
               className="mt-4 flex items-center rounded-lg bg-purple-600 px-4 py-2 font-bold text-white shadow-md transition-colors duration-200 hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               <ClipboardList className="mr-2" /> Generar Recibo
