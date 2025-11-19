@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { jwtDecode } from 'jwt-decode';
 
 import { User } from '../../types';
 
@@ -16,7 +15,6 @@ interface UIContextType {
   setCurrentUser: (user: User | null) => void;
   handleLogout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
-  startSessionTimer: (token: string) => void;
   isAddDoctorModalOpen: boolean;
   isAddNoteModalOpen: boolean;
   isAddPaymentModalOpen: boolean;
@@ -78,7 +76,6 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const [isDatabaseMaintenance, setIsDatabaseMaintenance] = React.useState(false); // New state
   const [isLoading, setIsLoading] = React.useState(false); // Initialize new loading state
   const [sessionExpired, setSessionExpired] = React.useState(false); // New state for session expiration
-  const sessionTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const API_URL = '/api';
 
@@ -96,58 +93,28 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     [hideToast],
   );
 
-  const clearSessionTimer = React.useCallback(() => {
-    if (sessionTimeoutRef.current) {
-      clearTimeout(sessionTimeoutRef.current);
-      sessionTimeoutRef.current = null;
-    }
-  }, []);
-
   const clientSideLogout = React.useCallback(() => {
     setCurrentUser(null);
     localStorage.removeItem('token');
-    clearSessionTimer();
-  }, [setCurrentUser, clearSessionTimer]);
+  }, [setCurrentUser]);
 
   const handleSessionExpired = React.useCallback(() => {
+    // Prevent re-triggering if modal is already about to be shown
+    if (sessionExpired) return;
+
     console.log('Session expired, showing modal.');
     clientSideLogout();
     setSessionExpired(true);
-  }, [clientSideLogout]);
-
-  const startSessionTimer = React.useCallback(
-    (token: string) => {
-      clearSessionTimer();
-      try {
-        const decodedToken = jwtDecode<{ exp: number }>(token);
-        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
-        const currentTime = Date.now();
-        const timeUntilExpiration = expirationTime - currentTime;
-
-        if (timeUntilExpiration > 0) {
-          sessionTimeoutRef.current = setTimeout(() => {
-            handleSessionExpired();
-          }, timeUntilExpiration);
-        } else {
-          // Token is already expired
-          handleSessionExpired();
-        }
-      } catch (error) {
-        console.error('Failed to decode JWT or set session timer:', error);
-        handleSessionExpired(); // Log out if token is invalid
-      }
-    },
-    [clearSessionTimer, handleSessionExpired],
-  );
+  }, [clientSideLogout, sessionExpired]);
 
   const resetSessionExpired = React.useCallback(() => {
     setSessionExpired(false);
-    window.location.reload();
+    // No full reload, let the user log in again which will re-render the app.
   }, []);
 
   const authFetch = React.useCallback(
     async (url: string, options?: RequestInit) => {
-      setIsLoading(true); // Set loading to true before fetch
+      setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
         const headers: HeadersInit = {
@@ -165,11 +132,11 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
               errorMessage = errorData.message;
             }
           } catch (jsonError) {
-            // If response is not JSON, use generic message
             console.error('Failed to parse error response:', jsonError);
           }
 
-          if (response.status === 401 && !sessionExpired) {
+          // Treat both 401 and 403 as session expiration signals
+          if (response.status === 401 || response.status === 403) {
             handleSessionExpired();
           } else {
             showToast(errorMessage, 'error');
@@ -178,10 +145,10 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
         }
         return response;
       } finally {
-        setIsLoading(false); // Set loading to false after fetch (success or error)
+        setIsLoading(false);
       }
     },
-    [showToast, handleSessionExpired, sessionExpired],
+    [showToast, handleSessionExpired],
   );
 
   const checkDatabaseStatus = React.useCallback(async () => {
@@ -206,7 +173,6 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
 
   const handleLogout = React.useCallback(async () => {
     try {
-      // We attempt the API logout, but don't let it block the client-side logout
       await authFetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('Error during API logout:', error);
@@ -340,7 +306,6 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
     setCurrentUser,
     handleLogout,
     authFetch,
-    startSessionTimer,
     isAddDoctorModalOpen,
     isAddNoteModalOpen,
     isAddPaymentModalOpen,

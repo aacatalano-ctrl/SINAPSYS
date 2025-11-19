@@ -7,14 +7,7 @@ import SessionExpiredModal from './components/SessionExpiredModal.tsx'; // Impor
 import { User } from '../types';
 
 function App() {
-  const {
-    currentUser,
-    setCurrentUser,
-    authFetch,
-    showToast,
-    sessionExpired,
-    startSessionTimer,
-  } = useUI(); // Get sessionExpired state and timer function
+  const { currentUser, setCurrentUser, authFetch, showToast, sessionExpired } = useUI(); // Get sessionExpired state
 
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
@@ -29,15 +22,15 @@ function App() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // We start the timer immediately, assuming the token is valid.
-          // If authFetch fails, the session will be cleared anyway.
-          startSessionTimer(token);
+          // The new logic relies on authFetch to handle expiration.
+          // A request to /me will validate the token. If it fails, authFetch will
+          // trigger the session expired flow.
           const response = await authFetch(`${API_URL}/auth/me`);
           if (response.ok) {
             const result = await response.json();
             setCurrentUser(result.user as User);
           } else {
-            // Token is invalid or expired, clientSideLogout is called by authFetch's 401 handler
+            // Token is invalid or expired, clientSideLogout is called by authFetch's handler
             setCurrentUser(null);
           }
         } catch (e) {
@@ -50,9 +43,9 @@ function App() {
       }
     };
     verifyToken();
-    // We only want this to run once on mount, but authFetch and startSessionTimer are dependencies.
-    // Let's trust they are memoized correctly in the context.
-  }, [setCurrentUser, authFetch, startSessionTimer]);
+    // We only want this to run once on mount.
+    // Let's trust that authFetch and setCurrentUser are memoized correctly in the context.
+  }, [setCurrentUser, authFetch]);
 
   const handleLogin = async (username: string, password: string) => {
     setAuthError('');
@@ -66,7 +59,6 @@ function App() {
       if (result.success) {
         setCurrentUser(result.user as User);
         localStorage.setItem('token', result.token); // Guardar el token
-        startSessionTimer(result.token); // Start the session timer
         showToast(`Bienvenido, ${result.user.username}!`);
       } else {
         setAuthError(result.message || 'Error de autenticación');
