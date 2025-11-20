@@ -16,7 +16,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationEnd }) => {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-blue-900 transition-opacity duration-500"
-         style={{ background: 'radial-gradient(circle at center, #2563eb 0%, #1e3a8a 100%)' }}>
+         style={{ background: 'radial-gradient(circle at center, #1e40af 0%, #1e3a8a 100%)' }}>
       <LogoSinapsis isAnimating={true} />
     </div>
   );
