@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+/* Custom Keyframes for Logo Animation */
+@keyframes pulse-shadow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(251, 113, 133, 0.9)); /* Original glow */
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(251, 113, 133, 1)); /* Brighter glow */
+  }
+}
+
+.animate-pulse-shadow {
+  animation: pulse-shadow 1.5s infinite alternate ease-in-out; /* Adjust timing as needed */
+}
+
 /* Estas tres líneas son las directivas de Tailwind. */
 /* Reemplazan el contenido original del archivo index.css */
 @tailwind base;

@@ -3,11 +3,13 @@ import AuthModal from './components/AuthModal.tsx';
 import MainAppWrapper from './components/MainAppWrapper.tsx';
 import { useUI } from './context/UIContext';
 import SessionExpiredModal from './components/SessionExpiredModal.tsx'; // Import the new modal
+import SplashScreen from './components/SplashScreen'; // Import SplashScreen
 
 import { User } from '../types';
 
 function App() {
   const { currentUser, setCurrentUser, authFetch, showToast, sessionExpired } = useUI(); // Get sessionExpired state
+  const [showSplash, setShowSplash] = useState(true); // New state for splash screen
 
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
@@ -16,6 +18,10 @@ function App() {
   const [authError, setAuthError] = useState('');
 
   const API_URL = '/api';
+
+  const handleSplashEnd = () => {
+    setShowSplash(false);
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -48,14 +54,18 @@ function App() {
       }
     };
 
-    verifyToken();
+    // Only verify token after splash screen, or if splash screen is not shown
+    if (!showSplash) {
+      verifyToken();
+    }
+
 
     return () => {
       controller.abort();
     };
     // We only want this to run once on mount.
     // Let's trust that authFetch and setCurrentUser are memoized correctly in the context.
-  }, [setCurrentUser, authFetch]);
+  }, [setCurrentUser, authFetch, showSplash]); // Add showSplash to dependency array
 
   const handleLogin = async (username: string, password: string) => {
     setAuthError('');
@@ -149,25 +159,31 @@ function App() {
 
   return (
     <>
-      {sessionExpired && <SessionExpiredModal />}
-      {!currentUser ? (
-        <AuthModal
-          onLogin={handleLogin}
-          authError={authError}
-          showNotification={showToast}
-          showForgotPasswordModal={showForgotPasswordModal}
-          setShowForgotPasswordModal={setShowForgotPasswordModal}
-          forgotPasswordStep={forgotPasswordStep}
-          setForgotPasswordStep={setForgotPasswordStep}
-          forgotPasswordUsername={forgotPasswordUsername}
-          setForgotPasswordUsername={setForgotPasswordUsername}
-          forgotPasswordSecurityQuestion={forgotPasswordSecurityQuestion}
-          onForgotPassword={onForgotPassword}
-          handleForgotPasswordSubmitAnswer={handleForgotPasswordSubmitAnswer}
-          handleSetNewPassword={handleSetNewPassword}
-        />
+      {showSplash ? (
+        <SplashScreen onAnimationEnd={handleSplashEnd} />
       ) : (
-        <MainAppWrapper currentUser={currentUser} authFetch={authFetch} />
+        <>
+          {sessionExpired && <SessionExpiredModal />}
+          {!currentUser ? (
+            <AuthModal
+              onLogin={handleLogin}
+              authError={authError}
+              showNotification={showToast}
+              showForgotPasswordModal={showForgotPasswordModal}
+              setShowForgotPasswordModal={setShowForgotPasswordModal}
+              forgotPasswordStep={forgotPasswordStep}
+              setForgotPasswordStep={setForgotPasswordStep}
+              forgotPasswordUsername={forgotPasswordUsername}
+              setForgotPasswordUsername={setForgotPasswordUsername}
+              forgotPasswordSecurityQuestion={forgotPasswordSecurityQuestion}
+              onForgotPassword={onForgotPassword}
+              handleForgotPasswordSubmitAnswer={handleForgotPasswordSubmitAnswer}
+              handleSetNewPassword={handleSetNewPassword}
+            />
+          ) : (
+            <MainAppWrapper currentUser={currentUser} authFetch={authFetch} />
+          )}
+        </>
       )}
     </>
   );
